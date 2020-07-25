@@ -26,7 +26,6 @@ pip-log.txt
 .coverage
 .tox
 venv
-app.db
 oka.log*
 __pycache__
 logs/
