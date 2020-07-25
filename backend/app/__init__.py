@@ -7,11 +7,16 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_mail import Mail
 from flask_smorest import Api
+from flask_jwt_extended import JWTManager
 from config import Config
+from celery import Celery
+
 
 db = SQLAlchemy()
 migrate = Migrate()
 mail = Mail()
+celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
+jwt = JWTManager()
 
 
 def create_app(config_class=Config):
@@ -22,6 +27,8 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     CORS(app)
     mail.init_app(app)
+    celery.conf.update(app.config)
+    jwt.init_app(app)
 
     api = Api()
     api.init_app(app)
@@ -68,4 +75,4 @@ def create_app(config_class=Config):
     return app
 
 
-from app import models
+from app import models  # noqa: F401

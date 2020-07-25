@@ -1,13 +1,14 @@
 from app import db
 from . import bp
+from flask import jsonify
 
 
 @bp.app_errorhandler(404)
 def not_found_error(error):
-    return {"error": "URL not found."}, 404
+    return jsonify(errors={"json": {"url": ["Does not exist."]}}), 404
 
 
 @bp.app_errorhandler(500)
 def internal_error(error):
     db.session.rollback()
-    return {"error": "Internal error."}, 500
+    return jsonify(errors={"json": {"server": ["Internal error."]}}), 500

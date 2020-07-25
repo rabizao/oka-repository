@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from dotenv import load_dotenv
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -27,3 +28,14 @@ class Config(object):
     OPENAPI_REDOC_URL = "https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"
     OPENAPI_SWAGGER_UI_PATH = "/swagger"
     OPENAPI_SWAGGER_UI_URL = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
+
+    CELERY_BROKER_URL = 'redis://localhost:6379/0'
+    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+    ACCESS_EXPIRES = timedelta(hours=12)
+    REFRESH_EXPIRES = timedelta(days=30)
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY') or 'testpass'
+    JWT_BLACKLIST_ENABLED = True
+    JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
+    JWT_ACCESS_TOKEN_EXPIRES = ACCESS_EXPIRES
+    JWT_REFRESH_TOKEN_EXPIRES = REFRESH_EXPIRES

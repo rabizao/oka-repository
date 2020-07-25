@@ -1,8 +1,20 @@
 #!/usr/bin/env python
 import unittest
 from app import create_app, db
-from app.models import Job
+from app.models import User, Post
 from config import Config
+
+
+user1 = {
+    "username": "user1",
+    "password": "password123",
+    "email": "teste@teste.com",
+    "name": "Teste1"
+}
+
+post1 = {
+    "data_uuid": "uuid1"
+}
 
 
 class TestConfig(Config):
@@ -22,13 +34,14 @@ class UserModelCase(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    def test_new_tag(self):
-        job = Job(uuid='uuidtest')
-        tag = job.new_tag(name="Tag1")
-        db.session.add(job)
+    def test_new_post(self):
+        user = User(**user1)
+        post = Post(**post1, author=user)
+        db.session.add(user)
+        db.session.add(post)
         db.session.commit()
-        self.assertTrue(job.tags.all()[0].name == "Tag1")
-        self.assertTrue(tag.job == job)
+        self.assertTrue(user.posts[0].data_uuid == post1['data_uuid'])
+        self.assertTrue(post.author == user)
 
 
 if __name__ == '__main__':
