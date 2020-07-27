@@ -1,8 +1,9 @@
 from . import bp
 from app import db
-from flask.views import MethodView
-from app.schemas import PostQuerySchema, PostSchemaBase, PostRegisterSchema
+from app.schemas import PostQuerySchema, PostBaseSchema, PostRegisterSchema
 from app.models import User, Post
+from flask.views import MethodView
+from flask_smorest import abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
@@ -10,7 +11,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 class Posts(MethodView):
     @jwt_required
     @bp.arguments(PostQuerySchema, location="query")
-    @bp.response(PostSchemaBase(many=True))
+    @bp.response(PostBaseSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters):
         """
@@ -24,16 +25,29 @@ class Posts(MethodView):
 
     @jwt_required
     @bp.arguments(PostRegisterSchema)
-    @bp.response(PostSchemaBase)
+    @bp.response(PostBaseSchema)
     def post(self, args):
         """
         Create a new post to the logged user
         """
-        # TODO:Get files from front end and store in Davi's package
+        # TODO:Get files from front end and store in cururu
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
         post = Post(**args, author=logged_user)
         db.session.add(post)
         db.session.commit()
 
+        return post
+
+
+@bp.route('/posts/<int:id>')
+class PostsById(MethodView):
+    @bp.response(PostBaseSchema)
+    def get(self, id):
+        """
+        Show info about the post with id {id}
+        """
+        post = Post.query.get(id)
+        if not post or not post.active:
+            abort(422, errors={"json": {"id": ["Does not exist."]}})
         return post

@@ -5,6 +5,18 @@ from app import db
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from werkzeug.security import generate_password_hash
 from app.models import User, Post, Experiment
+import json
+
+
+class ParseQueryMixin(object):
+    @post_load
+    def parse_search_list(self, data, **kwargs):
+        for key, value in data.items():
+            if key == 'logic':
+                continue
+            data[key] = json.loads(value)
+
+        return data
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -19,14 +31,6 @@ class UserBaseSchema(SQLAlchemyAutoSchema):
         validate.Length(min=6, max=36)], load_only=True)
     email = fields.Email(validate=[
         validate.Length(min=6, max=36)], load_only=True, required=True)
-
-
-class ParseQueryMixin(object):
-    @post_load
-    def parse_search_list(self, data, **kwargs):
-        for key, value in data.items():
-            data[key] = data[key].split(',')
-        return data
 
 
 class UserQuerySchema(ParseQueryMixin, SQLAlchemySchema):
@@ -46,6 +50,38 @@ class PostQuerySchema(ParseQueryMixin, SQLAlchemySchema):
     name = fields.String()
     body = fields.String()
     username = fields.String()
+    logic = fields.String()
+    # Data attributes
+    number_of_features = fields.String()
+    number_of_targets = fields.String()
+    number_of_instances = fields.String()
+    # Tasks
+    classification = fields.String()
+    regression = fields.String()
+    clustering = fields.String()
+    other_tasks = fields.String()
+    number_of_classes = fields.String()
+    type_of_regression = fields.String()
+    number_of_clusters = fields.String()
+    # Domain
+    life_sciences = fields.String()
+    physical_sciences = fields.String()
+    engineering = fields.String()
+    social = fields.String()
+    business = fields.String()
+    finances = fields.String()
+    astronomy = fields.String()
+    quantum_mechanics = fields.String()
+    medical = fields.String()
+    financial = fields.String()
+    other_domains = fields.String()
+    # Features
+    categorical = fields.String()
+    numerical = fields.String()
+    text = fields.String()
+    images = fields.String()
+    time_series = fields.String()
+    other_features = fields.String()
 
 
 class UserRegisterSchema(UserBaseSchema):
@@ -134,7 +170,7 @@ class UserEditSchema(SQLAlchemySchema):
         return data
 
 
-class PostSchemaBase(SQLAlchemyAutoSchema):
+class PostBaseSchema(SQLAlchemyAutoSchema):
 
     class Meta:
         model = Post
@@ -143,7 +179,7 @@ class PostSchemaBase(SQLAlchemyAutoSchema):
     author = Nested(UserBaseSchema, dump_only=True)
 
 
-class PostRegisterSchema(PostSchemaBase):
+class PostRegisterSchema(PostBaseSchema):
 
     @post_load
     def check_unique(self, data, **kwargs):
@@ -153,7 +189,7 @@ class PostRegisterSchema(PostSchemaBase):
         return data
 
 
-class ExperimentSchemaBase(SQLAlchemyAutoSchema):
+class ExperimentBaseSchema(SQLAlchemyAutoSchema):
 
     class Meta:
         model = Experiment
@@ -171,7 +207,7 @@ class ExperimentQuerySchema(ParseQueryMixin, SQLAlchemySchema):
     description = fields.String()
 
 
-class ExperimentRegisterSchema(ExperimentSchemaBase):
+class ExperimentRegisterSchema(ExperimentBaseSchema):
 
     @post_load
     def check_unique(self, data, **kwargs):

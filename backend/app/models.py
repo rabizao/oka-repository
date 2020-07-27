@@ -31,10 +31,18 @@ favorites = db.Table('favorites',
 
 class PaginateMixin(object):
     @classmethod
-    def get(cls, data, page, page_size, filter_by={}, filter="or"):
-        search_conds = [getattr(cls, e).like(
-            f"%{ee}%") for e, values in data.items() for ee in values]
-        if filter == "or":
+    def get(cls, data, page, page_size, filter_by={}):
+        logic = data['logic'] if 'logic' in data else 'or'
+        data.pop('logic', None)
+        search_conds = []
+        for key, values in data.items():
+            if isinstance(values, list):
+                if isinstance(values[0], list):
+                    search_conds += [getattr(cls, key).between(*values[0])]
+                else:
+                    search_conds += [getattr(cls,
+                                             key).like(f"%{ee}%") for ee in values]
+        if logic == "or":
             resources = cls.query.filter_by(**filter_by).filter(
                 or_(*search_conds)).paginate(page, page_size, False)
         else:
@@ -48,7 +56,8 @@ class User(PaginateMixin, db.Model):
     username = db.Column(db.String(64), index=True,
                          unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
-    email = db.Column(db.String(120), index=True, unique=True, nullable=False)
+    email = db.Column(db.String(120), index=True,
+                      unique=True, nullable=False)
     name = db.Column(db.String(128), nullable=False)
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
@@ -209,6 +218,37 @@ class Post(PaginateMixin, db.Model):
     tags = db.relationship('Tag', backref='post', lazy='dynamic')
     public = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
+    # Data attributes
+    number_of_features = db.Column(db.Integer)
+    number_of_targets = db.Column(db.Integer)
+    number_of_instances = db.Column(db.Integer)
+    # Tasks
+    classification = db.Column(db.Boolean)
+    regression = db.Column(db.Boolean)
+    clustering = db.Column(db.Boolean)
+    other_tasks = db.Column(db.Boolean)
+    number_of_classes = db.Column(db.Integer)
+    type_of_regression = db.Column(db.Integer)
+    number_of_clusters = db.Column(db.Integer)
+    # Domain
+    life_sciences = db.Column(db.Boolean)
+    physical_sciences = db.Column(db.Boolean)
+    engineering = db.Column(db.Boolean)
+    social = db.Column(db.Boolean)
+    business = db.Column(db.Boolean)
+    finances = db.Column(db.Boolean)
+    astronomy = db.Column(db.Boolean)
+    quantum_mechanics = db.Column(db.Boolean)
+    medical = db.Column(db.Boolean)
+    financial = db.Column(db.Boolean)
+    other_domains = db.Column(db.Boolean)
+    # Features
+    categorical = db.Column(db.Boolean)
+    numerical = db.Column(db.Boolean)
+    text = db.Column(db.Boolean)
+    images = db.Column(db.Boolean)
+    time_series = db.Column(db.Boolean)
+    other_features = db.Column(db.Boolean)
 
     def add_comment(self, text, author):
         comment = Comment(text=text, post=self, author=author)

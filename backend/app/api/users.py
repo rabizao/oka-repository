@@ -2,7 +2,7 @@ from app import db
 from . import bp
 from app.models import User, Post
 from app.schemas import UserBaseSchema, UserQuerySchema, UserRegisterSchema, UserEditSchema, \
-    PostQuerySchema, PostSchemaBase
+    PostQuerySchema, PostBaseSchema
 from flask.views import MethodView
 from flask_smorest import abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -98,7 +98,7 @@ class UsersById(MethodView):
 class UsersPosts(MethodView):
     @jwt_required
     @bp.arguments(PostQuerySchema, location="query")
-    @bp.response(PostSchemaBase(many=True))
+    @bp.response(PostBaseSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters, id):
         """
