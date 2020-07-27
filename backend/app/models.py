@@ -37,11 +37,14 @@ class PaginateMixin(object):
         search_conds = []
         for key, values in data.items():
             if isinstance(values, list):
-                if isinstance(values[0], list):
-                    search_conds += [getattr(cls, key).between(*values[0])]
+                if len(values) == 2 and all(isinstance(item, int) for item in values):
+                    values.sort()
+                    search_conds += [getattr(cls, key).between(*values)]
                 else:
                     search_conds += [getattr(cls,
-                                             key).like(f"%{ee}%") for ee in values]
+                                             key).like(f"%{item}%") for item in values]
+            else:
+                search_conds += [getattr(cls, key).like(f"%{values}%")]
         if logic == "or":
             resources = cls.query.filter_by(**filter_by).filter(
                 or_(*search_conds)).paginate(page, page_size, False)

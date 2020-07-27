@@ -1,22 +1,9 @@
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
 from marshmallow_sqlalchemy.fields import Nested
 from app import db
-# from app.models import Job, Tag
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from werkzeug.security import generate_password_hash
 from app.models import User, Post, Experiment
-import json
-
-
-class ParseQueryMixin(object):
-    @post_load
-    def parse_search_list(self, data, **kwargs):
-        for key, value in data.items():
-            if key == 'logic':
-                continue
-            data[key] = json.loads(value)
-
-        return data
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -33,7 +20,7 @@ class UserBaseSchema(SQLAlchemyAutoSchema):
         validate.Length(min=6, max=36)], load_only=True, required=True)
 
 
-class UserQuerySchema(ParseQueryMixin, SQLAlchemySchema):
+class UserQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
@@ -42,46 +29,51 @@ class UserQuerySchema(ParseQueryMixin, SQLAlchemySchema):
     username = fields.String()
 
 
-class PostQuerySchema(ParseQueryMixin, SQLAlchemySchema):
+class PostQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
     data_uuid = fields.String()
-    name = fields.String()
+    name = fields.List(fields.String())
     body = fields.String()
     username = fields.String()
     logic = fields.String()
     # Data attributes
-    number_of_features = fields.String()
-    number_of_targets = fields.String()
-    number_of_instances = fields.String()
+    number_of_features = fields.List(fields.Integer(), validate=[
+        validate.Length(equal=2)])
+    number_of_targets = fields.List(fields.Integer(), validate=[
+        validate.Length(equal=2)])
+    number_of_instances = fields.List(fields.Integer(), validate=[
+        validate.Length(equal=2)])
     # Tasks
-    classification = fields.String()
-    regression = fields.String()
-    clustering = fields.String()
-    other_tasks = fields.String()
-    number_of_classes = fields.String()
+    classification = fields.Boolean()
+    regression = fields.Boolean()
+    clustering = fields.Boolean()
+    other_tasks = fields.Boolean()
+    number_of_classes = fields.List(fields.Integer(), validate=[
+        validate.Length(equal=2)])
     type_of_regression = fields.String()
-    number_of_clusters = fields.String()
+    number_of_clusters = fields.List(fields.Integer(), validate=[
+        validate.Length(equal=2)])
     # Domain
-    life_sciences = fields.String()
-    physical_sciences = fields.String()
-    engineering = fields.String()
-    social = fields.String()
-    business = fields.String()
-    finances = fields.String()
-    astronomy = fields.String()
-    quantum_mechanics = fields.String()
-    medical = fields.String()
-    financial = fields.String()
-    other_domains = fields.String()
+    life_sciences = fields.Boolean()
+    physical_sciences = fields.Boolean()
+    engineering = fields.Boolean()
+    social = fields.Boolean()
+    business = fields.Boolean()
+    finances = fields.Boolean()
+    astronomy = fields.Boolean()
+    quantum_mechanics = fields.Boolean()
+    medical = fields.Boolean()
+    financial = fields.Boolean()
+    other_domains = fields.Boolean()
     # Features
-    categorical = fields.String()
-    numerical = fields.String()
-    text = fields.String()
-    images = fields.String()
-    time_series = fields.String()
-    other_features = fields.String()
+    categorical = fields.Boolean()
+    numerical = fields.Boolean()
+    text = fields.Boolean()
+    images = fields.Boolean()
+    time_series = fields.Boolean()
+    other_features = fields.Boolean()
 
 
 class UserRegisterSchema(UserBaseSchema):
@@ -198,7 +190,7 @@ class ExperimentBaseSchema(SQLAlchemyAutoSchema):
     author = Nested(UserBaseSchema, dump_only=True)
 
 
-class ExperimentQuerySchema(ParseQueryMixin, SQLAlchemySchema):
+class ExperimentQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
