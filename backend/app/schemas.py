@@ -203,3 +203,10 @@ class ExperimentRegisterSchema(ExperimentBaseSchema):
             raise ValidationError(field_name='experiment_uuid',
                                   message="Already in use.")
         return data
+
+
+class DownloadQuerySchema(SQLAlchemySchema):
+    class Meta:
+        unknown = EXCLUDE
+
+    uuids = fields.List(fields.String())
