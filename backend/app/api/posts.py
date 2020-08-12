@@ -2,9 +2,14 @@ from . import bp
 from app import db
 from app.schemas import PostQuerySchema, PostBaseSchema, PostFilesSchema
 from app.models import User, Post
+from flask import current_app
 from flask.views import MethodView
 from flask_smorest import abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from cururu.persistence import DuplicateEntryException
+# from cururu.pickleserver import PickleServer
+# from pjdata.content.specialdata import UUIDData
+from pjdata.data_creation import read_arff
 
 
 @bp.route("/posts")
@@ -26,12 +31,24 @@ class Posts(MethodView):
     @jwt_required
     @bp.arguments(PostFilesSchema, location="files")
     @bp.response(PostBaseSchema)
-    def post(self, files):
+    def post(self, args):
         """
         Create a new post to the logged user
         """
-        print(files)
         # TODO:Get files from front end and store in cururu
+
+        files = args['files']
+
+        for file in files:
+            full_path = current_app.config['TMP_FOLDER'] + file.filename
+            try:
+                file.save(full_path)
+                data = read_arff(full_path)[1]
+                print(data.uuid)
+                # PickleServer().store(data)
+            except DuplicateEntryException:
+                print('Duplicate! Ignored.')
+
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
         post = Post(author=logged_user)

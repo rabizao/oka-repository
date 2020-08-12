@@ -18,6 +18,7 @@ class Config(object):
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['your-email@example.com']
     POSTS_PER_PAGE = 25
+    TMP_FOLDER = '/tmp/oka/'
 
     API_TITLE = 'oka API'
     API_VERSION = ''

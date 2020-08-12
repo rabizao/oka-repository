@@ -54,7 +54,7 @@ export default function Home() {
             formData.append("files", value);
         })
 
-        var headers = { 'Content-Type': "multipart/form-data" }
+        var headers = { 'Content-Type': "multipart/form-data;" }
         try {
             const response = await api.post('posts', formData, { headers: headers });
             console.log(response)
