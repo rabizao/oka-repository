@@ -1,6 +1,6 @@
 # README!
 
-Install
+Install API
 -------
 
     sudo apt install python3.8-venv python3.8-dev python3.8-distutils # For Debian-like systems.
@@ -10,9 +10,7 @@ Install
     source venv/bin/activate
     pip install -r requirements.txt
 
-Use
-
-Start the API:
+Start API:
 ---
     source venv/bin/activate
     cd backend/
@@ -21,3 +19,14 @@ Start the API:
 Access documentation:
 ---
     http://localhost:5000/docs or http://localhost:5000/docs/swagger
+
+
+Install frontend:
+---
+    sudo apt install npm
+    cd frontend/
+    npm install
+
+Start frontend:
+---
+    npm start
