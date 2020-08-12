@@ -4,6 +4,7 @@ from app import db
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from werkzeug.security import generate_password_hash
 from app.models import User, Post, Experiment
+from flask_smorest.fields import Upload
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -171,14 +172,9 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     author = Nested(UserBaseSchema, dump_only=True)
 
 
-class PostRegisterSchema(PostBaseSchema):
+class PostFilesSchema(SQLAlchemySchema):
 
-    @post_load
-    def check_unique(self, data, **kwargs):
-        if Post.get_by_uuid(data["data_uuid"]):
-            raise ValidationError(field_name='data_uuid',
-                                  message="Already in use.")
-        return data
+    files = fields.List(Upload())
 
 
 class ExperimentBaseSchema(SQLAlchemyAutoSchema):

@@ -1,6 +1,6 @@
 from . import bp
 from app import db
-from app.schemas import PostQuerySchema, PostBaseSchema, PostRegisterSchema
+from app.schemas import PostQuerySchema, PostBaseSchema, PostFilesSchema
 from app.models import User, Post
 from flask.views import MethodView
 from flask_smorest import abort
@@ -24,16 +24,17 @@ class Posts(MethodView):
         return data
 
     @jwt_required
-    @bp.arguments(PostRegisterSchema)
+    @bp.arguments(PostFilesSchema, location="files")
     @bp.response(PostBaseSchema)
-    def post(self, args):
+    def post(self, files):
         """
         Create a new post to the logged user
         """
+        print(files)
         # TODO:Get files from front end and store in cururu
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
-        post = Post(**args, author=logged_user)
+        post = Post(author=logged_user)
         db.session.add(post)
         db.session.commit()
 
