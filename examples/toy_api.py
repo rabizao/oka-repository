@@ -7,7 +7,7 @@ import random
 
 
 base_url = 'http://localhost:5000/api/'
-url_downloads = base_url + 'downloads'
+url_downloads = base_url + 'downloads?uuids=asdaknml&uuids=sdawdasdasd'
 
 response = requests.get(url_downloads)
 print(response.text)
