@@ -7,6 +7,20 @@ import random
 
 
 base_url = 'http://localhost:5000/api/'
+url_downloads = base_url + 'downloads'
+
+response = requests.get(url_downloads)
+print(response.text)
+
+
+
+
+
+
+
+
+
+exit()
 
 # CREATE USER
 url_createuser = base_url + 'users'

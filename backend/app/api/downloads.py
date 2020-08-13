@@ -10,6 +10,7 @@ class Users(MethodView):
     @bp.arguments(DownloadQuerySchema, location="query")
     def get(self, args):
         """Download a zipped file containing all the requested datasets"""
-        print(args['uuids'])
+        if 'uuids' in args:
+            print(args['uuids'])
         return send_from_directory(current_app.static_folder,
                                    "iris.arff", as_attachment=True)
