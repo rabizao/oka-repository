@@ -57,7 +57,9 @@ export default function Home() {
         var headers = { 'Content-Type': "multipart/form-data;" }
         try {
             const response = await api.post('posts', formData, { headers: headers });
-            console.log(response)
+            setAcceptedFiles([]);
+            setDeniedFiles([]);
+            NotificationManager.success("Upload successful", "Finished", 4000)
         } catch (error) {
             console.log(error)
             if (error.response) {
@@ -65,7 +67,7 @@ export default function Home() {
                     NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
                 }
             } else {
-                NotificationManager.error("network error", "error", 4000)
+                NotificationManager.error("Network error", "Error", 4000)
             }
         }
     }

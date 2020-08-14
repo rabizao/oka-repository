@@ -23,9 +23,8 @@ class Posts(MethodView):
         Show all posts
         """
         filter_by = {"active": True}
-        data, total = Post.get(args, pagination_parameters.page,
-                               pagination_parameters.page_size, filter_by=filter_by)
-        pagination_parameters.item_count = total
+        data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
+                                                          pagination_parameters.page_size, filter_by=filter_by)
         return data
 
     @jwt_required

@@ -127,6 +127,9 @@ class LoginResponseSchema(SQLAlchemySchema):
 
     access_token = fields.String(dump_only=True)
     refresh_token = fields.String(dump_only=True)
+    id = fields.Integer(dump_only=True)
+    username = fields.String(dump_only=True)
+    name = fields.String(dump_only=True)
 
 
 class RefreshTokenSchema(SQLAlchemySchema):
@@ -170,6 +173,7 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
 
     id = auto_field(dump_only=True)
     author = Nested(UserBaseSchema, dump_only=True)
+    favorites = fields.Pluck(UserBaseSchema, "id", many=True, dump_only=True)
 
 
 class PostFilesSchema(SQLAlchemySchema):

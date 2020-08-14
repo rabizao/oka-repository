@@ -48,6 +48,9 @@ class Login(MethodView):
         response = {
             'access_token': access_token,
             'refresh_token': refresh_token,
+            'id': user.id,
+            'username': args['username'],
+            'name': user.name
         }
 
         return response
