@@ -7,7 +7,9 @@ import Index from './pages/Index';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import Upload from './pages/Upload';
-import Datasets from './pages/Datasets';
+import DatasetsDescription from './pages/Datasets/Description';
+import DatasetsVisualize from './pages/Datasets/Visualize';
+import DatasetsComments from './pages/Datasets/Comments';
 import Users from './pages/Users';
 import Register from './pages/Register';
 import Login from './pages/Login';
@@ -23,7 +25,9 @@ export default function Routes() {
                     <Route path="/login" component={Login} />
                     <PrivateRoute path="/users/:username/:section" component={Users} />
                     <PrivateRoute path="/search/:section/" component={Search} />
-                    <PrivateRoute path="/datasets/:uuid/:section/" component={Datasets} />
+                    <PrivateRoute path="/datasets/:uuid/description/" component={DatasetsDescription} />
+                    <PrivateRoute path="/datasets/:uuid/visualize/" component={DatasetsVisualize} />
+                    <PrivateRoute path="/datasets/:uuid/comments/" component={DatasetsComments} />
                     <PrivateRoute path="/upload" component={Upload} />
                 </LoginProvider>
             </Switch>

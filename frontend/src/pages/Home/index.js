@@ -101,9 +101,9 @@ export default function Home() {
                     <ContentBox title="Feed" fetchUrl={"posts"} maxWidth={700} />
                 </div>
                 <div className="column">
-                    <ContentBox title="Uploads" fetchUrl={"posts"} hideAvatar={true} hideAuthor={true} maxWidth={400} />
-                    <ContentBox title="Favorites" fetchUrl={"posts"} maxWidth={400} />
-                    <ContentBox title="Basket" fetchUrl={"posts"} maxWidth={400} />
+                    <ContentBox title="Uploads" fetchUrl={"posts"} hideAvatar={true} hideAuthor={true} hideActions={true} maxWidth={400} />
+                    <ContentBox title="Favorites" fetchUrl={"posts"} maxWidth={400} hideActions={true} />
+                    <ContentBox title="Basket" fetchUrl={"posts"} maxWidth={400} hideActions={true} />
                 </div>
             </div>
         </>

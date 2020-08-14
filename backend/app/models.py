@@ -215,6 +215,7 @@ class Post(PaginateMixin, db.Model):
     data_uuid = db.Column(db.String(120), index=True, unique=True)
     name = db.Column(db.String(120), default="No name")
     body = db.Column(db.String(1000), default="No description")
+    downloads = db.Column(db.Integer(), default=0)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     comments = db.relationship('Comment', backref='post', lazy='dynamic')

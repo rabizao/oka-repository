@@ -40,16 +40,25 @@ export default function ContentBox(props) {
         fetchData();
     }, [])
 
-    function handleFavoriteButton(e, post, index) {
+    async function handleFavoriteButton(e, post, index) {
         e.preventDefault();
         var newPosts = [...posts];
 
-        if (post.favorites.includes(user.id)) {
-            // call api and change in backend
-            newPosts[index].favorites = newPosts[index].favorites.filter(item => item !== user.id)
-        } else {
-            // call api and change in backend
-            newPosts[index].favorites.push(user.id)
+        try {
+            await api.post(`posts/${post.id}/favorite`);
+            if (post.favorites.includes(user.id)) {
+                newPosts[index].favorites = newPosts[index].favorites.filter(item => item !== user.id)
+            } else {
+                newPosts[index].favorites.push(user.id)
+            }
+        } catch (error) {
+            if (error.response) {
+                for (var prop in error.response.data.errors.json) {
+                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
+                }
+            } else {
+                NotificationManager.error("Network error", "Error", 4000)
+            }
         }
 
         setPosts(newPosts);
@@ -98,24 +107,26 @@ export default function ContentBox(props) {
                                                     <span className="bold">{post.name}</span>{props.hideAuthor && <span> - <TimeAgo datetime={post.timestamp} /></span>}
                                                 </div>
                                                 <span className="ellipsis">{post.body}</span>
-                                                <span className="padding-top-small">
-                                                    <ul className="flex-row ul-padding-sides-not-first">
-                                                        <li><button onClick={e => handleFavoriteButton(e, post, index)}>{post.favorites.includes(user.id) ? <><Favorite /> {post.favorites.length}</> : <><FavoriteBorder /> {post.favorites.length}</>}</button></li>
-                                                        <li><button onClick={e => handleShowCommentsBox(e, post)}><Message /> {post.comments_total}</button></li>
-                                                    </ul>
-                                                    <ul>
-                                                        {
-                                                            comments[post.id] &&
-                                                            <>
-                                                                {post.comments.map((comment) =>
-                                                                    <li key={post.id + "/" + comment.id}>
-                                                                        {comment.body}
-                                                                    </li>
-                                                                )}
-                                                            </>
-                                                        }
-                                                    </ul>
-                                                </span>
+                                                {!props.hideActions &&
+                                                    <span className="padding-top-small">
+                                                        <ul className="flex-row ul-padding-sides-not-first">
+                                                            <li><button onClick={e => handleFavoriteButton(e, post, index)}>{post.favorites.includes(user.id) ? <><Favorite /> {post.favorites.length}</> : <><FavoriteBorder /> {post.favorites.length}</>}</button></li>
+                                                            <li><button onClick={e => handleShowCommentsBox(e, post)}><Message /> {post.comments_total}</button></li>
+                                                        </ul>
+                                                        <ul>
+                                                            {
+                                                                comments[post.id] &&
+                                                                <>
+                                                                    {post.comments.map((comment) =>
+                                                                        <li key={post.id + "/" + comment.id}>
+                                                                            {comment.body}
+                                                                        </li>
+                                                                    )}
+                                                                </>
+                                                            }
+                                                        </ul>
+                                                    </span>
+                                                }
                                             </div>
                                         </Link>
                                     </div>

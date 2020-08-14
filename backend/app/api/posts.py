@@ -57,14 +57,49 @@ class Posts(MethodView):
         return post
 
 
-@bp.route('/posts/<int:id>')
+@bp.route('/posts/<string:uuid>')
 class PostsById(MethodView):
     @bp.response(PostBaseSchema)
-    def get(self, id):
+    def get(self, uuid):
         """
-        Show info about the post with id {id}
+        Show info about the post with uuid {uuid}
+        """
+        post = Post.get_by_uuid(uuid)
+        if not post or not post.active:
+            abort(422, errors={"json": {"uuid": ["Does not exist."]}})
+        return post
+
+
+@bp.route('/posts/<int:id>/favorite')
+class PostsFavoriteById(MethodView):
+    @jwt_required
+    @bp.response(code=200)
+    def post(self, id):
+        """
+        Favorite/unfavorite post with id {id}
         """
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={"json": {"id": ["Does not exist."]}})
-        return post
+
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
+        if logged_user.has_favorited(post):
+            logged_user.unfavorite(post)
+        else:
+            logged_user.favorite(post)
+
+
+@bp.route('/posts/<int:id>/download')
+class PostsDownloadCountById(MethodView):
+    @jwt_required
+    @bp.response(code=200)
+    def post(self, id):
+        """
+        Favorite/unfavorite post with id {id}
+        """
+        post = Post.query.get(id)
+        if not post or not post.active:
+            abort(422, errors={"json": {"id": ["Does not exist."]}})
+
+        post.downloads += 1
