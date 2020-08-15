@@ -94,11 +94,11 @@ export default function ContentBox(props) {
                         <h2 className="padding-sides-small margin-top-medium">{props.title}</h2>
                         <ul className="content-list margin-top-medium">
                             {posts.map((post, index) =>
-                                <li key={post.id} className="flex-column background-hover ">
+                                <li key={post.id} className="flex-column background-hover">
                                     {/* {favorites[post.id] = post.favorited} */}
                                     <div className="content-item flex-row padding-medium">
                                         {!props.hideAvatar && <Link to={`/users/${post.author.username}/uploads`} ><Avatar name={post.author.name} size="40" round={true} /></Link>}
-                                        <Link to={`/datasets/${post.data_uuid}/description`}>
+                                        <Link className="width100" to={`/datasets/${post.data_uuid}/description`}>
                                             <div className="flex-column padding-sides-small" style={{ maxWidth: props.maxWidth ? props.maxWidth : "300px" }}>
                                                 <div>
                                                     {!props.hideAuthor && <><span className="font-size-medium bold">{post.author.name}</span> - <span>{post.author.username}</span> - <TimeAgo datetime={post.timestamp} /></>}
