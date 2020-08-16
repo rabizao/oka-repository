@@ -19,6 +19,8 @@ class UserBaseSchema(SQLAlchemyAutoSchema):
         validate.Length(min=6, max=36)], load_only=True)
     email = fields.Email(validate=[
         validate.Length(min=6, max=36)], load_only=True, required=True)
+    followed = fields.Pluck("self", "id", many=True, dump_only=True)
+    followers = fields.Pluck("self", "id", many=True, dump_only=True)
 
 
 class UserQuerySchema(SQLAlchemySchema):

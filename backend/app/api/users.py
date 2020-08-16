@@ -33,38 +33,37 @@ class Users(MethodView):
         return user
 
 
-@bp.route('/users/<int:id>')
+@bp.route('/users/<string:username>')
 class UsersById(MethodView):
     @bp.response(UserBaseSchema)
-    def get(self, id):
+    def get(self, username):
         """
-        Show info about the user with id {id}
+        Show info about the user with username {username}
         """
-        user = User.query.get(id)
+        user = User.get_by_username(username)
         if not user or not user.active:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            abort(422, errors={"json": {"username": ["Does not exist."]}})
         return user
 
     @jwt_required
     @bp.arguments(UserEditSchema)
     @bp.response(UserBaseSchema)
-    def put(self, args, id):
+    def put(self, args, username):
         """
         Update an existing user. Available only for that user
         """
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
-        user = User.query.get(id)
+        logged_user = User.get_by_username(get_jwt_identity())
+        user = User.get_by_username(username)
 
         if not user:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            abort(422, errors={"json": {"username": ["Does not exist."]}})
         if not user.active:
             abort(422, errors={
                   "json": {"username": ["Your account was deleted."]}})
         if not logged_user.is_admin():
-            if logged_user.id != user.id:
+            if logged_user.username != user.username:
                 abort(422, errors={
-                      "json": {"id": ["You can only edit your own user."]}})
+                      "json": {"username": ["You can only edit your own user."]}})
 
         user.update(args)
         db.session.commit()
@@ -73,42 +72,60 @@ class UsersById(MethodView):
 
     @jwt_required
     @bp.response(code=200)
-    def delete(self, id):
+    def delete(self, username):
         """
         Delete an existing user. Available only for that user
         """
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
+        logged_user = User.get_by_username(get_jwt_identity())
 
-        if not User.query.get(id):
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+        if not User.query.get(username):
+            abort(422, errors={"json": {"username": ["Does not exist."]}})
 
         if not logged_user.is_admin():
-            if logged_user.id != id:
+            if logged_user.username != username:
                 abort(422, errors={
-                    "json": {"id": ["You can only edit your own user."]}})
+                    "json": {"username": ["You can only edit your own user."]}})
 
-        user = User.query.get(id)
+        user = User.get_by_username(username)
         user.revoke_all_tokens()
         user.active = False
         db.session.commit()
 
 
-@bp.route('/users/<int:id>/posts')
+@bp.route('/users/<string:username>/posts')
 class UsersPosts(MethodView):
     @jwt_required
     @bp.arguments(PostQuerySchema, location="query")
     @bp.response(PostBaseSchema(many=True))
     @bp.paginate()
-    def get(self, args, pagination_parameters, id):
+    def get(self, args, pagination_parameters, username):
         """
-        Show all posts that belong to user with id {id}
+        Show all posts that belong to user with username {username}
         """
-        user = User.query.get(id)
+        user = User.get_by_username(username)
         if not user:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            abort(422, errors={"json": {"username": ["Does not exist."]}})
         filter_by = {"active": True, "author": user}
         data, total = Post.get(args, pagination_parameters.page,
                                pagination_parameters.page_size, filter_by=filter_by)
         pagination_parameters.item_count = total
         return data
+
+
+@bp.route('/users/<string:username>/follow')
+class UsersFollow(MethodView):
+    @jwt_required
+    @bp.response(code=200)
+    def post(self, username):
+        """
+        Logged user follow/unfollow user with username {username}
+        """
+        user = User.get_by_username(username)
+        logged_user = User.get_by_username(get_jwt_identity())
+        if not user:
+            abort(422, errors={"json": {"username": ["Does not exist."]}})
+        if logged_user.is_following(user):
+            logged_user.unfollow(user)
+        else:
+            logged_user.follow(user)
+        db.session.commit()
