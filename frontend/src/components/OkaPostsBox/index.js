@@ -22,14 +22,11 @@ export default function OkaPostsBox({ section, navItems, loading, setLoading }) 
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             if (section in navItems) {
-                console.log(navItems[section])
-
                 try {
-                    const response = await api.get(`users/${user.username}/posts`);
+                    const response = await api.get(`${navItems[section].fetch_url}`);
                     setPosts(response.data);
                     setFilteredPosts(response.data);
                     setLoading(false);
-                    console.log(response.data)
                 } catch (error) {
                     if (error.response) {
                         for (var prop in error.response.data.errors.json) {
@@ -40,9 +37,7 @@ export default function OkaPostsBox({ section, navItems, loading, setLoading }) 
                     }
                 }
             }
-            console.log("Mudando");
         }
-
         fetchData();
         // eslint-disable-next-line
     }, [section, setLoading, user.username])

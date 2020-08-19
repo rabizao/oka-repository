@@ -33,17 +33,12 @@ export default function Users(props) {
         uploads: {
             "name": "Uploads",
             "url": "/users/" + username + "/uploads",
-            "fetch_url": "/users/" + username + "/uploads"
+            "fetch_url": "/users/" + username + "/posts"
         },
         favorites: {
             "name": "Favorites",
             "url": "/users/" + username + "/favorites",
             "fetch_url": "/users/" + username + "/favorites"
-        },
-        basket: {
-            "name": "Basket",
-            "url": "/users/" + username + "/basket",
-            "fetch_url": "/users/" + username + "/basket"
         }
     }
 
@@ -179,10 +174,10 @@ export default function Users(props) {
                 onClose={handleCloseApiToken}
             >
                 <div className="modal padding-big">
-                    <h3>Request API Token</h3>
+                    <h3 className="margin-top-small">Request API Token</h3>
                     <br />
                     <span>An API token is used to interact with OKA without having to enter in the web interface. Please click on
-                    the button bellow to generate your token. After generating your token, please store it in a safe place.
+                    the button bellow to generate your token. After generating your token, store it in a safe place.
                     Please note that if you generate a new token the older will not be valid anymore.
                     </span>
                     <br />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { CloudUpload } from '@material-ui/icons';
 import { NotificationManager } from 'react-notifications';
 
@@ -7,11 +7,13 @@ import './styles.css';
 import OkaHeader from '../../components/OkaHeader';
 import ContentBox from '../../components/ContentBox';
 import api from '../../services/api';
+import { LoginContext } from '../../contexts/LoginContext';
 
 export default function Home() {
-
     const [acceptedFiles, setAcceptedFiles] = useState([]);
     const [deniedFiles, setDeniedFiles] = useState([]);
+
+    const loggedUser = useContext(LoginContext);
 
     function fileListToArray(list) {
         const array = []
@@ -99,9 +101,8 @@ export default function Home() {
                     <ContentBox title="Feed" fetchUrl={"posts"} maxWidth={700} />
                 </div>
                 <div className="column">
-                    <ContentBox title="Uploads" fetchUrl={"posts"} hideAvatar={true} hideAuthor={true} hideActions={true} maxWidth={400} />
-                    <ContentBox title="Favorites" fetchUrl={"posts"} maxWidth={400} hideActions={true} />
-                    <ContentBox title="Basket" fetchUrl={"posts"} maxWidth={400} hideActions={true} />
+                    <ContentBox title="Uploads" fetchUrl={`/users/${loggedUser.username}/posts`} hideAvatar={true} hideAuthor={true} hideActions={true} maxWidth={400} />
+                    <ContentBox title="Favorites" fetchUrl={`/users/${loggedUser.username}/favorites`} maxWidth={400} hideActions={true} />
                 </div>
             </div>
         </>
