@@ -1,6 +1,6 @@
 from . import bp
 from app import db
-from app.schemas import PostQuerySchema, PostBaseSchema, PostFilesSchema
+from app.schemas import PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema
 from app.models import User, Post
 from flask import current_app
 from flask.views import MethodView
@@ -68,6 +68,27 @@ class PostsById(MethodView):
         if not post or not post.active:
             abort(422, errors={"json": {"uuid": ["Does not exist."]}})
         return post
+
+    @jwt_required
+    @bp.arguments(PostEditSchema)
+    @bp.response(code=200)
+    def put(self, args, uuid):
+        """
+        Edit post with uuid {uuid}
+        """
+        logged_user = User.get_by_username(get_jwt_identity())
+        post = Post.get_by_uuid(uuid)
+
+        if not post or not post.active:
+            abort(422, errors={"json": {"uuid": ["Does not exist."]}})
+
+        if not logged_user.is_admin():
+            if logged_user != post.author:
+                abort(422, errors={
+                      "json": {"uuid": ["You can only edit your own datasets."]}})
+
+        post.update(args)
+        db.session.commit()
 
 
 @bp.route('/posts/<int:id>/favorite')

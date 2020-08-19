@@ -293,6 +293,11 @@ class Post(PaginateMixin, db.Model):
     def can_be_shown_to(self, user):
         return self.is_public() or self.author == user
 
+    def update(self, args):
+        for key, value in args.items():
+            setattr(self, key, value)
+        return self
+
     # @staticmethod
     # def new(data, author, name):
     #     try:

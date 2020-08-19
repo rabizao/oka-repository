@@ -13,17 +13,17 @@ from flask_jwt_extended import (
 
 @jwt.revoked_token_loader
 def revoked_token_callback():
-    return jsonify(token=["Your token is invalid."]), 401
+    return jsonify(errors={"json": {"token": ["Your token is invalid."]}}), 401
 
 
 @jwt.invalid_token_loader
 def invalid_token_callback(invalid_token):
-    return jsonify(token=["Your token is invalid."]), 401
+    return jsonify(errors={"json": {"token": ["Your token is invalid."]}}), 401
 
 
 @jwt.expired_token_loader
 def expired_token_callback(expired_token):
-    return jsonify(token=["Your token has expired."]), 401
+    return jsonify(errors={"json": {"token": ["Your token has expired."]}}), 401
 
 
 @jwt.token_in_blacklist_loader

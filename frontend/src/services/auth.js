@@ -1,24 +1,11 @@
-import api_refresh from './api_refresh';
-
 var jwtDecode = require('jwt-decode');
 
 export const isAuthenticated = () => {
-    if (localStorage.getItem('token') !== null) {
-        if (is_expired(localStorage.getItem('token'))) {
-            api_refresh.post('auth/refresh')
-                .then(response => {
-                    localStorage.setItem('token', response.data.access_token);
-                }).catch(error => {
-                    localStorage.clear();
-                    return false
-                });
-            return true;
-        } else {
-            return true;
-        }
-    } else {
-        return false;
+    const token = localStorage.getItem('token');
+    if (token && !is_expired(token)) {
+        return true;
     }
+    return false;
 }
 
 

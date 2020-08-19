@@ -8,7 +8,6 @@ import OkaHeader from '../../components/OkaHeader';
 import OkaNavBar from '../../components/OkaNavBar';
 import OkaFilterBox from '../../components/OkaFilterBox';
 import OkaPostsBox from '../../components/OkaPostsBox';
-import { CircularProgress } from '@material-ui/core';
 
 export default function Search(props) {
     const location = useLocation();

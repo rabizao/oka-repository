@@ -2,14 +2,13 @@ import React from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import LoginProvider from './contexts/LoginContext';
 import PrivateRoute from './components/PrivateRoute';
+import { NotificationContainer } from 'react-notifications';
 
 import Index from './pages/Index';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import Upload from './pages/Upload';
-import DatasetsDescription from './pages/Datasets/Description';
-import DatasetsVisualize from './pages/Datasets/Visualize';
-import DatasetsComments from './pages/Datasets/Comments';
+import Datasets from './pages/Datasets';
 import Users from './pages/Users';
 import Register from './pages/Register';
 import Login from './pages/Login';
@@ -17,7 +16,8 @@ import Login from './pages/Login';
 export default function Routes() {
     return (
         <BrowserRouter>
-            <Switch>
+            <NotificationContainer />
+            <Switch>                
                 <LoginProvider>
                     <Route path="/" exact component={Index} />
                     <PrivateRoute path="/home" component={Home} />
@@ -25,9 +25,7 @@ export default function Routes() {
                     <Route path="/login" component={Login} />
                     <PrivateRoute path="/users/:username/:section" component={Users} />
                     <PrivateRoute path="/search/:section/" component={Search} />
-                    <PrivateRoute path="/datasets/:uuid/description/" component={DatasetsDescription} />
-                    <PrivateRoute path="/datasets/:uuid/visualize/" component={DatasetsVisualize} />
-                    <PrivateRoute path="/datasets/:uuid/comments/" component={DatasetsComments} />
+                    <PrivateRoute path="/datasets/:uuid/:section/" component={Datasets} />
                     <PrivateRoute path="/upload" component={Upload} />
                 </LoginProvider>
             </Switch>

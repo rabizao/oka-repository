@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
-import { NotificationContainer, NotificationManager } from 'react-notifications';
+import { NotificationManager } from 'react-notifications';
 
 import './styles.css';
 
@@ -38,38 +38,35 @@ export default function Register() {
     }
 
     return (
-        <>
-            <NotificationContainer />
-            <div className="margin-top-big flex-column flex-axis-center">
-                <h1><Link to="/home">Oka</Link></h1>
-                <h6 className="margin-top-small">Please fill in your data</h6>
-                <form className="form flex-column content-box" onSubmit={handleSubmit}>
-                    <input
-                        placeholder="Your name"
-                        value={name}
-                        onChange={e => setName(e.target.value)}
-                    />
-                    <input
-                        type="email"
-                        placeholder="Your email"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                    />
-                    <input
-                        placeholder="Username"
-                        value={username}
-                        onChange={e => setUsername(e.target.value)}
-                    />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                    />
-                    <button className="button-primary" type="submit">Register</button>
-                </form>
-                <h6 className="margin-top-small">Already registered? <Link className="link-underline" to="/login">Login now!</Link></h6>
-            </div>
-        </>
+        <div className="margin-top-big flex-column flex-axis-center">
+            <h1><Link to="/home">Oka</Link></h1>
+            <h6 className="margin-top-small">Please fill in your data</h6>
+            <form className="form flex-column content-box" onSubmit={handleSubmit}>
+                <input
+                    placeholder="Your name"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                />
+                <input
+                    type="email"
+                    placeholder="Your email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                />
+                <input
+                    placeholder="Username"
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                />
+                <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                />
+                <button className="button-primary" type="submit">Register</button>
+            </form>
+            <h6 className="margin-top-small">Already registered? <Link className="link-underline" to="/login">Login now!</Link></h6>
+        </div>
     )
 }

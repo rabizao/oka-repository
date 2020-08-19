@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { Link, useHistory } from 'react-router-dom';
-import { NotificationContainer, NotificationManager } from 'react-notifications';
+import { NotificationManager } from 'react-notifications';
 
 import './styles.css';
 
@@ -43,7 +43,6 @@ export default function Register() {
 
     return (
         <>
-            <NotificationContainer />
             <div className="margin-top-big flex-column flex-axis-center">
 
                 <h1><Link to="/home">Oka</Link></h1>

@@ -150,9 +150,12 @@ class UserEditSchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
+    name = fields.String(validate=[
+        validate.Length(min=1, max=128)])
     password = fields.String(validate=[
         validate.Length(min=6, max=36)], load_only=True)
-    about_me = fields.String()
+    about_me = fields.String(validate=[
+        validate.Length(min=1, max=140)])
     email = fields.Email(validate=[
         validate.Length(min=6, max=36)])
 
@@ -176,6 +179,17 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     id = auto_field(dump_only=True)
     author = Nested(UserBaseSchema, dump_only=True)
     favorites = fields.Pluck(UserBaseSchema, "id", many=True, dump_only=True)
+
+
+class PostEditSchema(SQLAlchemySchema):
+
+    class Meta:
+        unknown = EXCLUDE
+
+    name = fields.String(validate=[
+        validate.Length(min=1, max=120)])
+    body = fields.String(validate=[
+        validate.Length(min=1, max=1000)])
 
 
 class PostFilesSchema(SQLAlchemySchema):

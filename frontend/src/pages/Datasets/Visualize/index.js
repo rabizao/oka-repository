@@ -5,7 +5,7 @@ import { saveAs } from 'file-saver'
 import './styles.css';
 import { CircularProgress } from '@material-ui/core';
 import { CloudDownload, Favorite, FavoriteBorder } from '@material-ui/icons';
-import { NotificationContainer, NotificationManager } from 'react-notifications';
+import { NotificationManager } from 'react-notifications';
 
 import api from '../../../services/api';
 import { LoginContext } from '../../../contexts/LoginContext';
@@ -77,7 +77,6 @@ export default function DatasetsVisualize(props) {
 
     return (
         <>
-            <NotificationContainer />
             <OkaHeader />
             <div className="oka-hero-background padding-sides-small padding-top-big">
                 <div className="flex-row flex-space-between flex-axis-center">

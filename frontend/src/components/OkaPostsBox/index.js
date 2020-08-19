@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-
-import { ApiPosts } from '../../components/Api';
 
 import { CheckBoxOutlineBlank, CheckBox, CloudDownload, Search } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
+import { NotificationManager } from 'react-notifications';
+
+import api from '../../services/api';
+import { LoginContext } from '../../contexts/LoginContext';
 
 export default function OkaPostsBox({ section, navItems, loading, setLoading }) {
     const [selection, setSelection] = useState([]);
@@ -13,21 +15,37 @@ export default function OkaPostsBox({ section, navItems, loading, setLoading }) 
     const [posts, setPosts] = useState([]);
     const [filteredPosts, setFilteredPosts] = useState([]);
 
+    const user = useContext(LoginContext);
+
     useEffect(() => {
         async function fetchData() {
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             if (section in navItems) {
                 console.log(navItems[section])
-                setPosts(ApiPosts);
-                setFilteredPosts(ApiPosts);
-                setLoading(false);
+
+                try {
+                    const response = await api.get(`users/${user.username}/posts`);
+                    setPosts(response.data);
+                    setFilteredPosts(response.data);
+                    setLoading(false);
+                    console.log(response.data)
+                } catch (error) {
+                    if (error.response) {
+                        for (var prop in error.response.data.errors.json) {
+                            NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
+                        }
+                    } else {
+                        NotificationManager.error("Network error", "Error", 4000)
+                    }
+                }
             }
             console.log("Mudando");
         }
 
         fetchData();
-    }, [section, setLoading])
+        // eslint-disable-next-line
+    }, [section, setLoading, user.username])
 
     function handleSelect(e, post) {
         e.preventDefault();
@@ -65,7 +83,7 @@ export default function OkaPostsBox({ section, navItems, loading, setLoading }) 
     function handleFilter(e) {
         e.preventDefault();
         var newPosts = posts.filter(post => {
-            return post.title.toLowerCase().match(filter.toLowerCase());
+            return post.name.toLowerCase().match(filter.toLowerCase());
         });
         setFilteredPosts(newPosts);
     }
@@ -117,10 +135,10 @@ export default function OkaPostsBox({ section, navItems, loading, setLoading }) 
                                 </button>
                                 <Link className="flex-row padding-vertical-small width100" to={`/datasets/${post.data_uuid}/description`}>
                                     <div className="ellipsis bold padding-sides-small">
-                                        {post.title}
+                                        {post.name}
                                     </div>
                                     <div className="ellipsis padding-sides-small">
-                                        {post.description}
+                                        {post.body}
                                     </div>
                                 </Link>
                             </div>
@@ -128,6 +146,7 @@ export default function OkaPostsBox({ section, navItems, loading, setLoading }) 
                 </>
             }
         </div>
+
     )
 }
 

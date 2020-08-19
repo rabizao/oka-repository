@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CloudUpload } from '@material-ui/icons';
-import { NotificationContainer, NotificationManager } from 'react-notifications';
+import { NotificationManager } from 'react-notifications';
 
 import './styles.css';
 
@@ -50,13 +50,13 @@ export default function Home() {
 
     async function handleSubmit() {
         const formData = new FormData();
-        acceptedFiles.map((value, key) => {
+        acceptedFiles.forEach((value) => {
             formData.append("files", value);
         })
 
         var headers = { 'Content-Type': "multipart/form-data;" }
         try {
-            const response = await api.post('posts', formData, { headers: headers });
+            await api.post('posts', formData, { headers: headers });
             setAcceptedFiles([]);
             setDeniedFiles([]);
             NotificationManager.success("Upload successful", "Finished", 4000)
@@ -74,9 +74,7 @@ export default function Home() {
 
     return (
         <>
-            <NotificationContainer />
             <OkaHeader />
-
             <div className="row margin-top-medium">
                 <div className="column">
                     <div onDragOver={e => handleDragOver(e)} onDrop={e => handleDrop(e)} onClick={e => handleClick(e)} className="padding-big content-box background-hover">
