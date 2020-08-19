@@ -24,6 +24,8 @@ export default function Users(props) {
     const [about_me, setAbout_me] = useState('');
     const [nameEdit, setNameEdit] = useState('');
     const [about_meEdit, setAbout_meEdit] = useState('');
+    const [openApiToken, setOpenApiToken] = useState(false);
+    const [apiToken, setApiToken] = useState('');
 
     const loggedUser = useContext(LoginContext);
 
@@ -120,6 +122,29 @@ export default function Users(props) {
         setOpenEdit(false);
     }
 
+    function handleOpenApiToken() {
+        setOpenApiToken(true);
+    }
+
+    function handleCloseApiToken() {
+        setOpenApiToken(false);
+    }
+
+    async function handleGetApiToken() {
+        try {
+            const response = await api.post('auth/create-api-token')
+            setApiToken(response.data.api_token)
+        } catch (error) {
+            if (error.response) {
+                for (var prop in error.response.data.errors.json) {
+                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
+                }
+            } else {
+                NotificationManager.error("Network error", "Error", 4000)
+            }
+        }
+    }
+
     return (
         <>
             <Modal
@@ -149,6 +174,23 @@ export default function Users(props) {
                     </form>
                 </div>
             </Modal>
+            <Modal
+                open={openApiToken}
+                onClose={handleCloseApiToken}
+            >
+                <div className="modal padding-big">
+                    <h3>Request API Token</h3>
+                    <br />
+                    <span>An API token is used to interact with OKA without having to enter in the web interface. Please click on
+                    the button bellow to generate your token. After generating your token, please store it in a safe place.
+                    Please note that if you generate a new token the older will not be valid anymore.
+                    </span>
+                    <br />
+                    <button onClick={handleGetApiToken} className="button-primary margin-top-small">Get Token</button>
+                    <br />
+                    {apiToken && <div className="padding-small wrapword background-secondary-color-light">{apiToken}</div>}
+                </div>
+            </Modal>
             <OkaHeader />
             <div className="flex-column flex-axis-center oka-hero-background padding-sides-small padding-top-big">
                 {loadingHero ?
@@ -160,7 +202,10 @@ export default function Users(props) {
                         <h6 className="color-tertiary margin-top-small">{user.followed && user.followed.length} following | {user.followers && user.followers.length} followers</h6>
 
                         {(user.id === loggedUser.id) ?
-                            <button onClick={handleOpenEdit} className="button-secondary margin-vertical-small">Edit</button> :
+                            <div className="flex-row flex-axis-center margin-top-small">
+                                <button onClick={handleOpenEdit} className="button-secondary">Edit</button>
+                                <button onClick={handleOpenApiToken} className="button-secondary margin-left-small">API</button>
+                            </div> :
                             <button onClick={handleFollow} className="button-secondary margin-vertical-small">{user.followers && user.followers.includes(loggedUser.id) ? "Unfollow" : "Follow"}</button>
                         }
                     </>

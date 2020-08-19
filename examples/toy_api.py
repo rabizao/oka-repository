@@ -13,13 +13,6 @@ response = requests.get(url_downloads)
 print(response.text)
 
 
-
-
-
-
-
-
-
 exit()
 
 # CREATE USER
