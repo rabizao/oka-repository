@@ -81,7 +81,7 @@ export default function ContentBox(props) {
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
                 <>
-                    <h2 className="padding-sides-small margin-top-medium">{props.title}</h2>
+                    <h2 className="padding-sides-small margin-top-medium">{props.titleLink ? <Link to={props.titleLink}>{props.title}</Link> : props.title}</h2>
                     <ul className="content-list margin-top-medium">
                         {posts.map((post, index) =>
                             <li key={post.id} className="flex-column background-hover">

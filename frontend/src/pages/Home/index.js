@@ -101,8 +101,8 @@ export default function Home() {
                     <ContentBox title="Feed" fetchUrl={"posts"} maxWidth={700} />
                 </div>
                 <div className="column">
-                    <ContentBox title="Uploads" fetchUrl={`/users/${loggedUser.username}/posts`} hideAvatar={true} hideAuthor={true} hideActions={true} maxWidth={400} />
-                    <ContentBox title="Favorites" fetchUrl={`/users/${loggedUser.username}/favorites`} maxWidth={400} hideActions={true} />
+                    <ContentBox title="Uploads" titleLink={`/users/${loggedUser.username}/uploads`} fetchUrl={`/users/${loggedUser.username}/posts`} hideAvatar={true} hideAuthor={true} hideActions={true} maxWidth={400} />
+                    <ContentBox title="Favorites" titleLink={`/users/${loggedUser.username}/favorites`} fetchUrl={`/users/${loggedUser.username}/favorites`} maxWidth={400} hideActions={true} />
                 </div>
             </div>
         </>
