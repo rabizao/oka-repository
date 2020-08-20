@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 
 export default function OkaNavBar({ navItems, setLoading }) {
     return (
-        <nav className="flex-row flex-crossaxis-center padding-top-small oka-hero-background">
+        <nav className="flex-row overflow-x-auto flex-crossaxis-center padding-top-small oka-hero-background">
             {
                 Object.entries(navItems)
                     .map(([key, value]) =>

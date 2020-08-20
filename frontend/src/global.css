@@ -146,7 +146,7 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .flex-crossaxis-center {
-    justify-content: center;
+    justify-content: safe center;
 }
 
 .flex-space-between {
@@ -161,6 +161,10 @@ button, input[type="submit"], input[type="reset"] {
 .flex-row {
     display: flex;
     flex-direction: row;
+}
+
+.overflow-x-auto {
+    overflow-x: auto;
 }
 
 .ul-padding-sides {

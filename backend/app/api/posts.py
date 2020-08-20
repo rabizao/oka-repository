@@ -7,9 +7,10 @@ from flask.views import MethodView
 from flask_smorest import abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from cururu.persistence import DuplicateEntryException
-# from cururu.pickleserver import PickleServer
+from cururu.pickleserver import PickleServer
 # from pjdata.content.specialdata import UUIDData
 from pjdata.data_creation import read_arff
+import uuid
 
 
 @bp.route("/posts")
@@ -29,32 +30,33 @@ class Posts(MethodView):
 
     @jwt_required
     @bp.arguments(PostFilesSchema, location="files")
-    @bp.response(PostBaseSchema)
+    @bp.response(PostBaseSchema(many=True))
     def post(self, args):
         """
         Create a new post to the logged user
         """
         # TODO:Get files from front end and store in cururu
-
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
         files = args['files']
+        posts = []
 
         for file in files:
-            full_path = current_app.config['TMP_FOLDER'] + file.filename
+            full_path = current_app.config['TMP_FOLDER'] + str(uuid.uuid4())
             try:
                 file.save(full_path)
                 data = read_arff(full_path)[1]
-                print(data.uuid)
-                # PickleServer().store(data)
+                # TODO: Get the name and description from arff and insert into instance post bellow #name=..., body=...
+                post = Post(author=logged_user, data_uuid=str(data.uuid))
+                db.session.add(post)
+                posts.append(post)
+                PickleServer().store(data)
             except DuplicateEntryException:
                 print('Duplicate! Ignored.')
 
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
-        post = Post(author=logged_user)
-        db.session.add(post)
         db.session.commit()
 
-        return post
+        return posts
 
 
 @bp.route('/posts/<string:uuid>')

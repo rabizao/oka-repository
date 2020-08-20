@@ -17,9 +17,8 @@ class Users(MethodView):
     def get(self, args, pagination_parameters):
         """List all users"""
         filter_by = {"active": True}
-        data, total = User.get(args, pagination_parameters.page,
-                               pagination_parameters.page_size, filter_by=filter_by)
-        pagination_parameters.item_count = total
+        data, pagination_parameters.item_count = User.get(args, pagination_parameters.page,
+                                                          pagination_parameters.page_size, filter_by=filter_by)
         return data
 
     @bp.arguments(UserRegisterSchema)
@@ -106,9 +105,10 @@ class UsersPosts(MethodView):
         if not user:
             abort(422, errors={"json": {"username": ["Does not exist."]}})
         filter_by = {"active": True, "author": user}
-        data, total = Post.get(args, pagination_parameters.page,
-                               pagination_parameters.page_size, filter_by=filter_by)
-        pagination_parameters.item_count = total
+        order_by = Post.timestamp.desc()
+        data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
+                                                          pagination_parameters.page_size,
+                                                          filter_by=filter_by, order_by=order_by)
         return data
 
 
@@ -127,9 +127,10 @@ class UsersFavorites(MethodView):
             abort(422, errors={"json": {"username": ["Does not exist."]}})
         filter_by = {"active": True}
         filter = [getattr(User, 'favorited')]
-        data, total = Post.get(args, pagination_parameters.page,
-                               pagination_parameters.page_size, filter_by=filter_by, filter=filter)
-        pagination_parameters.item_count = total
+        order_by = Post.timestamp.desc()
+        data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
+                                                          pagination_parameters.page_size, filter_by=filter_by,
+                                                          filter=filter, order_by=order_by)
         return data
 
 

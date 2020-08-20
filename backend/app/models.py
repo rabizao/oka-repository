@@ -31,7 +31,7 @@ favorites = db.Table('favorites',
 
 class PaginateMixin(object):
     @classmethod
-    def get(cls, data, page, page_size, filter_by={}, filter=[]):
+    def get(cls, data, page, page_size, filter_by={}, filter=[], order_by=None):
         logic = data['logic'] if 'logic' in data else 'or'
         data.pop('logic', None)
         search_conds = []
@@ -47,10 +47,10 @@ class PaginateMixin(object):
                 search_conds += [getattr(cls, key).like(f"%{values}%")]
         if logic == "or":
             resources = cls.query.filter_by(**filter_by).filter(
-                or_(*search_conds)).filter(*filter).paginate(page, page_size, False)
+                or_(*search_conds)).filter(*filter).order_by(order_by).paginate(page, page_size, False)
         else:
             resources = cls.query.filter_by(**filter_by).filter(
-                and_(*search_conds)).filter(*filter).paginate(page, page_size, False)
+                and_(*search_conds)).filter(*filter).order_by(order_by).paginate(page, page_size, False)
         return resources.items, resources.total
 
 

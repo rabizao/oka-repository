@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {useHistory} from 'react-router-dom';
+import { useHistory, Link } from 'react-router-dom';
 
 import './styles.css';
 
@@ -18,7 +18,7 @@ export default function OkaHeader(props) {
     return (
         <div className="oka-header">
             <div className="oka-header-logo">
-                <a href="/home"><h1>Oka</h1></a>
+                <Link to="/home"><h1>Oka</h1></Link>
             </div>
             <div className="oka-header-search">
                 <form className="oka-header-search-form" onSubmit={handleSearch}>
