@@ -6,8 +6,8 @@ import requests
 import random
 
 
-base_url = 'http://localhost:5000/api/'
-url_downloads = base_url + 'downloads?uuids=asdaknml&uuids=sdawdasdasd'
+base_url = 'http://localhost:5000/api/'   # apche/ngix redireciona api p/ porta
+url_downloads = base_url + 'downloads/data?uuids=ġɼпϋæӖƱӌЄɬϳҢğv'
 
 response = requests.get(url_downloads)
 print(response.text)

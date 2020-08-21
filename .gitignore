@@ -30,3 +30,13 @@ oka.log*
 __pycache__
 logs/
 migrations/
+
+# Resources
+backend/app.db
+frontend/package-lock.json
+backend/app/static
+
+# IDE
+.idea/
+*.iml
+
