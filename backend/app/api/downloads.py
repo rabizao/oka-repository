@@ -33,7 +33,7 @@ class Download(MethodView):
                             data = storage.fetch(UUIDData(uuid))
                             if data is None:
                                 raise Exception("Download failed: " + uuid + " not found!")
-                            zipped_file.writestr(uuid, data.arff("No name", "No description"))
+                            zipped_file.writestr(uuid + ".arff", data.arff("No name", "No description"))
                 except Exception as e:
                     os.remove(path_server_zip)
                     abort(422, errors={"json": {"uuids": ["zip failed:      " + e.args[0]]}})
