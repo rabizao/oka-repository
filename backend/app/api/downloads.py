@@ -21,8 +21,7 @@ class Download(MethodView):
         """Download a zipped file containing all the requested datasets"""
         if 'uuids' in args:
             uuids = sorted(args['uuids'])
-            # folds = args.get('folds') or str(1)
-            obj = PickleServer()
+            storage = PickleServer()
 
             filename_server_zip = "_".join(uuids)
             path_server_zip = current_app.static_folder + "/" + filename_server_zip + ".zip"
@@ -31,15 +30,13 @@ class Download(MethodView):
                 try:
                     with ZipFile(path_server_zip, 'w') as zipped_file:
                         for uuid in uuids:
-                            print(111111111111111111111111111111111)
-                            # TODO: checar se uuid existe
-                            data = obj.fetch(UUIDData(uuid))
-                            print(22222222222222222222222222222222222)
-                            # ziped_file.writestr(data.arff(Post.get_by_uuid(uuid).name, Post.get_by_uuid(uuid).body))
-                            zipped_file.writestr(data.id, data.arff("No name", "No description"))
+                            data = storage.fetch(UUIDData(uuid))
+                            if data is None:
+                                raise Exception("Download failed: " + uuid + " not found!")
+                            zipped_file.writestr(uuid, data.arff("No name", "No description"))
                 except Exception as e:
                     os.remove(path_server_zip)
-                    abort(422, errors={"json": {"uuids": [str(e) + "zip falhou"]}})
+                    abort(422, errors={"json": {"uuids": ["zip failed:      " + e.args[0]]}})
 
             print("arquivo existe", path_server_zip)
             print(args)
