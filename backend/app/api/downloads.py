@@ -1,20 +1,16 @@
+from . import bp
+from app.schemas import DownloadQuerySchema
 from zipfile import ZipFile
-from pjdata.content.data import Data
 from cururu.pickleserver import PickleServer
 from flask import send_from_directory, current_app
 from flask.views import MethodView
 from flask_smorest import abort
 import os
-from marshmallow import ValidationError
 from pjdata.content.specialdata import UUIDData
-
-from app.schemas import DownloadQuerySchema
-from . import bp
-from ..models import Post
 
 
 @bp.route('/downloads/data')
-class Download(MethodView):
+class Downloads(MethodView):
     # @jwt_required
     @bp.arguments(DownloadQuerySchema, location="query")
     def get(self, args):  # args significa todas as variáveis da classe-schema
@@ -32,11 +28,14 @@ class Download(MethodView):
                         for uuid in uuids:
                             data = storage.fetch(UUIDData(uuid))
                             if data is None:
-                                raise Exception("Download failed: " + uuid + " not found!")
-                            zipped_file.writestr(uuid + ".arff", data.arff("No name", "No description"))
+                                raise Exception(
+                                    "Download failed: " + uuid + " not found!")
+                            zipped_file.writestr(
+                                uuid + ".arff", data.arff("No name", "No description"))
                 except Exception as e:
                     os.remove(path_server_zip)
-                    abort(422, errors={"json": {"uuids": ["zip failed:      " + e.args[0]]}})
+                    abort(422, errors={
+                          "json": {"uuids": ["zip failed: " + e.args[0]]}})
 
             print("arquivo existe", path_server_zip)
             print(args)

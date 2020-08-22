@@ -82,9 +82,11 @@ export default function Users(props) {
 
     async function handleDownload() {
         try {
-            const response = await api.get(`downloads?uuids=${uuid}`, { responseType: 'blob' });
-            saveAs(response.data, dataset.name + ".arff")
+            const response = await api.get(`downloads/data?uuids=${uuid}`);
+            const blob = new Blob([response.data]);
+            saveAs(blob, dataset.name + ".arff");
         } catch (error) {
+            console.log(error)
             if (error.response) {
                 for (var prop in error.response.data.errors.json) {
                     NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
