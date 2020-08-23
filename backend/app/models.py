@@ -211,12 +211,16 @@ class User(PaginateMixin, db.Model):
 
 class Post(PaginateMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
+
+    # Unique
     data_uuid = db.Column(db.String(120), index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    __table_args__ = (db.UniqueConstraint('data_uuid', 'user_id', name='_data_user_unique'), )
+
     name = db.Column(db.String(120), default="No name")
     description = db.Column(db.String(1000), default="No description")
     downloads = db.Column(db.Integer(), default=0)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
     tags = db.relationship('Tag', backref='post', lazy='dynamic')
     public = db.Column(db.Boolean, default=False)
