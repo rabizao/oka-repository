@@ -32,7 +32,7 @@ export default function Users(props) {
             <div className="content-box">
                 {loadingHero ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
-                    <div className="flex-row flex-space-between padding-sides-small padding-vertical-small">
+                    <div className="flex-row flex-space-between padding-sides-small padding-vertical-small text-box">
                         {text}
                     </div>
                 }

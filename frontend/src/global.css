@@ -163,6 +163,10 @@ button, input[type="submit"], input[type="reset"] {
     flex-direction: row;
 }
 
+.text-box {
+    white-space: pre-wrap;
+}
+
 .overflow-x-auto {
     overflow-x: auto;
 }
