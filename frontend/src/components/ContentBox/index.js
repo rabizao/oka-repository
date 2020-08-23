@@ -21,7 +21,6 @@ export default function ContentBox(props) {
         async function fetchData() {
             try {
                 const response = await api.get(props.fetchUrl);
-                await new Promise(resolve => setTimeout(resolve, 2000));
                 setPosts(response.data);
                 setLoading(false);
             } catch (error) {

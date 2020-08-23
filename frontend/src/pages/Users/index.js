@@ -46,7 +46,6 @@ export default function Users(props) {
         async function fetchUser() {
             try {
                 const response = await api.get(`users/${username}`);
-                await new Promise(resolve => setTimeout(resolve, 3000));
                 setUser(response.data);
                 setName(response.data.name);
                 setAbout_me(response.data.about_me ? response.data.about_me : '');

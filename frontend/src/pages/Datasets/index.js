@@ -62,7 +62,6 @@ export default function Users(props) {
         async function fetchDataset() {
             try {
                 const response = await api.get(`posts/${uuid}`);
-                await new Promise(resolve => setTimeout(resolve, 3000));
                 setDataset(response.data);
                 setName(response.data.name);
                 setDescription(response.data.body ? response.data.body : '');
@@ -82,14 +81,17 @@ export default function Users(props) {
 
     async function handleDownload() {
         try {
-            const response = await api.get(`downloads/data?uuids=${uuid}`);
-            const blob = new Blob([response.data]);
-            saveAs(blob, dataset.name + ".arff");
+            const response = await api.get(`downloads/data?uuids=${uuid}`, { responseType: ['blob'] });
+            saveAs(response.data, dataset.name + ".zip");
         } catch (error) {
-            console.log(error)
             if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
+                var reader = new FileReader();
+                reader.readAsText(error.response.data);
+                reader.onload = function () {
+                    const response = JSON.parse(reader.result);
+                    for (var prop in response.errors.json) {
+                        NotificationManager.error(response.errors.json[prop], `${prop}`, 4000)
+                    }
                 }
             } else {
                 NotificationManager.error("Network error", "Error", 4000)

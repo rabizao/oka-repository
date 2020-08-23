@@ -19,8 +19,6 @@ export default function OkaPostsBox({ section, navItems, loading, setLoading }) 
 
     useEffect(() => {
         async function fetchData() {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
             if (section in navItems) {
                 try {
                     const response = await api.get(`${navItems[section].fetch_url}`);
