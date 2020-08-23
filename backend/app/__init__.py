@@ -11,6 +11,7 @@ from flask_jwt_extended import JWTManager
 from config import Config
 from celery import Celery
 
+from cururu.pickleserver import PickleServer
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -21,9 +22,9 @@ jwt = JWTManager()
 
 def create_app(config_class=Config):
     app = Flask(__name__)
-    app.config['JSON_AS_ASCII'] = False  # Needed to support UUID short utf8 strings.
 
     app.config.from_object(config_class)
+    app.config['CURURU_SERVER'] = PickleServer(db=app.static_folder)
 
     db.init_app(app)
     migrate.init_app(app, db)

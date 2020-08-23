@@ -2,7 +2,6 @@ from sqlalchemy import or_, and_
 from datetime import datetime
 from werkzeug.security import check_password_hash
 from app import db
-# from cururu.pickleserver import PickleServer
 # from cururu.persistence import DuplicateEntryException
 # from pjdata.data import Data
 from flask import current_app
@@ -212,9 +211,9 @@ class User(PaginateMixin, db.Model):
 
 class Post(PaginateMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    data_uuid = db.Column(db.String(120), index=True, unique=True)
+    data_uuid = db.Column(db.String(120), index=True)
     name = db.Column(db.String(120), default="No name")
-    body = db.Column(db.String(1000), default="No description")
+    description = db.Column(db.String(1000), default="No description")
     downloads = db.Column(db.Integer(), default=0)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -300,7 +299,8 @@ class Post(PaginateMixin, db.Model):
 
     # @staticmethod
     # def new(data, author, name):
-    #     try:
+    #     storage = current_app.config['CURURU_SERVER']
+    #  try:
     #         PickleServer().store(data)
     #         try:
     #             post = Post(data_uuid=data.uuid, author=author, name=name)
@@ -319,6 +319,7 @@ class Post(PaginateMixin, db.Model):
         return Post.query.filter_by(data_uuid=uuid).first()
 
     # def get_data_object(self):
+    #     storage = current_app.config['CURURU_SERVER']
     #     return PickleServer().fetch(Data.phantom_by_uuid(self.data_uuid))
 
     @staticmethod

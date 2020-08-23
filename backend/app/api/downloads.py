@@ -17,7 +17,7 @@ class Downloads(MethodView):
         """Download a zipped file containing all the requested datasets"""
         if 'uuids' in args:
             uuids = sorted(args['uuids'])
-            storage = PickleServer()
+            storage = current_app.config['CURURU_SERVER']
 
             filename_server_zip = "_".join(uuids)
             path_server_zip = current_app.static_folder + "/" + filename_server_zip + ".zip"

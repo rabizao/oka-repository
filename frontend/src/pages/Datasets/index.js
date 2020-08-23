@@ -64,7 +64,7 @@ export default function Users(props) {
                 const response = await api.get(`posts/${uuid}`);
                 setDataset(response.data);
                 setName(response.data.name);
-                setDescription(response.data.body ? response.data.body : '');
+                setDescription(response.data.description ? response.data.description : '');
                 setLoadingHero(false);
             } catch (error) {
                 if (error.response) {

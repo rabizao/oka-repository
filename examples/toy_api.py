@@ -44,7 +44,7 @@ url_posts = base_url + 'posts'
 print("CREATE A NEW POST TO THE AUTHENTICATED USER\n")
 random_uuid = "uuid" + str(random.randint(1, 100000))
 data_createpost = {"data_uuid": random_uuid,
-                   "name": "Post teste", "body": "Este eh o body do post teste"}
+                   "name": "Post teste", "description": "Este eh o description do post teste"}
 r = requests.post(url_posts, json=data_createpost, headers=headers)
 print(r.text)
 

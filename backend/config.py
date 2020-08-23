@@ -2,6 +2,8 @@ import os
 from datetime import timedelta
 from dotenv import load_dotenv
 
+from cururu.pickleserver import PickleServer
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
 
@@ -19,6 +21,7 @@ class Config(object):
     ADMINS = ['your-email@example.com']
     POSTS_PER_PAGE = 25
     TMP_FOLDER = '/tmp/oka/'
+    JSON_AS_ASCII = False  # Needed to support UUID short utf8 strings.
 
     API_TITLE = 'oka API'
     API_VERSION = ''

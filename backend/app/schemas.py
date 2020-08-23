@@ -38,7 +38,7 @@ class PostQuerySchema(SQLAlchemySchema):
 
     data_uuid = fields.String()
     name = fields.List(fields.String())
-    body = fields.String()
+    description = fields.String()
     username = fields.String()
     logic = fields.String()
     # Data attributes
@@ -188,7 +188,7 @@ class PostEditSchema(SQLAlchemySchema):
 
     name = fields.String(validate=[
         validate.Length(min=1, max=120)])
-    body = fields.String(validate=[
+    description = fields.String(validate=[
         validate.Length(min=1, max=1000)])
 
 
