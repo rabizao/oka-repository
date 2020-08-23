@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { CheckBoxOutlineBlank, CheckBox, CloudDownload, Search } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 import { NotificationManager } from 'react-notifications';
+import { saveAs } from 'file-saver';
 
 import api from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
@@ -69,8 +70,28 @@ export default function OkaPostsBox({ section, navItems, loading, setLoading }) 
         setSelectAll(!selectAll);
     }
 
-    function handleDownload() {
+    async function handleDownload() {
         console.log(selection);
+
+        try {
+            var serializedSelection = JSON.stringify(selection);
+            serializedSelection = serializedSelection.replace(/","/g, '&uuids=').replace('["', "").replace('"]', "")
+            const response = await api.get('/downloads/data?uuids=' + serializedSelection, { responseType: ['blob'] });
+            saveAs(response.data, "datasets.zip");
+        } catch (error) {
+            if (error.response) {
+                var reader = new FileReader();
+                reader.readAsText(error.response.data);
+                reader.onload = function () {
+                    const response = JSON.parse(reader.result);
+                    for (var prop in response.errors.json) {
+                        NotificationManager.error(response.errors.json[prop], `${prop}`, 4000)
+                    }
+                }
+            } else {
+                NotificationManager.error("Network error", "Error", 4000)
+            }
+        }
     }
 
     function handleFilter(e) {
