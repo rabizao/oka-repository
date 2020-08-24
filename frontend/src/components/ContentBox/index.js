@@ -90,10 +90,10 @@ export default function ContentBox(props) {
                                     <Link className="width100" to={`/datasets/${post.data_uuid}/description`}>
                                         <div className="flex-column padding-sides-small" style={{ maxWidth: props.maxWidth ? props.maxWidth : "300px" }}>
                                             <div>
-                                                {!props.hideAuthor && <><span className="font-size-medium bold">{post.author.name}</span> - <span>{post.author.username}</span> - <TimeAgo datetime={post.timestamp} /></>}
+                                                {!props.hideAuthor && <><span className="font-size-medium bold">{post.author.name}</span> - <span>{post.author.username}</span> - <TimeAgo datetime={post.timestamp+'Z'} /></>}
                                             </div>
                                             <div>
-                                                <span className="bold">{post.name}</span>{props.hideAuthor && <span> - <TimeAgo datetime={post.timestamp} /></span>}
+                                                <span className="bold">{post.name}</span>{props.hideAuthor && <span> - <TimeAgo datetime={post.timestamp+'Z'}/></span>}
                                             </div>
                                             <span className="ellipsis">{post.body}</span>
                                             {!props.hideActions &&

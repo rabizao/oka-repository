@@ -16,7 +16,6 @@ import { LoginContext } from '../../contexts/LoginContext';
 export default function Users(props) {
     const username = props.match.params.username;
     const section = props.match.params.section;
-    const [loading, setLoading] = useState(true);
     const [loadingHero, setLoadingHero] = useState(true);
     const [user, setUser] = useState({});
     const [openEdit, setOpenEdit] = useState(false);
@@ -33,12 +32,12 @@ export default function Users(props) {
         uploads: {
             "name": "Uploads",
             "url": "/users/" + username + "/uploads",
-            "fetch_url": "/users/" + username + "/posts"
+            "content": <OkaPostsBox fetch_url={"/users/" + username + "/posts"} />
         },
         favorites: {
             "name": "Favorites",
             "url": "/users/" + username + "/favorites",
-            "fetch_url": "/users/" + username + "/favorites"
+            "content": <OkaPostsBox fetch_url={"/users/" + username + "/favorites"} />
         }
     }
 
@@ -206,8 +205,8 @@ export default function Users(props) {
                 }
 
             </div>
-            <OkaNavBar navItems={navItems} setLoading={setLoading} />
-            <OkaPostsBox navItems={navItems} section={section} loading={loading} setLoading={setLoading} />
+            <OkaNavBar navItems={navItems} />
+            {section in navItems && <>{navItems[section].content}</>}
         </>
     )
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import { CheckBoxOutlineBlank, CheckBox, CloudDownload, Search } from '@material-ui/icons';
@@ -7,39 +7,34 @@ import { NotificationManager } from 'react-notifications';
 import { saveAs } from 'file-saver';
 
 import api from '../../services/api';
-import { LoginContext } from '../../contexts/LoginContext';
 
-export default function OkaPostsBox({ section, navItems, loading, setLoading }) {
+export default function OkaPostsBox({ fetch_url }) {
     const [selection, setSelection] = useState([]);
     const [selectAll, setSelectAll] = useState(false);
     const [filter, setFilter] = useState('');
     const [posts, setPosts] = useState([]);
     const [filteredPosts, setFilteredPosts] = useState([]);
-
-    const user = useContext(LoginContext);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetchData() {
-            if (section in navItems) {
-                try {
-                    const response = await api.get(`${navItems[section].fetch_url}`);
-                    setPosts(response.data);
-                    setFilteredPosts(response.data);
-                    setLoading(false);
-                } catch (error) {
-                    if (error.response) {
-                        for (var prop in error.response.data.errors.json) {
-                            NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                        }
-                    } else {
-                        NotificationManager.error("Network error", "Error", 4000)
+            try {
+                const response = await api.get(`${fetch_url}`);
+                setPosts(response.data);
+                setFilteredPosts(response.data);
+                setLoading(false);
+            } catch (error) {
+                if (error.response) {
+                    for (var prop in error.response.data.errors.json) {
+                        NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
                     }
+                } else {
+                    NotificationManager.error("Network error", "Error", 4000)
                 }
             }
         }
         fetchData();
-        // eslint-disable-next-line
-    }, [section, setLoading, user.username])
+    }, [fetch_url])
 
     function handleSelect(e, post) {
         e.preventDefault();

@@ -363,7 +363,11 @@ button, input[type="submit"], input[type="reset"] {
     overflow-y: auto;
 }
 
-
+.sticky {
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+}
 
 
 
