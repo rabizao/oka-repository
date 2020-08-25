@@ -40,9 +40,17 @@ headers = {'Authorization': 'Bearer ' + access_token}
 
 url_posts = base_url + 'posts'
 
+
+# Ideia para funcao para criar post no oka
+# oka.new_post(data=data, name="teste", description="description", token="token_site")
+# oka.send_job(uuid=$#@%@!#$, code="ml")
+# oka.fetch()
+# oka.store()
+
 # POSTS
 print("CREATE A NEW POST TO THE AUTHENTICATED USER\n")
 random_uuid = "uuid" + str(random.randint(1, 100000))
+
 data_createpost = {"data_uuid": random_uuid,
                    "name": "Post teste", "description": "Este eh o description do post teste"}
 r = requests.post(url_posts, json=data_createpost, headers=headers)
