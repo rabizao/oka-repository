@@ -189,7 +189,7 @@ class PostEditSchema(SQLAlchemySchema):
     name = fields.String(validate=[
         validate.Length(min=1, max=120)])
     description = fields.String(validate=[
-        validate.Length(min=1, max=1000)])
+        validate.Length(min=1, max=100000)])
 
 
 class PostFilesSchema(SQLAlchemySchema):

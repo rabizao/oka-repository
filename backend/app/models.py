@@ -218,7 +218,7 @@ class Post(PaginateMixin, db.Model):
     __table_args__ = (db.UniqueConstraint('data_uuid', 'user_id', name='_data_user_unique'), )
 
     name = db.Column(db.String(120), default="No name")
-    description = db.Column(db.String(1000), default="No description")
+    description = db.Column(db.String(100000), default="No description")
     downloads = db.Column(db.Integer(), default=0)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
@@ -327,8 +327,11 @@ class Post(PaginateMixin, db.Model):
     #     return PickleServer().fetch(Data.phantom_by_uuid(self.data_uuid))
 
     @staticmethod
-    def get_by_uuid(uuid):
-        return Post.query.filter_by(data_uuid=uuid).first()
+    def get_by_uuid(uuid, active=False):
+        if active:
+            return Post.query.filter_by(data_uuid=uuid, active=True).all()
+        else:
+            return Post.query.filter_by(data_uuid=uuid).all()
 
     def __repr__(self):
         return '<Post {}>'.format(self.id)

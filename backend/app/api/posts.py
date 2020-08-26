@@ -62,35 +62,35 @@ class Posts(MethodView):
         return posts
 
 
-@bp.route('/posts/<string:uuid>')
+@bp.route('/posts/<int:id>')
 class PostsById(MethodView):
     @bp.response(PostBaseSchema)
-    def get(self, uuid):
+    def get(self, id):
         """
-        Show info about the post with uuid {uuid}
+        Show info about the post with id {id}
         """
-        post = Post.get_by_uuid(uuid)
+        post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={"json": {"uuid": ["Does not exist."]}})
+            abort(422, errors={"json": {"id": ["Does not exist."]}})
         return post
 
     @jwt_required
     @bp.arguments(PostEditSchema)
     @bp.response(code=200)
-    def put(self, args, uuid):
+    def put(self, args, id):
         """
-        Edit post with uuid {uuid}
+        Edit post with id {id}
         """
         logged_user = User.get_by_username(get_jwt_identity())
-        post = Post.get_by_uuid(uuid)
+        post = Post.query.get(id)
 
         if not post or not post.active:
-            abort(422, errors={"json": {"uuid": ["Does not exist."]}})
+            abort(422, errors={"json": {"id": ["Does not exist."]}})
 
         if not logged_user.is_admin():
             if logged_user != post.author:
                 abort(422, errors={
-                    "json": {"uuid": ["You can only edit your own datasets."]}})
+                    "json": {"id": ["You can only edit your own datasets."]}})
 
         post.update(args)
         db.session.commit()

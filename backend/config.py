@@ -2,8 +2,6 @@ import os
 from datetime import timedelta
 from dotenv import load_dotenv
 
-from cururu.pickleserver import PickleServer
-
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '.env'))
 

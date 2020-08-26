@@ -14,11 +14,11 @@ import OkaNavBar from '../../components/OkaNavBar';
 import api from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 
-export default function Users(props) {
-    const uuid = props.match.params.uuid;
+export default function Posts(props) {
+    const id = props.match.params.id;
     const section = props.match.params.section;
     const [loadingHero, setLoadingHero] = useState(true);
-    const [dataset, setDataset] = useState({});
+    const [post, setPost] = useState({});
     const [openEdit, setOpenEdit] = useState(false);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -43,26 +43,41 @@ export default function Users(props) {
     const navItems = {
         description: {
             "name": "Description",
-            "url": "/datasets/" + uuid + "/description",
+            "url": "/posts/" + id + "/description",
             "content": textBox(description)
-        },
-        visualize: {
-            "name": "Visualize",
-            "url": "/datasets/" + uuid + "/visualize",
-            "content": textBox("Visualize not implemented yet.")
         },
         comments: {
             "name": "Comments",
-            "url": "/datasets/" + uuid + "/comments",
+            "url": "/posts/" + id + "/comments",
             "content": textBox("Comments not implemented yet.")
+        },
+        history: {
+            "name": "History",
+            "url": "/posts/" + id + "/history",
+            "content": textBox("History not implemented yet.")
+        },   
+        visualize: {
+            "name": "Visualize",
+            "url": "/posts/" + id + "/visualize",
+            "content": textBox("Visualize not implemented yet.")
+        },             
+        metafeatures: {
+            "name": "Metafeatures",
+            "url": "/posts/" + id + "/metafeatures",
+            "content": textBox("Metafeatures not implemented yet.")
+        },
+        twins: {
+            "name": "Twins",
+            "url": "/posts/" + id + "/twins",
+            "content": textBox("Twins not implemented yet.")
         }
     }
 
     useEffect(() => {
-        async function fetchDataset() {
+        async function fetchPost() {
             try {
-                const response = await api.get(`posts/${uuid}`);
-                setDataset(response.data);
+                const response = await api.get(`posts/${id}`);
+                setPost(response.data);
                 setName(response.data.name);
                 setDescription(response.data.description ? response.data.description : '');
                 setLoadingHero(false);
@@ -76,13 +91,13 @@ export default function Users(props) {
                 }
             }
         }
-        fetchDataset();
-    }, [uuid])
+        fetchPost();
+    }, [id])
 
     async function handleDownload() {
         try {
-            const response = await api.get(`downloads/data?uuids=${uuid}`, { responseType: ['blob'] });
-            saveAs(response.data, dataset.name + ".zip");
+            const response = await api.get(`downloads/data?uuids=${post.data_uuid}`, { responseType: ['blob'] });
+            saveAs(response.data, post.name + ".zip");
         } catch (error) {
             if (error.response) {
                 var reader = new FileReader();
@@ -100,14 +115,14 @@ export default function Users(props) {
     }
 
     async function handleFavorite() {
-        var newDataset = { ...dataset };
+        var newPost = { ...post };
 
         try {
-            await api.post(`posts/${dataset.id}/favorite`);
-            if (dataset.favorites.includes(loggedUser.id)) {
-                newDataset.favorites = newDataset.favorites.filter(item => item !== loggedUser.id)
+            await api.post(`posts/${post.id}/favorite`);
+            if (post.favorites.includes(loggedUser.id)) {
+                newPost.favorites = newPost.favorites.filter(item => item !== loggedUser.id)
             } else {
-                newDataset.favorites.push(loggedUser.id)
+                newPost.favorites.push(loggedUser.id)
             }
         } catch (error) {
             if (error.response) {
@@ -118,7 +133,7 @@ export default function Users(props) {
                 NotificationManager.error("Network error", "Error", 4000)
             }
         }
-        setDataset(newDataset);
+        setPost(newPost);
     }
 
     function handleOpenEdit() {
@@ -135,10 +150,10 @@ export default function Users(props) {
         e.preventDefault()
         const data = {
             name: nameEdit,
-            body: descriptionEdit
+            description: descriptionEdit
         }
         try {
-            await api.put(`posts/${uuid}`, data);
+            await api.put(`posts/${id}`, data);
             setOpenEdit(false);
             setName(nameEdit);
             setDescription(descriptionEdit);
@@ -194,12 +209,12 @@ export default function Users(props) {
                                 <button className="button-secondary margin-left-small">Publish</button>
                             </div>
                         </div>
-                        <h6 className="color-tertiary">uploaded by {dataset.author.name} - <Link className="color-tertiary link-underline" to={`/users/${dataset.author.username}/uploads`}>{dataset.author.username}</Link></h6>
-                        <h6 className="color-tertiary">{dataset.downloads} downloads | {dataset.favorites.length} favorited</h6>
-                        <h6 className="color-tertiary">OID: {uuid}</h6>
+                        <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
+                        <h6 className="color-tertiary">{post.downloads} downloads | {post.favorites.length} favorited</h6>
+                        <h6 className="color-tertiary">OID: {post.data_uuid}</h6>
                         <div className="margin-top-very-small" >
                             <button onClick={handleDownload}><CloudDownload className="icon-secondary" /></button>
-                            {dataset.favorites && dataset.favorites.includes(loggedUser.id) ? <button onClick={handleFavorite}><Favorite className="icon-secondary margin-left-very-small" /></button> : <button onClick={handleFavorite}><FavoriteBorder className="icon-secondary margin-left-very-small" /></button>}
+                            {post.favorites && post.favorites.includes(loggedUser.id) ? <button onClick={handleFavorite}><Favorite className="icon-secondary margin-left-very-small" /></button> : <button onClick={handleFavorite}><FavoriteBorder className="icon-secondary margin-left-very-small" /></button>}
                         </div>
                     </>
                 }

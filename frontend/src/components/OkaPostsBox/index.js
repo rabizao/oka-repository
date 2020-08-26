@@ -142,12 +142,12 @@ export default function OkaPostsBox({ fetch_url }) {
                                             <CheckBoxOutlineBlank className="icon-primary" />
                                     }
                                 </button>
-                                <Link className="flex-row padding-vertical-small width100" to={`/datasets/${post.data_uuid}/description`}>
+                                <Link className="flex-row padding-vertical-small width100" to={`/posts/${post.id}/description`}>
                                     <div className="ellipsis bold padding-sides-small">
                                         {post.name}
                                     </div>
                                     <div className="ellipsis padding-sides-small">
-                                        {post.body}
+                                        {post.description}
                                     </div>
                                 </Link>
                             </div>
