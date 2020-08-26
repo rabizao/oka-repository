@@ -1,3 +1,4 @@
+import uuid as u
 from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -12,6 +13,7 @@ from pjdata.creation import read_arff
 from . import bp
 
 
+# noinspection PyArgumentList
 @bp.route("/posts")
 class Posts(MethodView):
     @jwt_required
@@ -41,7 +43,7 @@ class Posts(MethodView):
         posts = []
 
         for file in files:
-            full_path = current_app.config['TMP_FOLDER'] + str(uuid.uuid4())
+            full_path = current_app.config['TMP_FOLDER'] + str(u.uuid4())
             try:
                 file.save(full_path)
                 _, data, name, description = read_arff(full_path)
