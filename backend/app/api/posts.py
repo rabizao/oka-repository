@@ -174,7 +174,7 @@ class PostsHistoryById(MethodView):
         for transformer in reversed(list(data.history)[1:]):  # Discards data birth (e.g. File).
             uuid = uuid / transformer.uuid  # Revert to previous uuid.
             data = storage.fetch(UUIDData(uuid))
-            dic = {"uuid": uuid, "transformation": transformer.name, "help": transformer, "exist": data is not None}
+            dic = {"label": uuid, "transformation": transformer.name, "help": str(transformer), "exist": data is not None}
             lst.append(dic)
         return list(reversed(lst))
 
