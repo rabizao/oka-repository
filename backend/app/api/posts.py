@@ -1,15 +1,14 @@
-import uuid
-
 from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_smorest import abort
+from pjdata.content.specialdata import UUIDData
 
 from app import db
 from app.models import User, Post
 from app.schemas import PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema
 from cururu.persistence import DuplicateEntryException
-from pjdata.data_creation import read_arff
+from pjdata.creation import read_arff
 from . import bp
 
 
@@ -48,7 +47,7 @@ class Posts(MethodView):
                 _, data, name, description = read_arff(full_path)
                 if logged_user.posts.filter_by(data_uuid=data.id).first():
                     abort(422, errors={
-                          "json": {"Upload": ["Dataset already exists!"]}})
+                        "json": {"Upload": ["Dataset already exists!"]}})
                 post = Post(author=logged_user, data_uuid=data.id,
                             name=name, description=description)
                 db.session.add(post)
@@ -162,8 +161,17 @@ class PostsHistoryById(MethodView):
         if not post or not post.active:
             abort(422, errors={"json": {"id": ["Does not exist."]}})
 
-        # uuid = post.data_uuid
-        # TODO
+        uuid = post.data_uuid
+        storage = current_app.config['CURURU_SERVER']
+        data = storage.fetch(UUIDData(uuid))
+        lst = []
+        # TODO: show uuid along with post name in the web interface
+        for transformer in reversed(data.history[1:]):  # Discards data birth (e.g. File).
+            uuid = uuid / transformer  # Revert to previous uuid.
+            data = storage.fetch(UUIDData(uuid))
+            dic = {"uuid": uuid, "transformation": transformer.name, "help": transformer, "exist": data is not None}
+            lst.append(dic)
+        return reversed(lst)
 
 
 @bp.route('/posts/<int:id>/metafeatures')
