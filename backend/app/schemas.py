@@ -3,7 +3,7 @@ from marshmallow_sqlalchemy.fields import Nested
 from app import db
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from werkzeug.security import generate_password_hash
-from app.models import User, Post, Experiment
+from app.models import User, Post, Experiment, Comment
 from flask_smorest.fields import Upload
 
 
@@ -21,6 +21,17 @@ class UserBaseSchema(SQLAlchemyAutoSchema):
         validate.Length(min=6, max=36)], load_only=True, required=True)
     followed = fields.Pluck("self", "id", many=True, dump_only=True)
     followers = fields.Pluck("self", "id", many=True, dump_only=True)
+
+
+class CommentBaseSchema(SQLAlchemyAutoSchema):
+
+    class Meta:
+        model = Comment
+
+    id = auto_field(dump_only=True)
+    text = auto_field(required=True)
+    author = Nested(UserBaseSchema, dump_only=True)
+    replies = Nested("self", dump_only=True)
 
 
 class UserQuerySchema(SQLAlchemySchema):
@@ -229,4 +240,4 @@ class DownloadQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
-    uuids = fields.List(fields.String())
+    uuids = fields.List(fields.String(), required=True)

@@ -259,6 +259,7 @@ class Post(PaginateMixin, db.Model):
 
     def add_comment(self, text, author):
         comment = Comment(text=text, post=self, author=author)
+        db.session.add(comment)
         db.session.commit()
         return comment
 

@@ -7,9 +7,8 @@ from flask_smorest import abort
 
 from app import db
 from app.models import User, Post
-from app.schemas import PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema
+from app.schemas import PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema
 from cururu.persistence import DuplicateEntryException
-# from pjdata.content.specialdata import UUIDData
 from pjdata.data_creation import read_arff
 from . import bp
 
@@ -36,7 +35,6 @@ class Posts(MethodView):
         """
         Create a new post to the logged user
         """
-        # TODO:Get files from front end and store in cururu
         storage = current_app.config['CURURU_SERVER']
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
@@ -49,8 +47,10 @@ class Posts(MethodView):
                 file.save(full_path)
                 _, data, name, description = read_arff(full_path)
                 if logged_user.posts.filter_by(data_uuid=data.id).first():
-                    abort(422, errors={"json": {"Upload": ["Dataset already exists!"]}})
-                post = Post(author=logged_user, data_uuid=data.id, name=name, description=description)
+                    abort(422, errors={
+                          "json": {"Upload": ["Dataset already exists!"]}})
+                post = Post(author=logged_user, data_uuid=data.id,
+                            name=name, description=description)
                 db.session.add(post)
                 posts.append(post)
                 storage.store(data)
@@ -116,16 +116,83 @@ class PostsFavoriteById(MethodView):
             logged_user.favorite(post)
 
 
-@bp.route('/posts/<int:id>/download')
-class PostsDownloadCountById(MethodView):
+@bp.route('/posts/<int:id>/comments')
+class PostsCommentsById(MethodView):
     @jwt_required
-    @bp.response(code=200)
-    def post(self, id):
+    @bp.response(CommentBaseSchema(many=True))
+    @bp.paginate()
+    def get(self, pagination_parameters, id):
         """
-        Favorite/unfavorite post with id {id}
+        Return the comments of a post with id {id}
         """
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={"json": {"id": ["Does not exist."]}})
 
-        post.downloads += 1
+        comments = post.comments
+        pagination_parameters.item_count = comments.count()
+
+        return comments
+
+    @jwt_required
+    @bp.arguments(CommentBaseSchema)
+    @bp.response(code=201)
+    def post(self, args, id):
+        """
+        Create a new comment for the post with id {id}
+        """
+        post = Post.query.get(id)
+        if not post or not post.active:
+            abort(422, errors={"json": {"id": ["Does not exist."]}})
+
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
+        post.add_comment(text=args['text'], author=logged_user)
+
+
+@bp.route('/posts/<int:id>/history')
+class PostsHistoryById(MethodView):
+    @jwt_required
+    @bp.response(code=200)
+    def get(self, id):
+        """
+        Return the history of a dataset of a post with id {id}
+        """
+        post = Post.query.get(id)
+        if not post or not post.active:
+            abort(422, errors={"json": {"id": ["Does not exist."]}})
+
+        # uuid = post.data_uuid
+        # TODO
+
+
+@bp.route('/posts/<int:id>/metafeatures')
+class PostsMetafeaturesById(MethodView):
+    @jwt_required
+    @bp.response(code=200)
+    def get(self, id):
+        """
+        Return the metafeatures of a dataset of a post with id {id}
+        """
+        post = Post.query.get(id)
+        if not post or not post.active:
+            abort(422, errors={"json": {"id": ["Does not exist."]}})
+
+        # uuid = post.data_uuid
+        # TODO
+
+
+@bp.route('/posts/<int:id>/twins')
+class PostTwinsfeaturesById(MethodView):
+    @jwt_required
+    @bp.response(code=200)
+    def get(self, id):
+        """
+        Return the metafeatures of a dataset of a post with id {id}
+        """
+        post = Post.query.get(id)
+        if not post or not post.active:
+            abort(422, errors={"json": {"id": ["Does not exist."]}})
+
+        # uuid = post.data_uuid
+        # TODO
