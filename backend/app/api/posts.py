@@ -1,8 +1,11 @@
 import uuid as u
+
+from cururu.pickleserver import PickleServer
 from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_smorest import abort
+from pjdata.aux.uuid import UUID
 from pjdata.content.specialdata import UUIDData
 
 from app import db
@@ -163,18 +166,17 @@ class PostsHistoryById(MethodView):
         if not post or not post.active:
             abort(422, errors={"json": {"id": ["Does not exist."]}})
 
-        uuid = post.data_uuid
+        uuid = UUID(post.data_uuid)
         storage = current_app.config['CURURU_SERVER']
         data = storage.fetch(UUIDData(uuid))
         lst = []
         # TODO: show uuid along with post name in the web interface
-        for transformer in reversed(data.history[1:]):  # Discards data birth (e.g. File).
-            uuid = uuid / transformer  # Revert to previous uuid.
+        for transformer in reversed(list(data.history)[1:]):  # Discards data birth (e.g. File).
+            uuid = uuid / transformer.uuid  # Revert to previous uuid.
             data = storage.fetch(UUIDData(uuid))
             dic = {"uuid": uuid, "transformation": transformer.name, "help": transformer, "exist": data is not None}
             lst.append(dic)
-        return reversed(lst)
-
+        return list(reversed(lst))
 
 @bp.route('/posts/<int:id>/metafeatures')
 class PostsMetafeaturesById(MethodView):
