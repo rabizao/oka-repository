@@ -1,6 +1,8 @@
+from . import bp
+from pjdata.creation import read_arff
+from cururu.persistence import DuplicateEntryException
 import uuid as u
 
-from cururu.pickleserver import PickleServer
 from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -9,11 +11,9 @@ from pjdata.aux.uuid import UUID
 from pjdata.content.specialdata import UUIDData
 
 from app import db
-from app.models import User, Post
-from app.schemas import PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema
-from cururu.persistence import DuplicateEntryException
-from pjdata.creation import read_arff
-from . import bp
+from app.models import User, Post, Comment
+from app.schemas import (PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema,
+                         CommentQuerySchema)
 
 
 # noinspection PyArgumentList
@@ -123,9 +123,10 @@ class PostsFavoriteById(MethodView):
 @bp.route('/posts/<int:id>/comments')
 class PostsCommentsById(MethodView):
     @jwt_required
+    @bp.arguments(CommentQuerySchema, location="query")
     @bp.response(CommentBaseSchema(many=True))
     @bp.paginate()
-    def get(self, pagination_parameters, id):
+    def get(self, args, pagination_parameters, id):
         """
         Return the comments of a post with id {id}
         """
@@ -133,14 +134,15 @@ class PostsCommentsById(MethodView):
         if not post or not post.active:
             abort(422, errors={"json": {"id": ["Does not exist."]}})
 
-        comments = post.comments
+        order_by = getattr(Comment.timestamp, args['order_by'])()
+        comments = post.comments.order_by(order_by)
         pagination_parameters.item_count = comments.count()
 
         return comments
 
     @jwt_required
     @bp.arguments(CommentBaseSchema)
-    @bp.response(code=201)
+    @bp.response(CommentBaseSchema)
     def post(self, args, id):
         """
         Create a new comment for the post with id {id}
@@ -151,7 +153,9 @@ class PostsCommentsById(MethodView):
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
-        post.add_comment(text=args['text'], author=logged_user)
+        comment = post.add_comment(text=args['text'], author=logged_user)
+
+        return comment
 
 
 @bp.route('/posts/<int:id>/history')
@@ -171,20 +175,23 @@ class PostsHistoryById(MethodView):
         data = storage.fetch(UUIDData(uuid))
         lst = []
         # TODO: show uuid along with post name in the web interface
-        for transformer in reversed(list(data.history)[1:]):  # Discards data birth (e.g. File).
+        # Discards data birth (e.g. File).
+        for transformer in reversed(list(data.history)[1:]):
             uuid = uuid / transformer.uuid  # Revert to previous uuid.
             data = storage.fetch(UUIDData(uuid))
-            dic = {"uuid": uuid, "transformation": transformer.name, "help": transformer, "exist": data is not None}
+            dic = {"uuid": uuid, "transformation": transformer.name,
+                   "help": transformer, "exist": data is not None}
             lst.append(dic)
         return list(reversed(lst))
 
-@bp.route('/posts/<int:id>/metafeatures')
-class PostsMetafeaturesById(MethodView):
+
+@bp.route('/posts/<int:id>/stats')
+class PostsStatsById(MethodView):
     @jwt_required
     @bp.response(code=200)
     def get(self, id):
         """
-        Return the metafeatures of a dataset of a post with id {id}
+        Return the stats of a dataset of a post with id {id}
         """
         post = Post.query.get(id)
         if not post or not post.active:
@@ -195,12 +202,12 @@ class PostsMetafeaturesById(MethodView):
 
 
 @bp.route('/posts/<int:id>/twins')
-class PostTwinsfeaturesById(MethodView):
+class PostsTwinsById(MethodView):
     @jwt_required
     @bp.response(code=200)
     def get(self, id):
         """
-        Return the metafeatures of a dataset of a post with id {id}
+        Return the twins of a post with id {id}
         """
         post = Post.query.get(id)
         if not post or not post.active:

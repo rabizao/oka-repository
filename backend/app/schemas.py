@@ -3,7 +3,7 @@ from marshmallow_sqlalchemy.fields import Nested
 from app import db
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from werkzeug.security import generate_password_hash
-from app.models import User, Post, Experiment, Comment
+from app.models import User, Post, Comment
 from flask_smorest.fields import Upload
 
 
@@ -31,7 +31,15 @@ class CommentBaseSchema(SQLAlchemyAutoSchema):
     id = auto_field(dump_only=True)
     text = auto_field(required=True)
     author = Nested(UserBaseSchema, dump_only=True)
-    replies = Nested("self", dump_only=True)
+    replies = Nested("self", many=True, dump_only=True)
+
+
+class CommentQuerySchema(SQLAlchemySchema):
+    class Meta:
+        unknown = EXCLUDE
+
+    order_by = fields.String(validate=validate.OneOf(
+        ['asc', 'desc']), missing='desc')
 
 
 class UserQuerySchema(SQLAlchemySchema):
@@ -206,34 +214,6 @@ class PostEditSchema(SQLAlchemySchema):
 class PostFilesSchema(SQLAlchemySchema):
 
     files = fields.List(Upload())
-
-
-class ExperimentBaseSchema(SQLAlchemyAutoSchema):
-
-    class Meta:
-        model = Experiment
-
-    id = auto_field(dump_only=True)
-    author = Nested(UserBaseSchema, dump_only=True)
-
-
-class ExperimentQuerySchema(SQLAlchemySchema):
-    class Meta:
-        unknown = EXCLUDE
-
-    experiment_uuid = fields.String()
-    name = fields.String()
-    description = fields.String()
-
-
-class ExperimentRegisterSchema(ExperimentBaseSchema):
-
-    @post_load
-    def check_unique(self, data, **kwargs):
-        if Experiment.get_by_uuid(data["experiment_uuid"]):
-            raise ValidationError(field_name='experiment_uuid',
-                                  message="Already in use.")
-        return data
 
 
 class DownloadQuerySchema(SQLAlchemySchema):

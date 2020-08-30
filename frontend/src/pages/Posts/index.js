@@ -11,6 +11,7 @@ import { saveAs } from 'file-saver';
 
 import OkaHeader from '../../components/OkaHeader';
 import OkaNavBar from '../../components/OkaNavBar';
+import OkaPostComments from '../../components/OkaPostComments';
 import api from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 
@@ -49,22 +50,22 @@ export default function Posts(props) {
         comments: {
             "name": "Comments",
             "url": "/posts/" + id + "/comments",
-            "content": textBox("Comments not implemented yet.")
+            "content": <OkaPostComments postId={id}/>
         },
         history: {
             "name": "History",
             "url": "/posts/" + id + "/history",
             "content": textBox("History not implemented yet.")
-        },   
+        },
         visualize: {
             "name": "Visualize",
             "url": "/posts/" + id + "/visualize",
             "content": textBox("Visualize not implemented yet.")
-        },             
-        metafeatures: {
-            "name": "Metafeatures",
-            "url": "/posts/" + id + "/metafeatures",
-            "content": textBox("Metafeatures not implemented yet.")
+        },
+        stats: {
+            "name": "Stats",
+            "url": "/posts/" + id + "/stats",
+            "content": textBox("Stats not implemented yet.")
         },
         twins: {
             "name": "Twins",

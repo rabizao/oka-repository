@@ -63,22 +63,3 @@ print("GET ALL POSTS THAT BELONG TO THE AUTHENTICATED USER")
 # by adding to the url (for example): ?name=teste&per_page=50&page=1
 r = requests.get(url_posts, headers=headers)
 print(r.text)
-
-
-# EXPERIMENTS
-url_experiments = base_url + 'experiments'
-
-print("CREATE A NEW EXPERIMENT TO THE AUTHENTICATED USER")
-data = {"experiment_uuid": random_uuid, "name": "Experiment teste",
-        "description": "Esta eh a descricao do experiment teste"}
-r = requests.post(url_experiments, json=data, headers=headers)
-print(r.text)
-
-
-print("GET ALL EXPERIMENTS THAT BELONG TO THE AUTHENTICATED USER")
-# The request returns all the experiments that the user that generated the token above has access to.
-# The api knows who is making this request, so selections per user can be easily made.
-# The response can be paginated and selections can be made
-# by adding to the url (for example): ?name=teste&per_page=50&page=1
-r = requests.get(url_experiments, headers=headers)
-print(r.text)

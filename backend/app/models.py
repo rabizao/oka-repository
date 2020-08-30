@@ -68,8 +68,6 @@ class User(PaginateMixin, db.Model):
     access = db.Column(db.Integer, default=0)
 
     posts = db.relationship('Post', backref='author', lazy='dynamic')
-    experiments = db.relationship(
-        'Experiment', backref='author', lazy='dynamic')
     comments = db.relationship('Comment', backref='author', lazy='dynamic')
     tags = db.relationship('Tag', backref='author', lazy='dynamic')
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
@@ -215,7 +213,8 @@ class Post(PaginateMixin, db.Model):
     # Unique
     data_uuid = db.Column(db.String(120), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    __table_args__ = (db.UniqueConstraint('data_uuid', 'user_id', name='_data_user_unique'), )
+    __table_args__ = (db.UniqueConstraint(
+        'data_uuid', 'user_id', name='_data_user_unique'), )
 
     name = db.Column(db.String(120), default="No name")
     description = db.Column(db.String(100000), default="No description")
@@ -348,15 +347,13 @@ class Comment(db.Model):
     replies = db.relationship(
         'Comment', backref=db.backref('parent', remote_side=[id]),
         lazy='dynamic')
+    active = db.Column(db.Boolean, default=True)
 
     def add_reply(self, text, author):
-        repply = Comment(text=text, parent=self, author=author)
+        reply = Comment(text=text, parent=self, author=author)
+        db.session.add(reply)
         db.session.commit()
-        return repply
-
-    @staticmethod
-    def get_comment_object(id):
-        return Comment.query.filter_by(id=id).first()
+        return reply
 
 
 class Tag(db.Model):
@@ -427,19 +424,3 @@ class Token(db.Model):
         if token is None or token.revoked is True:
             return True
         return False
-
-
-class Experiment(PaginateMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    experiment_uuid = db.Column(db.String(120), index=True, unique=True)
-    name = db.Column(db.String(120))
-    description = db.Column(db.String(1000))
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    public = db.Column(db.Boolean, default=False)
-    active = db.Column(db.Boolean, default=True)
-
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-    @staticmethod
-    def get_by_uuid(uuid):
-        return Experiment.query.filter_by(experiment_uuid=uuid).first()

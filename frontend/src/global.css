@@ -299,6 +299,11 @@ button, input[type="submit"], input[type="reset"] {
     transition-duration: var(--transition-time);
 }
 
+.background-hover-strong:hover {
+    background-color: #eff0f1;
+    transition-duration: var(--transition-time);
+}
+
 .link-underline {
     text-decoration: underline;
 }
