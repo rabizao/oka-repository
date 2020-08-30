@@ -12,6 +12,7 @@ import { saveAs } from 'file-saver';
 import OkaHeader from '../../components/OkaHeader';
 import OkaNavBar from '../../components/OkaNavBar';
 import OkaPostComments from '../../components/OkaPostComments';
+import OkaPostsBox from '../../components/OkaPostsBox';
 import api from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 
@@ -70,7 +71,7 @@ export default function Posts(props) {
         twins: {
             "name": "Twins",
             "url": "/posts/" + id + "/twins",
-            "content": textBox("Twins not implemented yet.")
+            "content": <OkaPostsBox fetch_url={"/posts/" + id + "/twins"} />
         }
     }
 

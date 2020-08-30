@@ -204,14 +204,18 @@ class PostsStatsById(MethodView):
 @bp.route('/posts/<int:id>/twins')
 class PostsTwinsById(MethodView):
     @jwt_required
-    @bp.response(code=200)
-    def get(self, id):
+    @bp.arguments(PostQuerySchema, location="query")
+    @bp.response(PostBaseSchema(many=True))
+    @bp.paginate()
+    def get(self, args, pagination_parameters, id):
         """
         Return the twins of a post with id {id}
         """
         post = Post.query.get(id)
-        if not post or not post.active:
+        if not post:
             abort(422, errors={"json": {"id": ["Does not exist."]}})
 
-        # uuid = post.data_uuid
-        # TODO
+        filter_by = {"active": True, "data_uuid": post.data_uuid, "id": not id}
+        data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
+                                                          pagination_parameters.page_size, filter_by=filter_by)
+        return data
