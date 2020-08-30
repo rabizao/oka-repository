@@ -4,7 +4,7 @@ from werkzeug.security import check_password_hash
 from app import db
 # from cururu.persistence import DuplicateEntryException
 # from pjdata.data import Data
-from flask import current_app
+# from flask import current_app
 import json
 from time import time
 # import redis
@@ -129,16 +129,16 @@ class User(PaginateMixin, db.Model):
             setattr(self, key, value)
         return self
 
-    def new_messages(self):
-        last_read_time = self.last_message_read_time or datetime(1900, 1, 1)
-        return Message.query.filter_by(recipient=self).filter(
-            Message.timestamp > last_read_time).count()
+    # def new_messages(self):
+    #     last_read_time = self.last_message_read_time or datetime(1900, 1, 1)
+    #     return Message.query.filter_by(recipient=self).filter(
+    #         Message.timestamp > last_read_time).count()
 
-    def add_notification(self, name, data):
-        self.notifications.filter_by(name=name).delete()
-        n = Notification(name=name, payload_json=json.dumps(data), user=self)
-        db.session.add(n)
-        return n
+    # def add_notification(self, name, data):
+    #     self.notifications.filter_by(name=name).delete()
+    #     n = Notification(name=name, payload_json=json.dumps(data), user=self)
+    #     db.session.add(n)
+    #     return n
 
     def follow(self, user):
         if not self.is_following(user):
@@ -152,7 +152,7 @@ class User(PaginateMixin, db.Model):
         return self.followed.filter(
             followers.c.followed_id == user.id).count() > 0
 
-    def followed_posts(self):
+    def followed_posts(self):  # feed
         followed = Post.query.join(
             followers, (followers.c.followed_id == Post.user_id)).filter(
                 followers.c.follower_id == self.id, Post.public is True)
@@ -176,20 +176,20 @@ class User(PaginateMixin, db.Model):
     def favorited_posts(self):
         return self.favorited.order_by(favorites.c.timestamp.desc()).all()
 
-    def launch_task(self, name, description, *args, **kwargs):
-        rq_job = current_app.task_queue.enqueue('current_app.tasks.' + name, self.id,
-                                                *args, **kwargs)
-        task = Task(id=rq_job.get_id(), name=name, description=description,
-                    user=self)
-        db.session.add(task)
-        return task
+    # def launch_task(self, name, description, *args, **kwargs):
+    #     rq_job = current_app.task_queue.enqueue('current_app.tasks.' + name, self.id,
+    #                                             *args, **kwargs)
+    #     task = Task(id=rq_job.get_id(), name=name, description=description,
+    #                 user=self)
+    #     db.session.add(task)
+    #     return task
 
-    def get_tasks_in_progress(self):
-        return Task.query.filter_by(user=self, complete=False).all()
+    # def get_tasks_in_progress(self):
+    #     return Task.query.filter_by(user=self, complete=False).all()
 
-    def get_task_in_progress(self, name):
-        return Task.query.filter_by(name=name, user=self,
-                                    complete=False).first()
+    # def get_task_in_progress(self, name):
+    #     return Task.query.filter_by(name=name, user=self,
+    #                                 complete=False).first()
 
     @staticmethod
     def list_by_name(search_term):
@@ -262,36 +262,36 @@ class Post(PaginateMixin, db.Model):
         db.session.commit()
         return comment
 
-    def add_tag(self, text, author):
-        tag = Tag(text=text, post=self, author=author)
-        db.session.commit()
-        return tag
+    # def add_tag(self, text, author):
+    #     tag = Tag(text=text, post=self, author=author)
+    #     db.session.commit()
+    #     return tag
 
-    def show_tags(self):
-        return self.tags.all()
+    # def show_tags(self):
+    #     return self.tags.all()
 
-    def store(self):
-        db.session.add(self)
-        db.session.commit()
+    # def store(self):
+    #     db.session.add(self)
+    #     db.session.commit()
 
-    def delete(self):  # TODO delete dataset
-        db.session.delete(self)
-        db.session.commit()
-        return
+    # def delete(self):  # TODO delete dataset
+    #     db.session.delete(self)
+    #     db.session.commit()
+    #     return
 
-    def is_public(self):
-        return self.public
+    # def is_public(self):
+    #     return self.public
 
-    def is_private(self):
-        return not self.public
+    # def is_private(self):
+    #     return not self.public
 
-    def set_public(self):
-        self.public = True
-        db.session.commit()
+    # def set_public(self):
+    #     self.public = True
+    #     db.session.commit()
 
-    def set_private(self):
-        self.public = False
-        db.session.commit()
+    # def set_private(self):
+    #     self.public = False
+    #     db.session.commit()
 
     def can_be_shown_to(self, user):
         return self.is_public() or self.author == user
@@ -315,12 +315,8 @@ class Post(PaginateMixin, db.Model):
     #     except DuplicateEntryException:
     #         return 'Duplicated dataset! Ignored.'
 
-    def get_comments(self):
-        return self.comments.order_by(Comment.timestamp.desc())
-
-    @staticmethod
-    def get_post_object(uuid):
-        return Post.query.filter_by(data_uuid=uuid).first()
+    # def get_comments(self):
+    #     return self.comments.order_by(Comment.timestamp.desc())
 
     # def get_data_object(self):
     #     storage = current_app.config['CURURU_SERVER']
