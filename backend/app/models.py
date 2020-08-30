@@ -27,6 +27,15 @@ favorites = db.Table('favorites',
                                default=datetime.utcnow)
                      )
 
+access = db.Table('access',
+                  db.Column('user_id', db.Integer,
+                            db.ForeignKey('user.id')),
+                  db.Column('post_id', db.Integer,
+                            db.ForeignKey('post.id')),
+                  db.Column('timestamp', db.DateTime,
+                            default=datetime.utcnow)
+                  )
+
 
 class PaginateMixin(object):
     @classmethod
@@ -65,7 +74,7 @@ class User(PaginateMixin, db.Model):
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     last_message_read_time = db.Column(db.DateTime)
     active = db.Column(db.Boolean, default=True)
-    access = db.Column(db.Integer, default=0)
+    role = db.Column(db.Integer, default=0)
 
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     comments = db.relationship('Comment', backref='author', lazy='dynamic')
@@ -91,6 +100,12 @@ class User(PaginateMixin, db.Model):
     favorited = db.relationship(
         'Post', secondary=favorites,
         backref=db.backref('favorites', lazy='dynamic'), lazy='dynamic')
+
+    # user.accessible
+    # post.allowed
+    accessible = db.relationship(
+        'Post', secondary=access,
+        backref=db.backref('allowed', lazy='dynamic'), lazy='dynamic')
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
@@ -175,6 +190,10 @@ class User(PaginateMixin, db.Model):
 
     def favorited_posts(self):
         return self.favorited.order_by(favorites.c.timestamp.desc()).all()
+
+    def has_access(self, post):
+        return self.accessible.filter(
+            access.c.post_id == post.id).count() > 0
 
     # def launch_task(self, name, description, *args, **kwargs):
     #     rq_job = current_app.task_queue.enqueue('current_app.tasks.' + name, self.id,
