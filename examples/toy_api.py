@@ -44,8 +44,20 @@ url_posts = base_url + 'posts'
 # Ideia para funcao para criar post no oka
 # oka.new_post(data=data, name="teste", description="description", token="token_site")
 # oka.send_job(uuid=$#@%@!#$, code="ml")
-# oka.fetch()
-# oka.store()
+
+# Caso de uso "cururu remoto" (apenas cache de resultado)
+# cururuserver.fetch()      -> busca Data no cururu remote usando credencial de forma transparente
+# cururuserver.store(Data)  -> guarda Data no cururu remote usando credencial de forma transparente
+
+# caso de uso "compartilhamento
+# Oka()
+# oka.commit
+# oka.find(name="asdsad", uuid="ffddsfdfasa")
+# download / load / get
+# oka.upload(data, name, description)
+# oka.loaddata(uuid/filtros) -> data.arff
+# oka.loadarff(uuid/filtros) -> data -> data.arff
+
 
 # POSTS
 print("CREATE A NEW POST TO THE AUTHENTICATED USER\n")

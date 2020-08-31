@@ -214,6 +214,14 @@ class PostFilesSchema(SQLAlchemySchema):
     files = fields.List(Upload())
 
 
+class CururuUploadSchema(SQLAlchemySchema):
+    file = Upload()
+
+
+class CururuDownloadSchema(SQLAlchemySchema):
+    uuid = fields.String()
+
+
 class DownloadQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
