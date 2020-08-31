@@ -22,7 +22,7 @@ class CururuServer(Persistence):
 
     def _fetch_impl(self, data: Data, lock: bool = False) -> Data:
         response = requests.get(self.url + f"?uuid={data.id}", headers=self.headers)
-        return unpack(response.content.getbuffer())
+        return unpack(response.content)
 
     def fetch_matrix(self, id):
         pass
@@ -34,7 +34,3 @@ class CururuServer(Persistence):
         pass
 
 
-data = read_arff('iris.arff')[1]
-storage = CururuServer("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1OTg5MDExMDMsIm5iZiI6MTU5ODkwMTEwMywianRpIjoiZjRkMzQ4OTYtOWNmNy00YzRjLWJhYmYtYmFjZGQzMjQ2NDYzIiwiZXhwIjoxNTk4OTQ0MzAzLCJpZGVudGl0eSI6ImRhdmlwcyIsImZyZXNoIjpmYWxzZSwidHlwZSI6ImFjY2VzcyJ9.ZQWrKdPsrUExRCw4VqVJ7J14tDfktUm0QqSdtx75YUI")
-d = storage.fetch(data.hollow())
-print(d)
