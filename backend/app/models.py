@@ -228,8 +228,13 @@ class User(PaginateMixin, db.Model):
 
 
 class Transformation(db.Model):
+    # "label" "name" "help" "stored" "avatar"
     id = db.Column(db.Integer, primary_key=True)
-    step = db.Column(db.String(120))
+    label = db.Column(db.String(999))  # Visible text describind Data object.
+    name = db.Column(db.String(999))  # Name of the Transformer object.
+    help = db.Column(db.String(99999))  # Complete description of the Transformer object.
+    stored = db.Column(db.Boolean)  # Whether the Data object is already stored in cururu.
+    avatar = db.Column(db.String(999))  # Filename of the icon representing the Data object.
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
 
 
@@ -244,6 +249,7 @@ class Post(PaginateMixin, db.Model):
 
     name = db.Column(db.String(120), default="No name")
     description = db.Column(db.String(100000), default="No description")
+    # avatar = db.Column(db.String(1000))
 
     downloads = db.Column(db.Integer(), default=0)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)

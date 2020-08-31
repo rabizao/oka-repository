@@ -3,12 +3,11 @@ from marshmallow_sqlalchemy.fields import Nested
 from app import db
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from werkzeug.security import generate_password_hash
-from app.models import User, Post, Comment
+from app.models import User, Post, Comment, Transformation
 from flask_smorest.fields import Upload
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
-
     class Meta:
         model = User
 
@@ -24,7 +23,6 @@ class UserBaseSchema(SQLAlchemyAutoSchema):
 
 
 class CommentBaseSchema(SQLAlchemyAutoSchema):
-
     class Meta:
         model = Comment
 
@@ -125,7 +123,6 @@ class UserRegisterSchema(UserBaseSchema):
 
 
 class UserLoginSchema(UserBaseSchema):
-
     class Meta:
         fields = ("username", "password")
 
@@ -145,7 +142,6 @@ class UserLoginSchema(UserBaseSchema):
 
 
 class LoginResponseSchema(SQLAlchemySchema):
-
     access_token = fields.String(dump_only=True)
     refresh_token = fields.String(dump_only=True)
     id = fields.Integer(dump_only=True)
@@ -154,18 +150,15 @@ class LoginResponseSchema(SQLAlchemySchema):
 
 
 class RefreshTokenSchema(SQLAlchemySchema):
-
     access_token = fields.String(dump_only=True)
     refresh_token = fields.String(load_only=True)
 
 
 class ApiTokenSchema(SQLAlchemySchema):
-
     api_token = fields.String(dump_only=True)
 
 
 class UserEditSchema(SQLAlchemySchema):
-
     class Meta:
         unknown = EXCLUDE
 
@@ -190,18 +183,24 @@ class UserEditSchema(SQLAlchemySchema):
         return data
 
 
-class PostBaseSchema(SQLAlchemyAutoSchema):
+class TransformationBaseSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Transformation
 
+    id = auto_field(dump_only=True)
+
+
+class PostBaseSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Post
 
     id = auto_field(dump_only=True)
     author = Nested(UserBaseSchema, dump_only=True)
+    history = Nested(TransformationBaseSchema, many=True, dump_only=True)
     favorites = fields.Pluck(UserBaseSchema, "id", many=True, dump_only=True)
 
 
 class PostEditSchema(SQLAlchemySchema):
-
     class Meta:
         unknown = EXCLUDE
 
@@ -212,7 +211,6 @@ class PostEditSchema(SQLAlchemySchema):
 
 
 class PostFilesSchema(SQLAlchemySchema):
-
     files = fields.List(Upload())
 
 

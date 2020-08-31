@@ -11,7 +11,7 @@ from pjdata.aux.uuid import UUID
 from pjdata.content.specialdata import UUIDData
 
 from app import db
-from app.models import User, Post, Comment
+from app.models import User, Post, Comment, Transformation
 from app.schemas import (PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema,
                          CommentQuerySchema)
 
@@ -52,20 +52,13 @@ class Posts(MethodView):
                 _, data, name, description = read_arff(full_path)
                 if logged_user.posts.filter_by(data_uuid=data.id).first():
                     abort(422, errors={"json": {"Upload": ["Dataset already exists!"]}})
-                history = []
-                for dic in storage.visual_history(data.id, "http://127.0.0.1:5000/", current_app.static_folder):
-                    history.append(
-                        "<table><tr><td><center><div title='" + dic["help"] + "'>" + dic["transformation"] + "</div>\n"
-                        + f"<button {'disabled' if not dic['stored'] else ''}>\n"
-                          "   <img src='" + dic["avatar"] + "' onClick={\n"
-                        + "       () => {navigator.clipboard.writeText('" + dic['label'] + "')}\n" # not working inside button
-                        + "   } title='" + dic["label"] + "'/><br>→→→→→→</div></center></td><td>\n"
-                        + "</button></td></tr></table>"
-                    )
-                post = Post(author=logged_user, data_uuid=data.id, name=name, description=description, history=history)
+                storage.store(data)
+
+                post = Post(author=logged_user, data_uuid=data.id, name=name, description=description)
+                for dic in storage.visual_history(data.id, current_app.static_folder):
+                    Transformation(**dic, post=post)
                 db.session.add(post)
                 posts.append(post)
-                storage.store(data)
             except DuplicateEntryException:
                 print('Duplicate! Ignored.')
 
