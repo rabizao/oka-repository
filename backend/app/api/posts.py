@@ -49,6 +49,7 @@ class Posts(MethodView):
                 _, data, name, description = read_arff(full_path)
                 if logged_user.posts.filter_by(data_uuid=data.id).first():
                     abort(422, errors={"json": {"Upload": ["Dataset already exists!"]}})
+                # print("nnnnnnnnnnnnnnnnnname", data.history ^ "name")
                 storage.store(data)
 
                 post = Post(author=logged_user, data_uuid=data.id, name=name, description=description)
