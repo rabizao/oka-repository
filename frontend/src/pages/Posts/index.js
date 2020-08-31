@@ -207,47 +207,43 @@ export default function Posts(props) {
                         <div className="flex-row flex-space-between flex-axis-center">
                             <h1 className="color-tertiary">
 
-                                                            <table>
-                                                            <tr>
-                                                                {post.history.map(transformation =>
-                                                                    <td>
-                                                                    <h6>
-                                                                    <table><tr>
-                                                                    <td>
-                                                                    <center>
-                                                                        <div title={transformation.help}>
-                                                                            {transformation.name ? <div className="color-tertiary"><span>&nbsp;&nbsp;</span> {transformation.name} <span className="color-tertiary">&nbsp;?&nbsp;</span></div>: ""}
-                                                                        </div>
-                                                                        <center>
-                                                                        <div className="color-tertiary">
-                                                                            {transformation.name ? "→" : ""}
-                                                                        </div>
-                                                                        </center>
-                                                                </center>
-                                                                    </td>
-                                                                    <td>
-                                                                        <button disabled={transformation.stored ? 'false' : 'true'}>
-                                                                            <img class="rounded" width="35px" src={`http://127.0.0.1:5000/static/${transformation.avatar}`} title={`${transformation.label}`}/>
-                                                                        </button>
-                                                                    </td>
-                                                                    </tr></table>
-                                                                    </h6>
-                                                                    </td>
-                                                                )}
-                                                            </tr>
-                                                            </table>
+                                <table>
+                                <tr>
+                                    <td className="color-tertiary">&nbsp;{name}&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                    <td>
+                                        <img width="50%" src={`http://127.0.0.1:5000/static/${post.data_uuid}.jpg`} title={`${post.data_uuid}`}/>
+                                    </td>
 
-
-                            <table><tr>
-                                <td className="color-tertiary">&nbsp;{name}&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td>
-                                    <img width="50%" src={`http://127.0.0.1:5000/static/${post.data_uuid}.jpg`} title={`${post.data_uuid}`}/>
-                                </td>
-                            </tr></table>
-
-
-
+                                    {post.history.map(transformation =>
+                                        <td>
+                                        <h6>
+                                        <table><tr>
+                                        <td>
+                                            <h6>
+                                            <center>
+                                            <div title={transformation.help}>
+                                                {transformation.name ? <div className="color-tertiary"><span>&nbsp;&nbsp;</span> {transformation.name} <span className="color-tertiary">&nbsp;?&nbsp;</span></div>: ""}
+                                            </div>
+                                            <center>
+                                            <div className="color-tertiary">
+                                                    {transformation.name ? "←" : ""}
+                                            </div>
+                                            </center>
+                                            </center>
+                                            </h6>
+                                        </td>
+                                        <td>
+                                            <button disabled={transformation.stored ? 'false' : 'true'}>
+                                                <img class="rounded" width="35px" src={`http://127.0.0.1:5000/static/${transformation.avatar}`} title={`${transformation.label}`}/>
+                                            </button>
+                                        </td>
+                                        </tr></table>
+                                        </h6>
+                                        </td>
+                                    )}
+                                </tr>
+                                </table>
 
                             </h1>
                             <div>
