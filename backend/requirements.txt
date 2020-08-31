@@ -52,9 +52,6 @@ methodtools==0.4.2
 numpy==1.19.1
 pandas==1.1.0
 patsy==0.5.1
--e git+https://github.com/davips/cururu@master#egg=cururu
--e git+https://github.com/davips/pjdata@master#egg=pjdata
--e git+https://github.com/davips/pjml@master#egg=pjml
 pycryptodome==3.9.8
 pymfe==0.4
 PyMySQL==0.10.0

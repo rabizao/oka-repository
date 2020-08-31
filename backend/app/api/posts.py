@@ -51,10 +51,18 @@ class Posts(MethodView):
                 file.save(full_path)
                 _, data, name, description = read_arff(full_path)
                 if logged_user.posts.filter_by(data_uuid=data.id).first():
-                    abort(422, errors={
-                        "json": {"Upload": ["Dataset already exists!"]}})
-                post = Post(author=logged_user, data_uuid=data.id,
-                            name=name, description=description)
+                    abort(422, errors={"json": {"Upload": ["Dataset already exists!"]}})
+                history = []
+                for dic in storage.visual_history(data.id, "http://127.0.0.1:5000/", current_app.static_folder):
+                    history.append(
+                        "<table><tr><td><center><div title='" + dic["help"] + "'>" + dic["transformation"] + "</div>\n"
+                        + f"<button {'disabled' if not dic['stored'] else ''}>\n"
+                          "   <img src='" + dic["avatar"] + "' onClick={\n"
+                        + "       () => {navigator.clipboard.writeText('" + dic['label'] + "')}\n" # not working inside button
+                        + "   } title='" + dic["label"] + "'/><br>→→→→→→</div></center></td><td>\n"
+                        + "</button></td></tr></table>"
+                    )
+                post = Post(author=logged_user, data_uuid=data.id, name=name, description=description, history=history)
                 db.session.add(post)
                 posts.append(post)
                 storage.store(data)
@@ -170,19 +178,9 @@ class PostsHistoryById(MethodView):
         if not post or not post.active:
             abort(422, errors={"json": {"id": ["Does not exist."]}})
 
-        uuid = UUID(post.data_uuid)
         storage = current_app.config['CURURU_SERVER']
-        data = storage.fetch(UUIDData(uuid))
-        lst = []
-        # TODO: show uuid along with post name in the web interface
-        # Discards data birth (e.g. File).
-        for transformer in reversed(list(data.history)[1:]):
-            uuid = uuid / transformer.uuid  # Revert to previous uuid.
-            data = storage.fetch(UUIDData(uuid))
-            dic = {"label": uuid, "transformation": transformer.name,
-                   "help": str(transformer), "exist": data is not None}
-            lst.append(dic)
-        return list(reversed(lst))
+        # TODO: show uuid-avatar along with post name in the web interface
+        return storage.visual_history(post.data_uuid, "http://127.0.0.1:5000/", current_app.static_folder)
 
 
 @bp.route('/posts/<int:id>/stats')

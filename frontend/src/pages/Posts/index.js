@@ -213,7 +213,7 @@ export default function Posts(props) {
                         </div>
                         <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
                         <h6 className="color-tertiary">{post.downloads} downloads | {post.favorites.length} favorited</h6>
-                        <h6 className="color-tertiary">OID: {post.data_uuid}</h6>
+                        <h6 className="color-tertiary">OID: {post.data_uuid}   hist: {post.history}</h6>
                         <div className="margin-top-very-small" >
                             <button onClick={handleDownload}><CloudDownload className="icon-secondary" /></button>
                             {post.favorites && post.favorites.includes(loggedUser.id) ? <button onClick={handleFavorite}><Favorite className="icon-secondary margin-left-very-small" /></button> : <button onClick={handleFavorite}><FavoriteBorder className="icon-secondary margin-left-very-small" /></button>}
