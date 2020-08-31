@@ -205,7 +205,51 @@ export default function Posts(props) {
                     <div className="flex-row flex-crossaxis-center"><CircularProgress className="icon-tertiary" /></div> :
                     <>
                         <div className="flex-row flex-space-between flex-axis-center">
-                            <h2 className="color-tertiary">{name}</h2>
+                            <h1 className="color-tertiary">
+
+                                                            <table>
+                                                            <tr>
+                                                                {post.history.map(transformation =>
+                                                                    <td>
+                                                                    <h6>
+                                                                    <table><tr>
+                                                                    <td>
+                                                                    <center>
+                                                                        <div title={transformation.help}>
+                                                                            {transformation.name ? <div className="color-tertiary"><span>&nbsp;&nbsp;</span> {transformation.name} <span className="color-tertiary">&nbsp;?&nbsp;</span></div>: ""}
+                                                                        </div>
+                                                                        <center>
+                                                                        <div className="color-tertiary">
+                                                                            {transformation.name ? "→" : ""}
+                                                                        </div>
+                                                                        </center>
+                                                                </center>
+                                                                    </td>
+                                                                    <td>
+                                                                        <button disabled={transformation.stored ? 'false' : 'true'}>
+                                                                            <img class="rounded" width="35px" src={`http://127.0.0.1:5000/static/${transformation.avatar}`} title={`${transformation.label}`}/>
+                                                                        </button>
+                                                                    </td>
+                                                                    </tr></table>
+                                                                    </h6>
+                                                                    </td>
+                                                                )}
+                                                            </tr>
+                                                            </table>
+
+
+                            <table><tr>
+                                <td className="color-tertiary">&nbsp;{name}&nbsp;</td>
+                                <td>&nbsp;</td>
+                                <td>
+                                    <img width="50%" src={`http://127.0.0.1:5000/static/${post.data_uuid}.jpg`} title={`${post.data_uuid}`}/>
+                                </td>
+                            </tr></table>
+
+
+
+
+                            </h1>
                             <div>
                                 <button onClick={handleOpenEdit} className="button-secondary">Edit</button>
                                 <button className="button-secondary margin-left-small">Publish</button>
@@ -213,26 +257,6 @@ export default function Posts(props) {
                         </div>
                         <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
                         <h6 className="color-tertiary">{post.downloads} downloads | {post.favorites.length} favorited</h6>
-                        <h6 className="color-tertiary">OID: {post.data_uuid}   hist: {
-                            post.history.map(transformation =>
-                                <table>
-                                    <tr><td>
-                                        <center>
-                                            <div className="color-tertiary" title={transformation.help}>
-                                                {transformation.name}
-                                            </div>
-                                            <div className="color-tertiary">
-                                                →→→→→→
-                                            </div>
-                                       </center>
-                                    </td><td>
-                                            <button enabled={transformation.stored ? 'true' : 'false'}>
-                                                <img width="35px" src={`http://127.0.0.1:5000/static/${transformation.avatar}`} title={`${transformation.label}`}/>
-                                            </button>
-                                    </td></tr>
-                                </table>
-                            )
-                        }</h6>
                         <div className="margin-top-very-small" >
                             <button onClick={handleDownload}><CloudDownload className="icon-secondary" /></button>
                             {post.favorites && post.favorites.includes(loggedUser.id) ? <button onClick={handleFavorite}><Favorite className="icon-secondary margin-left-very-small" /></button> : <button onClick={handleFavorite}><FavoriteBorder className="icon-secondary margin-left-very-small" /></button>}

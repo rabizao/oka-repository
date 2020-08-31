@@ -230,6 +230,7 @@ class Post(PaginateMixin, db.Model):
 
     name = db.Column(db.String(120), default="No name")
     description = db.Column(db.String(100000), default="No description")
+    # avatar = db.Column(db.String(1000))
 
     downloads = db.Column(db.Integer(), default=0)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
