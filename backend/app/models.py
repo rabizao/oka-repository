@@ -138,7 +138,7 @@ class User(PaginateMixin, db.Model):
         return
 
     def is_admin(self):
-        return self.access == 10
+        return self.role == 10
 
     def update(self, args):
         for key, value in args.items():

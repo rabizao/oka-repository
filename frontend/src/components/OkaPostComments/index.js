@@ -109,6 +109,7 @@ export default function OkaPostComments({ postId }) {
                 NotificationManager.error("Network error", "Error", 4000)
             }
         }
+        setNewComment('');
     }
 
     return (

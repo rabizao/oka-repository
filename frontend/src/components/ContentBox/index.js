@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import { Message, Favorite, FavoriteBorder } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
@@ -16,6 +16,8 @@ export default function ContentBox(props) {
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
     const user = useContext(LoginContext);
+
+    const history = useHistory();
 
     useEffect(() => {
         async function fetchData() {
@@ -71,6 +73,8 @@ export default function ContentBox(props) {
         } else {
             newComments[post.id] = post.comments;
         }
+
+        history.push(`/posts/${post.id}/comments`)
 
         setComments(newComments);
     }

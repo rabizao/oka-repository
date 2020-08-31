@@ -7,8 +7,6 @@ from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_smorest import abort
-from pjdata.aux.uuid import UUID
-from pjdata.content.specialdata import UUIDData
 
 from app import db
 from app.models import User, Post, Comment, Transformation
@@ -51,10 +49,12 @@ class Posts(MethodView):
                 file.save(full_path)
                 _, data, name, description = read_arff(full_path)
                 if logged_user.posts.filter_by(data_uuid=data.id).first():
-                    abort(422, errors={"json": {"Upload": ["Dataset already exists!"]}})
+                    abort(422, errors={
+                          "json": {"Upload": ["Dataset already exists!"]}})
                 storage.store(data)
 
-                post = Post(author=logged_user, data_uuid=data.id, name=name, description=description)
+                post = Post(author=logged_user, data_uuid=data.id,
+                            name=name, description=description)
                 for dic in storage.visual_history(data.id, current_app.static_folder):
                     Transformation(**dic, post=post)
                 db.session.add(post)

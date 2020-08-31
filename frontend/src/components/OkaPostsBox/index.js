@@ -122,14 +122,16 @@ export default function OkaPostsBox({ fetch_url }) {
                                 </button>
                             }
                         </div>
-                        <form className="search-form" onKeyUp={(e) => handleFilter(e)} onSubmit={(e) => handleFilter(e)}>
-                            <input
-                                placeholder="Search..."
-                                value={filter}
-                                onChange={e => setFilter(e.target.value)}
-                            />
-                            <button type="submit"><Search className="icon-primary" /></button>
-                        </form>
+                        {filteredPosts.length > 0 &&
+                            <form className="search-form" onKeyUp={(e) => handleFilter(e)} onSubmit={(e) => handleFilter(e)}>
+                                <input
+                                    placeholder="Search..."
+                                    value={filter}
+                                    onChange={e => setFilter(e.target.value)}
+                                />
+                                <button type="submit"><Search className="icon-primary" /></button>
+                            </form>
+                        }
                     </div>
 
                     {filteredPosts.map(
