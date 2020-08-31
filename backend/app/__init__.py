@@ -24,7 +24,7 @@ def create_app(config_class=Config):
     app = Flask(__name__)
 
     app.config.from_object(config_class)
-    app.config['CURURU_SERVER'] = PickleServer(db="/tmp/cururu")  #app.static_folder)
+    app.config['CURURU_SERVER'] = PickleServer(db=app.static_folder)
 
     db.init_app(app)
     migrate.init_app(app, db)
