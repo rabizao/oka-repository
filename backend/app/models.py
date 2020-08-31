@@ -7,6 +7,7 @@ from app import db
 # from flask import current_app
 import json
 from time import time
+
 # import redis
 # import rq
 
@@ -155,7 +156,7 @@ class User(PaginateMixin, db.Model):
     def followed_posts(self):  # feed
         followed = Post.query.join(
             followers, (followers.c.followed_id == Post.user_id)).filter(
-                followers.c.follower_id == self.id, Post.public is True)
+            followers.c.follower_id == self.id, Post.public is True)
         own = Post.query.filter_by(user_id=self.id)
         return followed.union(own).order_by(Post.timestamp.desc())
 
@@ -207,6 +208,12 @@ class User(PaginateMixin, db.Model):
         return '<User {}>'.format(self.username)
 
 
+class Transformation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    step = db.Column(db.String(120))
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+
+
 class Post(PaginateMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
@@ -214,13 +221,15 @@ class Post(PaginateMixin, db.Model):
     data_uuid = db.Column(db.String(120), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     __table_args__ = (db.UniqueConstraint(
-        'data_uuid', 'user_id', name='_data_user_unique'), )
+        'data_uuid', 'user_id', name='_data_user_unique'),)
 
     name = db.Column(db.String(120), default="No name")
     description = db.Column(db.String(100000), default="No description")
+
     downloads = db.Column(db.Integer(), default=0)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
+    history = db.relationship('Transformation', backref='post', lazy='dynamic')
     tags = db.relationship('Tag', backref='post', lazy='dynamic')
     public = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
