@@ -209,14 +209,14 @@ export default function Posts(props) {
                                 <div>
                                     <img height="100px" src={`http://127.0.0.1:5000/static/${post.data_uuid}.jpg`} title={`${post.data_uuid}`} />
                                 </div>
-                                <div className="flex-column padding-small flex-crossaxis-center">
-                                    <h1 className="color-tertiary">{name}</h1>
-                                    <div className="padding-top-medium">
+                                <div className="flex-column flex-crossaxis-center">
+                                    <h1 className="padding-small color-tertiary">{name}</h1>
+                                    <div className="padding-top-small flex-row">
                                         {
                                             post.history.map(transformation =>
                                                 transformation.name &&
                                                 <div className="flex-row">
-                                                    <div className="flex-column flex-axis-center">
+                                                    <div className="flex-column flex-axis-center padding-left-very-small">
                                                         <span className="color-tertiary" title={transformation.help}>{transformation.name}</span>
                                                         <span className="color-tertiary">←</span>
                                                     </div>
@@ -225,7 +225,7 @@ export default function Posts(props) {
                                                     </div>
                                                 </div>
                                             )
-                                        }
+                                        }                                        
                                     </div>
                                 </div>
                             </div>
