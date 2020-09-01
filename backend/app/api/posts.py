@@ -1,16 +1,18 @@
-from . import bp
-from pjdata.creation import read_arff
-from cururu.persistence import DuplicateEntryException
 import uuid as u
 
 from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_smorest import abort
+
 from app import db
 from app.models import User, Post, Comment, Transformation
 from app.schemas import (PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema,
-                         CommentQuerySchema)
+                         CommentQuerySchema, PostQuerySchemaUUID)
+from cururu.persistence import DuplicateEntryException
+from pjdata.content.specialdata import UUIDData
+from pjdata.creation import read_arff
+from . import bp
 
 
 # noinspection PyArgumentList
@@ -206,3 +208,28 @@ class PostsTwinsById(MethodView):
         data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
                                                           pagination_parameters.page_size, filter_by=filter_by)
         return data
+
+
+@bp.route("/posts/<string:uuid>")
+class PostsOnDemand(MethodView):
+    @jwt_required
+    @bp.response(code=201)
+    def post(self, uuid):
+        """
+        Create a new Post on demand.
+        """
+        storage = current_app.config['CURURU_SERVER']
+        if storage.fetch(UUIDData(uuid)) is None:
+            abort(422, errors={"json": {"OnDemand": [f"UUID {uuid} does not exist!"]}})
+
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
+        if logged_user.posts.filter_by(data_uuid=uuid).first():
+            abort(422, errors={"json": {"OnDemand": ["Dataset already exists!"]}})
+
+        # TODO: refactor duplicate code
+        post = Post(author=logged_user, data_uuid=uuid)
+        for dic in storage.visual_history(uuid, current_app.static_folder):
+            Transformation(**dic, post=post)
+        db.session.add(post)
+        db.session.commit()

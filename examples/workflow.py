@@ -10,13 +10,13 @@ from pjml.tool.data.processing.feature.reductor.pca import PCA
 from util.create import user, token
 
 okatoken = token(*user("okatest", "pass123")[0:2])
-STORAGE_CONFIG["oka"] = {"engine": "oka", "token": okatoken, "post": True}
+STORAGE_CONFIG["oka"] = {"engine": "oka", "token": okatoken, "post": not True}
 
 wflow = Cache(
     File("iris.arff"),
     TsSplit(),  # TsSplit should come before TrSplit to ensure the same original data is used as input for both.
     TrSplit(),
-    PCA(),
+    PCA(n=3),
     SVMC(),
     Metric(enhance=False),
     Report("metric ... R: $R", enhance=False),
