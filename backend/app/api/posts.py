@@ -213,7 +213,7 @@ class PostsTwinsById(MethodView):
 @bp.route("/posts/<string:uuid>")
 class PostsOnDemand(MethodView):
     @jwt_required
-    @bp.response(code=201)
+    @bp.response(PostBaseSchema)
     def post(self, uuid):
         """
         Create a new Post on demand.
@@ -233,3 +233,5 @@ class PostsOnDemand(MethodView):
             Transformation(**dic, post=post)
         db.session.add(post)
         db.session.commit()
+
+        return post

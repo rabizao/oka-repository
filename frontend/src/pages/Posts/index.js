@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 import './styles.css';
 
 import { NotificationManager } from 'react-notifications';
-import { CloudDownload, Favorite, FavoriteBorder } from '@material-ui/icons';
+import { CloudDownload, Favorite, FavoriteBorder, Help } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 import Modal from '@material-ui/core/Modal';
 import { saveAs } from 'file-saver';
@@ -28,6 +28,7 @@ export default function Posts(props) {
     const [descriptionEdit, setDescriptionEdit] = useState('');
 
     const loggedUser = useContext(LoginContext);
+    const history = useHistory();
 
     const textBox = (text) => {
         return (
@@ -52,11 +53,6 @@ export default function Posts(props) {
             "name": "Comments",
             "url": "/posts/" + id + "/comments",
             "content": <OkaPostComments postId={id} />
-        },
-        history: {
-            "name": "History",
-            "url": "/posts/" + id + "/history",
-            "content": textBox("History not implemented yet.")
         },
         visualize: {
             "name": "Visualize",
@@ -170,6 +166,33 @@ export default function Posts(props) {
         }
     }
 
+    function copyToClipboard(e, label) {
+        e.preventDefault();
+        navigator.clipboard.writeText(label);
+        NotificationManager.info("OID copied to clipboard");
+    }
+
+    async function handleCreatePost(e, uuid) {
+        e.preventDefault();
+        if (uuid === "00000000000001") {
+            NotificationManager.info("All histories begin here!", "NoData");
+            return
+        }
+        
+        try {
+            const response = await api.post(`posts/${uuid}`);
+            history.push(`posts/${response.data.id}`);
+        } catch (error) {
+            if (error.response) {
+                for (var prop in error.response.data.errors.json) {
+                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
+                }
+            } else {
+                NotificationManager.error("Network error", "Error", 4000)
+            }
+        }
+    }
+
     return (
         <>
             <Modal
@@ -206,26 +229,29 @@ export default function Posts(props) {
                     <>
                         <div className="flex-row flex-space-between flex-axis-center">
                             <div className="flex-row">
-                                <div>
-                                    <img height="100px" src={`http://127.0.0.1:5000/static/${post.data_uuid}.jpg`} title={`${post.data_uuid}`} />
-                                </div>
+                                <button onClick={(e) => copyToClipboard(e, post.data_uuid)}>
+                                    <img height="100px" src={`http://127.0.0.1:5000/static/${post.data_uuid}.jpg`} title="Copy to clipboard" alt="Copy to clipboard" />
+                                </button>
                                 <div className="flex-column flex-crossaxis-center">
                                     <h1 className="padding-small color-tertiary">{name}</h1>
                                     <div className="padding-top-small flex-row">
                                         {
-                                            post.history.map(transformation =>
+                                            post.history.slice(0).reverse().map((transformation) =>
                                                 transformation.name &&
-                                                <div className="flex-row">
+                                                <div key={transformation.id} className="flex-row">
                                                     <div className="flex-column flex-axis-center padding-left-very-small">
-                                                        <span className="color-tertiary" title={transformation.help}>{transformation.name}</span>
+                                                        <div className="flex-row" title={transformation.help}>
+                                                            <Help className="icon-tertiary" />
+                                                            <span className="color-tertiary">{transformation.name}</span>                                                            
+                                                        </div>
                                                         <span className="color-tertiary">←</span>
                                                     </div>
-                                                    <div className="flex-column flex-crossaxis-center padding-left-very-small">
-                                                        <img height="40px" src={`http://127.0.0.1:5000/static/${transformation.avatar}`} title={`${transformation.label}`} />
-                                                    </div>
+                                                    <button onClick={(e) => handleCreatePost(e, transformation.label)} className="flex-column flex-crossaxis-center padding-left-very-small">
+                                                        <img height="40px" src={`http://127.0.0.1:5000/static/${transformation.avatar}`} title={transformation.label !== "00000000000001"? "Copy to clipboard": ""} alt="Copy to clipboard" />
+                                                    </button>
                                                 </div>
                                             )
-                                        }                                        
+                                        }
                                     </div>
                                 </div>
                             </div>
