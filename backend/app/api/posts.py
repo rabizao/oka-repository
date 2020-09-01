@@ -51,7 +51,7 @@ class Posts(MethodView):
             try:
                 storage.store(data)
             except DuplicateEntryException:
-                print('Duplicate! Ignored.')
+                print('Duplicate! Ignored.', data.id)
             finally:
                 post = Post(author=logged_user, data_uuid=data.id, name=name, description=description)
                 for dic in storage.visual_history(data.id, current_app.static_folder):

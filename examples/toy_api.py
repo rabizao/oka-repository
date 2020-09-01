@@ -15,30 +15,6 @@ print(response.text)
 
 exit()
 
-# CREATE USER
-url_createuser = base_url + 'users'
-
-random_username = "username" + str(random.randint(1, 100000))
-random_password = "password" + str(random.randint(1, 100000))
-random_email = "email@" + str(random.randint(1, 100000)) + ".com"
-
-data_createuser = {"username": random_username,
-                   "password": random_password, "name": "Teste", "email": random_email}
-response_createuser = requests.post(url_createuser, json=data_createuser)
-print(response_createuser.text)
-
-
-# GET AUTHENTICATION TOKEN
-url_login = base_url + 'auth/login'
-
-data_login = {"username": random_username, "password": random_password}
-response_login = requests.post(url_login, json=data_login)
-access_token = response_login.json()['access_token']
-print("####################TOKEN####################\n" + access_token)
-
-headers = {'Authorization': 'Bearer ' + access_token}
-
-url_posts = base_url + 'posts'
 
 
 # Ideia para funcao para criar post no oka

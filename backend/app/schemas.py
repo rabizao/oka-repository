@@ -1,10 +1,11 @@
+from flask_smorest.fields import Upload
+from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate, pre_load
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
 from marshmallow_sqlalchemy.fields import Nested
-from app import db
-from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from werkzeug.security import generate_password_hash
+
+from app import db
 from app.models import User, Post, Comment, Transformation
-from flask_smorest.fields import Upload
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -215,7 +216,14 @@ class PostFilesSchema(SQLAlchemySchema):
 
 
 class CururuUploadSchema(SQLAlchemySchema):
+    # @pre_load  # Diferentes estágios de tratamento dos dados: pre/pos load/dump
+    # def test(self, data, **kwargs):
+    #     print("test, CururuUploadSchema", data, "----------", kwargs)
+    #
+    #     return data
+
     file = Upload()
+    json = Upload()
 
 
 class CururuDownloadSchema(SQLAlchemySchema):
