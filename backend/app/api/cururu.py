@@ -2,6 +2,7 @@ from flask import current_app, send_from_directory
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import json
+from flask_smorest import abort
 
 from app.schemas import (CururuUploadSchema, CururuDownloadSchema)
 from cururu.persistence import DuplicateEntryException
@@ -57,6 +58,8 @@ class CururuData(MethodView):
         if create_post:
             username = get_jwt_identity()
             logged_user = User.get_by_username(username)
+            if logged_user.posts.filter_by(data_uuid=data.id).first():
+                abort(422, errors={"json": {"Upload": ["Dataset already exists!"]}})
             post = Post(author=logged_user, data_uuid=data.id)
             for dic in storage.visual_history(data.id, current_app.static_folder):
                 Transformation(**dic, post=post)
