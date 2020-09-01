@@ -247,7 +247,7 @@ export default function Posts(props) {
                                                         <span className="color-tertiary">←</span>
                                                     </div>
                                                     <button onClick={(e) => handleCreatePost(e, transformation.label)} className="flex-column flex-crossaxis-center padding-left-very-small">
-                                                        <img height="40px" src={`http://127.0.0.1:5000/static/${transformation.avatar}`} title={transformation.label !== "00000000000001"? "Copy to clipboard": ""} alt="Copy to clipboard" />
+                                                        <img height="40px" src={`http://127.0.0.1:5000/static/${transformation.avatar}`} title="Show Dataset" alt="Show Dataset" />
                                                     </button>
                                                 </div>
                                             )

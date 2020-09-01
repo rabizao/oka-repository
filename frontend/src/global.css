@@ -77,6 +77,11 @@ button, input[type="submit"], input[type="reset"] {
     text-overflow: ellipsis;
 }
 
+.nowrap {
+    white-space: nowrap;
+    overflow: hidden;
+}
+
 .padding-bottom-big {
     padding-bottom: 50px;
 }
@@ -367,6 +372,10 @@ button, input[type="submit"], input[type="reset"] {
 
 .width100 {
     width: 100%;
+}
+
+.max-width-big {
+    max-width: 120px;
 }
 
 .modal {

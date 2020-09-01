@@ -5,6 +5,7 @@ import { CheckBoxOutlineBlank, CheckBox, CloudDownload, Search } from '@material
 import { CircularProgress } from '@material-ui/core';
 import { NotificationManager } from 'react-notifications';
 import { saveAs } from 'file-saver';
+import TimeAgo from 'timeago-react';
 
 import api from '../../services/api';
 
@@ -145,11 +146,14 @@ export default function OkaPostsBox({ fetch_url }) {
                                     }
                                 </button>
                                 <Link className="flex-row padding-vertical-small width100" to={`/posts/${post.id}/description`}>
-                                    <div className="ellipsis bold padding-sides-small">
+                                    <div className="bold padding-sides-small max-width-big">
                                         {post.name}
                                     </div>
                                     <div className="ellipsis padding-sides-small">
                                         {post.description}
+                                    </div>
+                                    <div className="padding-sides-small">
+                                        <TimeAgo className="nowrap" datetime={post.timestamp+'Z'}/>
                                     </div>
                                 </Link>
                             </div>
