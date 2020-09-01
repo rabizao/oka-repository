@@ -59,7 +59,11 @@ class CururuData(MethodView):
             logged_user = User.get_by_username(username)
             if logged_user.posts.filter_by(data_uuid=data.id).first():
                 abort(422, errors={"json": {"Upload": ["Dataset already exists!"]}})
-            post = Post(author=logged_user, data_uuid=data.id)
+            post = Post(
+                author=logged_user, data_uuid=data.id,
+                name="←".join([i["name"] for i in reversed(list(data.historystr))]),
+                description="Title and description automatically generated."
+            )
             for dic in storage.visual_history(data.id, current_app.static_folder):
                 Transformation(**dic, post=post)
             db.session.add(post)

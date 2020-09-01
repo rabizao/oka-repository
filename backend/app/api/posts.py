@@ -219,7 +219,8 @@ class PostsOnDemand(MethodView):
         Create a new Post on demand.
         """
         storage = current_app.config['CURURU_SERVER']
-        if storage.fetch(UUIDData(uuid)) is None:
+        data = storage.fetch(UUIDData(uuid))
+        if data is None:
             abort(
                 422, errors={"json": {"OnDemand": [f"Data {uuid} was not cached nor uploaded, so it does not exist!"]}}
             )
@@ -230,7 +231,10 @@ class PostsOnDemand(MethodView):
             abort(422, errors={"json": {"OnDemand": ["Dataset already exists!"]}})
 
         # TODO: refactor duplicate code
-        post = Post(author=logged_user, data_uuid=uuid)
+        post = Post(author=logged_user, data_uuid=uuid,
+                    name="←".join([i["name"] for i in reversed(list(data.historystr))]),
+                    description="Title and description automatically generated."
+                    )
         for dic in storage.visual_history(uuid, current_app.static_folder):
             Transformation(**dic, post=post)
         db.session.add(post)
