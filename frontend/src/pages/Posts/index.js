@@ -51,7 +51,7 @@ export default function Posts(props) {
         comments: {
             "name": "Comments",
             "url": "/posts/" + id + "/comments",
-            "content": <OkaPostComments postId={id}/>
+            "content": <OkaPostComments postId={id} />
         },
         history: {
             "name": "History",
@@ -205,9 +205,32 @@ export default function Posts(props) {
                     <div className="flex-row flex-crossaxis-center"><CircularProgress className="icon-tertiary" /></div> :
                     <>
                         <div className="flex-row flex-space-between flex-axis-center">
-                            <h1 className="color-tertiary">
+                            <div className="flex-row">
+                                <div>
+                                    <img height="100px" src={`http://127.0.0.1:5000/static/${post.data_uuid}.jpg`} title={`${post.data_uuid}`} />
+                                </div>
+                                <div className="flex-column padding-small flex-crossaxis-center">
+                                    <h1 className="color-tertiary">{name}</h1>
+                                    <div className="padding-top-medium">
+                                        {
+                                            post.history.map(transformation =>
+                                                transformation.name &&
+                                                <div className="flex-row">
+                                                    <div className="flex-column flex-axis-center">
+                                                        <span className="color-tertiary" title={transformation.help}>{transformation.name}</span>
+                                                        <span className="color-tertiary">←</span>
+                                                    </div>
+                                                    <div className="flex-column flex-crossaxis-center padding-left-very-small">
+                                                        <img height="40px" src={`http://127.0.0.1:5000/static/${transformation.avatar}`} title={`${transformation.label}`} />
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+                                    </div>
+                                </div>
+                            </div>
 
-                                <table>
+                            {/* <table>
                                 <tr>
                                     <td className="color-tertiary">&nbsp;{name}&nbsp;</td>
                                     <td>&nbsp;</td>
@@ -216,6 +239,8 @@ export default function Posts(props) {
                                     </td>
 
                                     {post.history.map(transformation =>
+
+                                        
                                         <td>
                                         <h6>
                                         <table><tr>
@@ -243,9 +268,9 @@ export default function Posts(props) {
                                         </td>
                                     )}
                                 </tr>
-                                </table>
+                                </table> */}
 
-                            </h1>
+
                             <div>
                                 <button onClick={handleOpenEdit} className="button-secondary">Edit</button>
                                 <button className="button-secondary margin-left-small">Publish</button>

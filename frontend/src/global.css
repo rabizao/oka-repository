@@ -85,6 +85,10 @@ button, input[type="submit"], input[type="reset"] {
     padding-top: 10px;
 }
 
+.padding-top-medium {
+    padding-top: 20px;
+}
+
 .padding-top-big {
     padding-top: 50px
 }
@@ -92,6 +96,14 @@ button, input[type="submit"], input[type="reset"] {
 .padding-sides-small {
     padding-left: 20px;
     padding-right: 20px;
+}
+
+.padding-left-small {
+    padding-left: 20px;
+}
+
+.padding-left-very-small {
+    padding-left: 10px;
 }
 
 .padding-vertical-small {

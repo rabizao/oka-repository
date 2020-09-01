@@ -10,5 +10,7 @@
   "python.linting.flake8Args": [
     "--max-line-length=120",
     "--ignore=E402",
-  ]
+  ],
+  "emmet.syntaxProfiles": {"javascript": "jsx"},
+  "emmet.includeLanguages": {"javascript": "javascriptreact"}
 }
