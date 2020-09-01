@@ -220,7 +220,9 @@ class PostsOnDemand(MethodView):
         """
         storage = current_app.config['CURURU_SERVER']
         if storage.fetch(UUIDData(uuid)) is None:
-            abort(422, errors={"json": {"OnDemand": [f"UUID {uuid} does not exist!"]}})
+            abort(
+                422, errors={"json": {"OnDemand": [f"Data {uuid} was not cached nor uploaded, so it does not exist!"]}}
+            )
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
