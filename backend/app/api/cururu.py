@@ -1,7 +1,8 @@
+import json
+
 from flask import current_app, send_from_directory
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
-import json
 from flask_smorest import abort
 
 from app.schemas import (CururuUploadSchema, CururuDownloadSchema)
@@ -9,8 +10,6 @@ from cururu.persistence import DuplicateEntryException
 from pjdata.aux.compression import unpack, pack
 from pjdata.content.specialdata import UUIDData
 from . import bp
-
-
 # noinspection PyArgumentList
 from .. import db
 from ..models import Transformation, User, Post

@@ -1,5 +1,5 @@
 from flask_smorest.fields import Upload
-from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate, pre_load
+from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
 from marshmallow_sqlalchemy.fields import Nested
 from werkzeug.security import generate_password_hash

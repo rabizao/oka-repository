@@ -2,9 +2,9 @@
 # If you want to access from the same server and do the same kind of operations,
 # there are examples of how to do this in tests.py file.
 
-import requests
 import random
 
+import requests
 
 base_url = 'http://localhost:5000/api/'   # apche/ngix redireciona api p/ porta
 url_downloads = base_url + 'downloads/data?uuids=ġɼпϋæӖƱӌЄɬϳҢğv'
