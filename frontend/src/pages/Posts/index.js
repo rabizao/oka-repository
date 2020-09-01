@@ -181,7 +181,7 @@ export default function Posts(props) {
         
         try {
             const response = await api.post(`posts/${uuid}`);
-            history.push(`posts/${response.data.id}`);
+            history.push(`/posts/${response.data.id}/description`);
         } catch (error) {
             if (error.response) {
                 for (var prop in error.response.data.errors.json) {
@@ -255,48 +255,6 @@ export default function Posts(props) {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* <table>
-                                <tr>
-                                    <td className="color-tertiary">&nbsp;{name}&nbsp;</td>
-                                    <td>&nbsp;</td>
-                                    <td>
-                                        <img width="50%" src={`http://127.0.0.1:5000/static/${post.data_uuid}.jpg`} title={`${post.data_uuid}`}/>
-                                    </td>
-
-                                    {post.history.map(transformation =>
-
-                                        
-                                        <td>
-                                        <h6>
-                                        <table><tr>
-                                        <td>
-                                            <h6>
-                                            <center>
-                                            <div title={transformation.help}>
-                                                {transformation.name ? <div className="color-tertiary"><span>&nbsp;&nbsp;</span> {transformation.name} <span className="color-tertiary">&nbsp;?&nbsp;</span></div>: ""}
-                                            </div>
-                                            <center>
-                                            <div className="color-tertiary">
-                                                    {transformation.name ? "←" : ""}
-                                            </div>
-                                            </center>
-                                            </center>
-                                            </h6>
-                                        </td>
-                                        <td>
-                                            <button disabled={transformation.stored ? 'false' : 'true'}>
-                                                <img class="rounded" width="35px" src={`http://127.0.0.1:5000/static/${transformation.avatar}`} title={`${transformation.label}`}/>
-                                            </button>
-                                        </td>
-                                        </tr></table>
-                                        </h6>
-                                        </td>
-                                    )}
-                                </tr>
-                                </table> */}
-
-
                             <div>
                                 <button onClick={handleOpenEdit} className="button-secondary">Edit</button>
                                 <button className="button-secondary margin-left-small">Publish</button>
