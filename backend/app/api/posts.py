@@ -44,24 +44,22 @@ class Posts(MethodView):
 
         for file in files:
             full_path = current_app.config['TMP_FOLDER'] + str(u.uuid4())
+            file.save(full_path)
+            _, data, name, description = read_arff(full_path)
+            if logged_user.posts.filter_by(data_uuid=data.id).first():
+                abort(422, errors={"json": {"Upload": ["Dataset already exists!"]}})
             try:
-                file.save(full_path)
-                _, data, name, description = read_arff(full_path)
-                if logged_user.posts.filter_by(data_uuid=data.id).first():
-                    abort(422, errors={"json": {"Upload": ["Dataset already exists!"]}})
-                # print("nnnnnnnnnnnnnnnnnname", data.history ^ "name")
                 storage.store(data)
-
+            except DuplicateEntryException:
+                print('Duplicate! Ignored.')
+            finally:
                 post = Post(author=logged_user, data_uuid=data.id, name=name, description=description)
                 for dic in storage.visual_history(data.id, current_app.static_folder):
                     Transformation(**dic, post=post)
                 db.session.add(post)
                 posts.append(post)
-            except DuplicateEntryException:
-                print('Duplicate! Ignored.')
 
         db.session.commit()
-
         return posts
 
 
