@@ -103,6 +103,11 @@ button, input[type="submit"], input[type="reset"] {
     padding-right: 20px;
 }
 
+.padding-sides-medium {
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
 .padding-left-small {
     padding-left: 20px;
 }
@@ -114,6 +119,11 @@ button, input[type="submit"], input[type="reset"] {
 .padding-vertical-small {
     padding-top: 20px;
     padding-bottom: 20px;
+}
+
+.padding-vertical-medium {
+    padding-top: 30px;
+    padding-bottom: 30px;
 }
 
 .padding-vertical-verysmall {
@@ -299,6 +309,11 @@ button, input[type="submit"], input[type="reset"] {
     justify-content: space-between;
 }
 
+.flex-wrap {
+    display: flex;
+    flex-wrap: wrap;
+}
+
 .padding-big {
     padding: 30px
 }
@@ -340,6 +355,10 @@ button, input[type="submit"], input[type="reset"] {
     max-width: max-content;
 }
 
+.cursor-pointer {
+    cursor: pointer;
+}
+
 .wrapword {
     white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
     white-space: -webkit-pre-wrap;          /* Chrome & Safari */ 
@@ -376,6 +395,10 @@ button, input[type="submit"], input[type="reset"] {
 
 .max-width-big {
     max-width: 120px;
+}
+
+.max-width-huge {
+    max-width: 200px;
 }
 
 .modal {
