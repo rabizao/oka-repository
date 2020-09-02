@@ -8,7 +8,6 @@ from pjml.tool.data.flow.file import File
 from pjml.tool.data.modeling.supervised.classifier.svmc import SVMC
 from pjml.tool.data.processing.feature.binarize import Binarize
 from pjml.tool.data.processing.feature.reductor.pca import PCA
-from pjml.workflow import Workflow
 from util.create import user, token
 
 okatoken = token(*user("okatest", "pass123")[0:2])
