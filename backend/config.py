@@ -11,12 +11,12 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    MAIL_SERVER = os.environ.get('MAIL_SERVER')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)
-    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
+    MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
+    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 587)
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') or 1
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    ADMINS = ['your-email@example.com']
+    ADMINS = ['rabizao@gmail.com', 'davips@gmail.com']
     POSTS_PER_PAGE = 25
     TMP_FOLDER = '/tmp/oka/'
     JSON_AS_ASCII = False  # Needed to support UUID short utf8 strings.
@@ -34,7 +34,7 @@ class Config(object):
     CELERY_BROKER_URL = 'redis://localhost:6379/0'
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
-    ACCESS_EXPIRES = timedelta(hours=12)
+    ACCESS_EXPIRES = timedelta(days=15)
     REFRESH_EXPIRES = timedelta(days=30)
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY') or 'testpass'
     JWT_BLACKLIST_ENABLED = True

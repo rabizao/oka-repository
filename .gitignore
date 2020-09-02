@@ -35,6 +35,7 @@ migrations/
 backend/app.db
 frontend/package-lock.json
 backend/app/static/
+.env
 
 # IDE
 .idea/

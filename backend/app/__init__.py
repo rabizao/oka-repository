@@ -10,7 +10,6 @@ from flask_smorest import Api
 from flask_jwt_extended import JWTManager
 from config import Config
 from celery import Celery
-
 from cururu.pickleserver import PickleServer
 
 db = SQLAlchemy()
