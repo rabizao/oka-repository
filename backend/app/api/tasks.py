@@ -27,20 +27,19 @@ def async_job(self, uuid, username):
     """
     Background task to run async jobs
     """
-    print("Starting task related to uuid " + uuid +
-          " that belongs to username " + username)
+    print("Starting task related to uuid " + uuid + " that belongs to username " + username)
 
     self.update_state(state='PROGRESS', meta={
                       'current': 25, 'total': 100, 'status': "25 porcento"})
-    time.sleep(1)
+    time.sleep(20)
 
     self.update_state(state='PROGRESS', meta={
                       'current': 50, 'total': 100, 'status': "50 porcento"})
-    time.sleep(1)
+    time.sleep(20)
 
     self.update_state(state='PROGRESS', meta={
                       'current': 75, 'total': 100, 'status': "75 porcento"})
-    time.sleep(1)
+    time.sleep(20)
 
     task = Task.query.get(self.request.id)
     task.complete = True

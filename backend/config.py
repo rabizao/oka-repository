@@ -16,7 +16,7 @@ class Config(object):
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') or 1
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    ADMINS = ['rabizao@gmail.com', 'davips@gmail.com']
+    ADMINS = ['rabizao@gmail.com', 'dpsabc@gmail.com']
     POSTS_PER_PAGE = 25
     TMP_FOLDER = '/tmp/oka/'
     JSON_AS_ASCII = False  # Needed to support UUID short utf8 strings.
