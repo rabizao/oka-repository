@@ -232,9 +232,12 @@ class Transformation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     label = db.Column(db.String(999))  # Visible text describind Data object.
     name = db.Column(db.String(999))  # Name of the Transformer object.
-    help = db.Column(db.String(99999))  # Complete description of the Transformer object.
-    stored = db.Column(db.Boolean)  # Whether the Data object is already stored in cururu.
-    avatar = db.Column(db.String(999))  # Filename of the icon representing the Data object.
+    # Complete description of the Transformer object.
+    help = db.Column(db.String(99999))
+    # Whether the Data object is already stored in cururu.
+    stored = db.Column(db.Boolean)
+    # Filename of the icon representing the Data object.
+    avatar = db.Column(db.String(999))
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
 
 
@@ -454,3 +457,14 @@ class Token(db.Model):
         if token is None or token.revoked is True:
             return True
         return False
+
+
+class Contact(PaginateMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(140))
+    email = db.Column(db.String(140))
+    message = db.Column(db.Text())
+    active = db.Column(db.Boolean, default=True)
+
+    def __repr__(self):
+        return '<Contact {}>'.format(self.id)

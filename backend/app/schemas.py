@@ -5,7 +5,7 @@ from marshmallow_sqlalchemy.fields import Nested
 from werkzeug.security import generate_password_hash
 
 from app import db
-from app.models import User, Post, Comment, Transformation
+from app.models import User, Post, Comment, Transformation, Contact
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -235,3 +235,18 @@ class DownloadQuerySchema(SQLAlchemySchema):
         unknown = EXCLUDE
 
     uuids = fields.List(fields.String(), required=True)
+
+
+class ContactBaseSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Contact
+
+    id = auto_field(dump_only=True)
+
+
+class TaskBaseSchema(SQLAlchemySchema):
+
+    state = fields.String()
+    current = fields.Integer()
+    total = fields.Integer()
+    status = fields.String()
