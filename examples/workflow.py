@@ -6,6 +6,7 @@ from pjml.tool.data.evaluation.metric import Metric
 from pjml.tool.data.evaluation.split import TrSplit, TsSplit
 from pjml.tool.data.flow.file import File
 from pjml.tool.data.modeling.supervised.classifier.svmc import SVMC
+from pjml.tool.data.processing.feature.binarize import Binarize
 from pjml.tool.data.processing.feature.reductor.pca import PCA
 from pjml.workflow import Workflow
 from util.create import user, token
@@ -16,10 +17,11 @@ STORAGE_CONFIG["okapost"] = {"engine": "okapost", "token": okatoken}
 
 # TODO: multiple caches are not working regarding whether to post
 wflow = Workflow(
-    File("iris.arff"),
+    File("abalone3.arff"),
+    Binarize(),
     TsSplit(),  # TsSplit should come before TrSplit to ensure the same original data is used as input for both.
     TrSplit(),
-    PCA(n=4),
+    PCA(n=3),
     # Cache(PCA(n=4), storage_alias="oka"),
     Report("{id}"),
     SVMC(),
