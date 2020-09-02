@@ -16,16 +16,15 @@ STORAGE_CONFIG["oka"] = {"engine": "oka", "token": okatoken}
 STORAGE_CONFIG["okapost"] = {"engine": "okapost", "token": okatoken}
 
 # TODO: multiple caches are not working regarding whether to post
-wflow = Workflow(
-    File("abalone3.arff"),
-    Binarize(),
-    TsSplit(),  # TsSplit should come before TrSplit to ensure the same original data is used as input for both.
-    TrSplit(),
-    PCA(n=3),
-    # Cache(PCA(n=4), storage_alias="oka"),
-    Report("{id}"),
-    SVMC(),
-    Cache(Metric(enhance=False), storage_alias="okapost"),
-    Report("metric ... R: $R", enhance=False)
-)
+# TIP: TsSplit should come before TrSplit to ensure the same original data is used as input for both.
+wflow = File("abalone3.arff") \
+        * Binarize() \
+        * TsSplit() \
+        * TrSplit() \
+        * Cache(PCA(n=3), storage_alias="oka") \
+        * Report("{id}") \
+        * SVMC(C=0.5) \
+        * Cache(Metric(enhance=False), storage_alias="okapost") \
+        * Report("metric ... R: $R", enhance=False)
+
 train, test = wflow.dual_transform(NoData, NoData)
