@@ -8,13 +8,10 @@ export const isAuthenticated = () => {
     return false;
 }
 
-
 export const getUserId = () => Number(localStorage.getItem('id'));
 export const getUserUsername = () => localStorage.getItem('username');
 export const getUserName = () => localStorage.getItem('name');
-
 export const getToken = () => localStorage.getItem('token');
-
 export const getRefreshToken = () => localStorage.getItem('refresh_token');
 
 export const login = (access_token, refresh_token) => {
@@ -35,6 +32,5 @@ export const is_expired = token => {
 
 export const user_info = token => {
     var decoded_token = jwtDecode(token);
-    console.log(decoded_token);
     return decoded_token;
 }

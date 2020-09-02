@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getToken } from './auth'
+import { getToken, logout } from './auth';
 
 const url = process.env.REACT_APP_URL ? process.env.REACT_APP_URL : "http://localhost:5000";
 
@@ -13,6 +13,17 @@ api.interceptors.request.use(async config => {
 		config.headers.Authorization = `Bearer ${token}`;
 	}
 	return config;
+});
+
+api.interceptors.response.use(function (response) {
+	return response;
+}, function (error) {
+	if (error.response.status === 401) {
+		logout()
+		window.location.href = '/login'
+		return
+	}
+	return Promise.reject(error);
 });
 
 export default api;
