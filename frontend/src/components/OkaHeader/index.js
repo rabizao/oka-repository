@@ -51,18 +51,18 @@ export default function OkaHeader(props) {
                             content=
                             {
                                 <div className="flex-wrap flex-space-between max-width-huge padding-medium">
-                                    <Apps/>
-                                    <Apps/>
-                                    <Apps/>
-                                    <Apps/>
-                                    <Apps/>
-                                    <Apps/>
-                                    <Apps/>
-                                    <Apps/>
-                                    <Apps/>
-                                    <Apps/>
-                                    <Apps/>
-                                    <Apps/>
+                                    <Apps />
+                                    <Apps />
+                                    <Apps />
+                                    <Apps />
+                                    <Apps />
+                                    <Apps />
+                                    <Apps />
+                                    <Apps />
+                                    <Apps />
+                                    <Apps />
+                                    <Apps />
+                                    <Apps />
                                 </div>
                             }
                         />
@@ -73,10 +73,13 @@ export default function OkaHeader(props) {
                             componentClasses="icon-tertiary"
                             content=
                             {
-                                <div className="flex-column flex-axis-center padding-vertical-medium">
-                                    <Link className="padding-sides-medium padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/uploads`}>Notification 1</Link>
-                                    <Link className="padding-sides-medium padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/favorites`}>Notification 2</Link>
-                                </div>
+                                <>
+                                    <h6 className="padding-sides-small padding-top-medium">Notifications</h6>
+                                    <div className="flex-column padding-vertical-small">
+                                        <Link className="padding-sides-small padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/uploads`}>Notification 1</Link>
+                                        <Link className="padding-sides-small padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/favorites`}>Notification 2</Link>
+                                    </div>
+                                </>
                             }
                         />
                     </li>

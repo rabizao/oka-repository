@@ -79,7 +79,7 @@ export default function Home() {
             <OkaHeader />
             <div className="row margin-top-medium">
                 <div className="column">
-                    <div onDragOver={e => handleDragOver(e)} onDrop={e => handleDrop(e)} onClick={e => handleClick(e)} className="padding-big content-box background-hover">
+                    <div onDragOver={e => handleDragOver(e)} onDrop={e => handleDrop(e)} onClick={e => handleClick(e)} className="padding-big content-box margin-very-small background-hover">
                         <div className="flex-column flex-axis-center flex-crossaxis-center">
                             <h2>Upload your arff datasets here</h2>
                             <CloudUpload className="icon-secondary padding-top-small" style={{ fontSize: 80 }} />

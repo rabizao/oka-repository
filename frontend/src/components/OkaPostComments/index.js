@@ -113,7 +113,7 @@ export default function OkaPostComments({ postId }) {
     }
 
     return (
-        <div className="content-box padding-bottom-big">
+        <div className="content-box margin-very-small padding-bottom-big">
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
                 <>

@@ -63,7 +63,7 @@ export default function Search(props) {
                 section === "datasets" ?
                     <OkaPostsBox navItems={navItems} section={section} loading={loadingSection} setLoading={setLoadingSection} /> :
 
-                    <div className="content-box padding-big">
+                    <div className="content-box margin-very-small padding-big">
                         {
                             section === "people" ?
                                 <div>Not supported yet</div> :

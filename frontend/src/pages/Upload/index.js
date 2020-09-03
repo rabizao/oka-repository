@@ -11,7 +11,7 @@ export default function Search() {
             <OkaHeader />
             <div className="row margin-top-medium">
                 <div className="column">
-                    <div className="flex-column flex-axis-center flex-crossaxis-center content-box">
+                    <div className="flex-column flex-axis-center flex-crossaxis-center content-box margin-very-small">
                         <h2>Upload your arff datasets here</h2>
                         <CloudUpload style={{ fill: "#A5DE37", fontSize: 50 }} />
                     </div>

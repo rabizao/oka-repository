@@ -47,7 +47,6 @@ button, input[type="submit"], input[type="reset"] {
     background-color: white;
     border: var(--border);
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    margin: 5px;
 }
 
 .box {
@@ -131,6 +130,11 @@ button, input[type="submit"], input[type="reset"] {
     padding-bottom: 10px;
 }
 
+.margin-sides-verysmall {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
 .margin-vertical-small {
     margin-top: 20px;
     margin-bottom: 20px;
@@ -138,6 +142,10 @@ button, input[type="submit"], input[type="reset"] {
 
 .margin-small {
     margin: 20px;
+}
+
+.margin-very-small {
+    margin: 5px;
 }
 
 .margin-top-big {
@@ -389,6 +397,10 @@ button, input[type="submit"], input[type="reset"] {
     background-color: var(--secondary-color-light);
 }
 
+.background-primary-color {
+    background-color: var(--primary-color);
+}
+
 .width100 {
     width: 100%;
 }
@@ -399,6 +411,10 @@ button, input[type="submit"], input[type="reset"] {
 
 .max-width-huge {
     max-width: 200px;
+}
+
+.width-very-huge {
+    width: 400px;
 }
 
 .modal {
@@ -416,6 +432,20 @@ button, input[type="submit"], input[type="reset"] {
     position: fixed;
     top: 0;
     z-index: 1000;
+}
+
+.inactive {
+    display: none;
+}
+
+.active {
+    display: block;
+}
+
+.fixed-bottom-right {
+    position: fixed;
+    bottom: 0;
+    right: 0;
 }
 
 
