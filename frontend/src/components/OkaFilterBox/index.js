@@ -92,7 +92,7 @@ export default function OkaFilterBox() {
     console.log(filterOptions.Domains);
 
     return (
-        <div className="row-nowrap content-box">
+        <div className="row-nowrap content-box margin-very-small">
             {Object.entries(filterOptions)
                 .map(([option, obj]) =>
                     <div className="flex-column padding-small margin-small">

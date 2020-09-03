@@ -99,7 +99,7 @@ export default function OkaPostsBox({ fetch_url }) {
     }
 
     return (
-        <div className="content-box">
+        <div className="content-box margin-very-small">
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
                 <>

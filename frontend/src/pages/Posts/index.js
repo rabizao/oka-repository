@@ -32,7 +32,7 @@ export default function Posts(props) {
 
     const textBox = (text) => {
         return (
-            <div className="content-box">
+            <div className="content-box margin-very-small">
                 {loadingHero ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
                     <div className="flex-row flex-space-between padding-sides-small padding-vertical-small text-box">

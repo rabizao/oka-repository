@@ -8,6 +8,7 @@
     "axios": "^0.19.2",
     "file-saver": "^2.0.2",
     "jwt-decode": "^2.2.0",
+    "material-ui-popup-state": "^1.6.1",
     "react": "^16.13.1",
     "react-avatar": "^3.9.7",
     "react-dom": "^16.13.1",
