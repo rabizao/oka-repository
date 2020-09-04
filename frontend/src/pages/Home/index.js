@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import { CloudUpload } from '@material-ui/icons';
 import { NotificationManager } from 'react-notifications';
 
@@ -12,6 +12,7 @@ import { LoginContext } from '../../contexts/LoginContext';
 export default function Home() {
     const [acceptedFiles, setAcceptedFiles] = useState([]);
     const [deniedFiles, setDeniedFiles] = useState([]);
+    const fileInputRef = useRef();
 
     const loggedUser = useContext(LoginContext);
 
@@ -23,9 +24,8 @@ export default function Home() {
         return array
     }
 
-    function handleDrop(e) {
-        e.preventDefault();
-        const files = fileListToArray(e.dataTransfer.files);
+    function handleFilesCheck(input) {
+        const files = fileListToArray(input);
         var newAcceptedFiles = [...acceptedFiles]
         var newDeniedFiles = [...deniedFiles]
         for (var i in files) {
@@ -42,12 +42,24 @@ export default function Home() {
         setDeniedFiles(newDeniedFiles)
     }
 
+    function handleDrop(e) {
+        e.preventDefault();
+        handleFilesCheck(e.dataTransfer.files);
+    }
+
     function handleClick(e) {
         console.log("clicou");
+        fileInputRef.current.click();
     }
 
     function handleDragOver(e) {
         e.preventDefault();
+    }
+
+    function handleSelectedFiles() {
+        if (fileInputRef.current.files.length) {
+            handleFilesCheck(fileInputRef.current.files);
+        }
     }
 
     async function handleSubmit() {
@@ -79,25 +91,40 @@ export default function Home() {
             <OkaHeader />
             <div className="row margin-top-medium">
                 <div className="column">
-                    <div onDragOver={e => handleDragOver(e)} onDrop={e => handleDrop(e)} onClick={e => handleClick(e)} className="padding-big content-box margin-very-small background-hover">
-                        <div className="flex-column flex-axis-center flex-crossaxis-center">
-                            <h2>Upload your arff datasets here</h2>
-                            <CloudUpload className="icon-secondary padding-top-small" style={{ fontSize: 80 }} />
+                    <div className="content-box margin-very-small">
+                        <div className="padding-big border-dashed background-hover" onDragOver={e => handleDragOver(e)} onDrop={e => handleDrop(e)} onClick={e => handleClick(e)}>
+                            <input
+                                ref={fileInputRef}
+                                className="inactive"
+                                type="file"
+                                multiple
+                                onChange={handleSelectedFiles}
+                            />
+                            <div className="flex-column flex-axis-center flex-crossaxis-center">
+                                <h2>Upload your arff datasets here</h2>
+                                <CloudUpload className="icon-secondary padding-top-small" style={{ fontSize: 80 }} />
+                            </div>
                         </div>
-                        <ul>
-                            {acceptedFiles.length > 0 && <h4>Accepted files</h4>}
-                            {acceptedFiles.map((file, index) =>
-                                <li key={index}>{file.name}</li>
-                            )}
-                        </ul>
-                        <ul className="margin-top-small">
-                            {deniedFiles.length > 0 && <h4>Denied files</h4>}
-                            {deniedFiles.map((file, index) =>
-                                <li key={index}>{file.name}</li>
-                            )}
-                        </ul>
-                        {acceptedFiles.length > 0 && <button className="margin-top-medium button-primary" onClick={() => handleSubmit()}>Submit</button>}
+                        {
+                            (acceptedFiles.length > 0 || deniedFiles.length > 0) &&
+                            <div className="padding-big">
+                                <ul>
+                                    {acceptedFiles.length > 0 && <h4>Accepted files</h4>}
+                                    {acceptedFiles.map((file, index) =>
+                                        <li key={index}>{file.name}</li>
+                                    )}
+                                </ul>
+                                <ul className="margin-top-small">
+                                    {deniedFiles.length > 0 && <h4>Denied files</h4>}
+                                    {deniedFiles.map((file, index) =>
+                                        <li key={index}>{file.name}</li>
+                                    )}
+                                </ul>
+                                {acceptedFiles.length > 0 && <button className="margin-top-medium button-primary" onClick={() => handleSubmit()}>Submit</button>}
+                            </div>
+                        }
                     </div>
+
                     <ContentBox title="Feed" fetchUrl={"posts"} maxWidth={700} />
                 </div>
                 <div className="column">

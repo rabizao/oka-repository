@@ -85,10 +85,10 @@ export default function ContentBox(props) {
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
                 <>
                     <h2 className="padding-sides-small margin-top-medium">{props.titleLink ? <Link to={props.titleLink}>{props.title}</Link> : props.title}</h2>
+                    {posts.length === 0 ? <h4 className="padding-sides-small margin-top-medium">Nothing to show yet</h4>: 
                     <ul className="content-list margin-top-medium">
                         {posts.map((post, index) =>
                             <li key={post.id} className="flex-column background-hover">
-                                {/* {favorites[post.id] = post.favorited} */}
                                 <div className="content-item flex-row padding-medium">
                                     {!props.hideAvatar && <Link to={`/users/${post.author.username}/uploads`} ><Avatar name={post.author.name} size="40" round={true} /></Link>}
                                     <Link className="width100" to={`/posts/${post.id}/description`}>
@@ -126,6 +126,7 @@ export default function ContentBox(props) {
                             </li>
                         )}
                     </ul>
+                    }
                 </>
             }
         </div>
