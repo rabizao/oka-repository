@@ -92,7 +92,7 @@ export default function Home() {
             <div className="row margin-top-medium">
                 <div className="column">
                     <div className="content-box margin-very-small">
-                        <div className="padding-big border-dashed background-hover" onDragOver={e => handleDragOver(e)} onDrop={e => handleDrop(e)} onClick={e => handleClick(e)}>
+                        <div className="padding-big border-dashed background-hover cursor-pointer" onDragOver={e => handleDragOver(e)} onDrop={e => handleDrop(e)} onClick={e => handleClick(e)}>
                             <input
                                 ref={fileInputRef}
                                 className="inactive"
