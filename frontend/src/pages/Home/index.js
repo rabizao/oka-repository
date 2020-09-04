@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef } from 'react';
-import { CloudUpload } from '@material-ui/icons';
+import { CloudUpload, Clear } from '@material-ui/icons';
 import { NotificationManager } from 'react-notifications';
 
 import './styles.css';
@@ -13,6 +13,7 @@ export default function Home() {
     const [acceptedFiles, setAcceptedFiles] = useState([]);
     const [deniedFiles, setDeniedFiles] = useState([]);
     const fileInputRef = useRef();
+    const dropRegion = useRef();
 
     const loggedUser = useContext(LoginContext);
 
@@ -32,10 +33,8 @@ export default function Home() {
             const extension = files[i].name.split('.')[files[i].name.split('.').length - 1]
             if (extension === "arff") {
                 newAcceptedFiles.push(files[i])
-                console.log("arff");
             } else {
                 newDeniedFiles.push(files[i])
-                console.log("not arff");
             }
         }
         setAcceptedFiles(newAcceptedFiles)
@@ -44,16 +43,23 @@ export default function Home() {
 
     function handleDrop(e) {
         e.preventDefault();
+        e.stopPropagation();
+        dropRegion.current.classList.remove("background-secondary-color-light")
         handleFilesCheck(e.dataTransfer.files);
     }
 
     function handleClick(e) {
-        console.log("clicou");
         fileInputRef.current.click();
     }
 
     function handleDragOver(e) {
+        console.log("dragover")
         e.preventDefault();
+        dropRegion.current.classList.add("background-secondary-color-light")
+    }
+
+    function handleDragLeave() {
+        dropRegion.current.classList.remove("background-secondary-color-light")
     }
 
     function handleSelectedFiles() {
@@ -75,7 +81,6 @@ export default function Home() {
             setDeniedFiles([]);
             NotificationManager.success("Upload successful", "Finished", 4000)
         } catch (error) {
-            console.log(error)
             if (error.response) {
                 for (var prop in error.response.data.errors.json) {
                     NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
@@ -86,13 +91,19 @@ export default function Home() {
         }
     }
 
+    function handleRemoveItem(array, setter, index) {
+        var newArray = [...array];
+        newArray.splice(index, 1);
+        setter(newArray);
+    }
+
     return (
         <>
             <OkaHeader />
             <div className="row margin-top-medium">
                 <div className="column">
                     <div className="content-box margin-very-small">
-                        <div className="padding-big border-dashed background-hover cursor-pointer" onDragOver={e => handleDragOver(e)} onDrop={e => handleDrop(e)} onClick={e => handleClick(e)}>
+                        <div ref={dropRegion} className="padding-big border-dashed background-hover cursor-pointer" onDragOver={e => handleDragOver(e)} onDrop={e => handleDrop(e)} onClick={e => handleClick(e)} onDragLeave={e => handleDragLeave(e)}>
                             <input
                                 ref={fileInputRef}
                                 className="inactive"
@@ -108,19 +119,37 @@ export default function Home() {
                         {
                             (acceptedFiles.length > 0 || deniedFiles.length > 0) &&
                             <div className="padding-big">
-                                <ul>
-                                    {acceptedFiles.length > 0 && <h4>Accepted files</h4>}
-                                    {acceptedFiles.map((file, index) =>
-                                        <li key={index}>{file.name}</li>
-                                    )}
-                                </ul>
-                                <ul className="margin-top-small">
-                                    {deniedFiles.length > 0 && <h4>Denied files</h4>}
-                                    {deniedFiles.map((file, index) =>
-                                        <li key={index}>{file.name}</li>
-                                    )}
-                                </ul>
-                                {acceptedFiles.length > 0 && <button className="margin-top-medium button-primary" onClick={() => handleSubmit()}>Submit</button>}
+                                {acceptedFiles.length > 0 &&
+                                    <>
+                                        <h4 className="padding-small bold">Accepted files</h4>
+                                        {acceptedFiles.map((file, index) =>
+                                            <div key={index} className="flex-row flex-space-between padding-small box background-hover">
+                                                <div>
+                                                    {file.name}
+                                                </div>
+                                                <button onClick={() => handleRemoveItem(acceptedFiles, setAcceptedFiles, index)}>
+                                                    <Clear />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
+                                }
+                                {deniedFiles.length > 0 &&
+                                    <>
+                                        <h4 className="padding-small bold">Denied files</h4>
+                                        {deniedFiles.map((file, index) =>
+                                            <div key={index} className="flex-row flex-space-between padding-small box background-hover">
+                                                <div>
+                                                    {file.name}
+                                                </div>
+                                                <button onClick={() => handleRemoveItem(deniedFiles, setDeniedFiles, index)}>
+                                                    <Clear />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
+                                }
+                                {(acceptedFiles.length > 0 && deniedFiles.length <= 0) && <button className="margin-top-medium button-primary" onClick={() => handleSubmit()}>Submit</button>}
                             </div>
                         }
                     </div>
