@@ -47,7 +47,7 @@ class CururuData(MethodView):
         """
         create_post = json.loads(args["json"].read().decode())["create_post"]
         storage = current_app.config['CURURU_SERVER']
-        data = unpack(args['file'].getbuffer())
+        data = unpack(args['file'].read())
         try:
             storage.store(data)
         except DuplicateEntryException:
