@@ -6,12 +6,15 @@ import './styles.css';
 
 import OkaHeader from '../../components/OkaHeader';
 import ContentBox from '../../components/ContentBox';
+import LinearProgress from '@material-ui/core/LinearProgress';
 import api from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 
 export default function Home() {
     const [acceptedFiles, setAcceptedFiles] = useState([]);
     const [deniedFiles, setDeniedFiles] = useState([]);
+    const [progress, setProgress] = useState(0);
+    const [showProgress, setShowProgress] = useState(false);
     const fileInputRef = useRef();
     const dropRegion = useRef();
 
@@ -53,7 +56,6 @@ export default function Home() {
     }
 
     function handleDragOver(e) {
-        console.log("dragover")
         e.preventDefault();
         dropRegion.current.classList.add("background-secondary-color-light")
     }
@@ -69,14 +71,23 @@ export default function Home() {
     }
 
     async function handleSubmit() {
-        const formData = new FormData();
+        var formData = new FormData();
+        setShowProgress(true);
         acceptedFiles.forEach((value) => {
             formData.append("files", value);
         })
 
-        var headers = { 'Content-Type': "multipart/form-data;" }
+        const config = {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            },
+            onUploadProgress: function (progressEvent) {
+                setProgress(parseInt(Math.round((progressEvent.loaded / progressEvent.total) * 100)))
+            }
+        }
+
         try {
-            await api.post('posts', formData, { headers: headers });
+            await api.post('posts', formData, config);
             setAcceptedFiles([]);
             setDeniedFiles([]);
             NotificationManager.success("Upload successful", "Finished", 4000)
@@ -149,11 +160,17 @@ export default function Home() {
                                         )}
                                     </>
                                 }
+                                {
+                                    showProgress &&
+                                    <div className="flex-row flex-axis-center padding-small box width100">
+                                        <LinearProgress className="padding-sides-small width100" variant="determinate" value={progress} />
+                                        <h5 className="margin-sides-verysmall min-width-small">{progress}%</h5>
+                                    </div>
+                                }
                                 {(acceptedFiles.length > 0 && deniedFiles.length <= 0) && <button className="margin-top-medium button-primary" onClick={() => handleSubmit()}>Submit</button>}
                             </div>
                         }
                     </div>
-
                     <ContentBox title="Feed" fetchUrl={"posts"} maxWidth={700} />
                 </div>
                 <div className="column">

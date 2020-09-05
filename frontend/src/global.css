@@ -413,8 +413,24 @@ button, input[type="submit"], input[type="reset"] {
     max-width: 120px;
 }
 
+.min-width-small {
+    min-width: 40px;
+}
+
+.min-width-big {
+    min-width: 120px;
+}
+
+.min-width-huge {
+    min-width: 200px;
+}
+
 .max-width-huge {
     max-width: 200px;
+}
+
+.max-width-very-huge {
+    max-width: 400px;
 }
 
 .width-very-huge {
