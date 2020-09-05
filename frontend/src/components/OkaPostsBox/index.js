@@ -146,7 +146,7 @@ export default function OkaPostsBox({ fetch_url }) {
                                     }
                                 </button>
                                 <Link className="flex-row padding-vertical-small width100" to={`/posts/${post.id}/description`}>
-                                    <div className="bold padding-sides-small max-width-big">
+                                    <div className="bold padding-sides-small max-width-very-huge min-width-huge ellipsis">
                                         {post.name}
                                     </div>
                                     <div className="ellipsis padding-sides-small">
