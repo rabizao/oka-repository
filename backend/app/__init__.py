@@ -11,12 +11,15 @@ from flask_jwt_extended import JWTManager
 from config import Config
 from celery import Celery
 from cururu.pickleserver import PickleServer
+from flask_socketio import SocketIO
+import eventlet
 
 db = SQLAlchemy()
 migrate = Migrate()
 mail = Mail()
 celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
 jwt = JWTManager()
+socketio = SocketIO()
 
 
 def create_app(config_class=Config):
@@ -31,9 +34,16 @@ def create_app(config_class=Config):
     mail.init_app(app)
     celery.conf.update(app.config)
     jwt.init_app(app)
+    eventlet.monkey_patch()
+
+    socketio.init_app(app,
+                      message_queue=app.config['SOCKETIO_MESSAGE_QUEUE'], async_mode='eventlet',
+                      cors_allowed_origins=app.config['FRONTEND_HOST'])
 
     api = Api()
     api.init_app(app)
+
+    from . import events  # noqa: F401
 
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)

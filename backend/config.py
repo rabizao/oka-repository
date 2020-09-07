@@ -33,6 +33,8 @@ class Config(object):
 
     CELERY_BROKER_URL = 'redis://localhost:6379/0'
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+    SOCKETIO_MESSAGE_QUEUE = CELERY_RESULT_BACKEND
+    FRONTEND_HOST = os.environ.get('FRONTEND_HOST') or "http://localhost:3000"
 
     ACCESS_EXPIRES = timedelta(days=15)
     REFRESH_EXPIRES = timedelta(days=30)
