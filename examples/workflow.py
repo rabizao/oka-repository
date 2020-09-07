@@ -20,10 +20,10 @@ wflow = File("abalone3.arff") \
         * Binarize() \
         * TsSplit() \
         * TrSplit() \
-        * Cache(PCA(n=3), storage_alias="oka") \
+        * PCA(n=3) \
         * Report("{id}") \
         * SVMC(C=0.5) \
         * Cache(Metric(enhance=False), storage_alias="okapost") \
-        * Report("metric ... R: $R", enhance=False)
+        # * Report("metric ... R: $R", enhance=False)
 
 train, test = wflow.dual_transform(NoData, NoData)
