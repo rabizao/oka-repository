@@ -16,7 +16,7 @@ STORAGE_CONFIG["okapost"] = {"engine": "okapost", "token": okatoken}
 
 # TODO: multiple caches are not working regarding whether to post
 # TIP: TsSplit should come before TrSplit to ensure the same original data is used as input for both.
-wflow = File("abalone3.arff") \
+wflow = File("iris.arff") \
         * Binarize() \
         * TsSplit() \
         * TrSplit() \
