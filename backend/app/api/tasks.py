@@ -1,12 +1,13 @@
 from app import mail, celery, db
 from . import bp
-from app.models import User, Task
+from app.models import User, Task, Transformation, Post
 from app.schemas import TaskBaseSchema
-from flask import current_app, jsonify
+from flask import current_app
+from pjdata.creation import read_arff
 from flask.views import MethodView
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 from flask_mail import Message
-import time
+from cururu.persistence import DuplicateEntryException
 
 
 @celery.task
@@ -23,46 +24,48 @@ def send_async_email(message):
 
 
 @celery.task(bind=True)
-def async_job(self, uuid, username):
+def celery_process_data(self, files_path, username):
     """
-    Background task to run async jobs
+    Background task to run async post process
     """
-    print("Starting task related to uuid " + uuid + " that belongs to username " + username)
 
-    self.update_state(state='PROGRESS', meta={
-                      'current': 25, 'total': 100, 'status': "25 porcento"})
-    time.sleep(20)
+    storage = current_app.config['CURURU_SERVER']
+    logged_user = User.get_by_username(username)
+    report = {}
 
-    self.update_state(state='PROGRESS', meta={
-                      'current': 50, 'total': 100, 'status': "50 porcento"})
-    time.sleep(20)
-
-    self.update_state(state='PROGRESS', meta={
-                      'current': 75, 'total': 100, 'status': "75 porcento"})
-    time.sleep(20)
+    for file_path in files_path:
+        actual_index = files_path.index(file_path)
+        self.update_state(state='PROGRESS', meta={
+            'current': actual_index / len(files_path) * 100,
+            'total': 100,
+            'status': f"Processing file {str(actual_index)} of {str(len(files_path))}"
+        })
+        _, data, name, description = read_arff(file_path)
+        if logged_user.posts.filter_by(data_uuid=data.id).first():
+            print("Dataset already exists!")
+            report[data.id] = "Error! Dataset already exist"
+            continue
+        try:
+            storage.store(data)
+        except DuplicateEntryException:
+            print('Duplicate! Ignored.', data.id)
+        finally:
+            report[data.id] = "Success!"
+            post = Post(author=logged_user, data_uuid=data.id,
+                        name=name, description=description)
+            for dic in storage.visual_history(data.id, current_app.static_folder):
+                Transformation(**dic, post=post)
+            db.session.add(post)
 
     task = Task.query.get(self.request.id)
     task.complete = True
     db.session.commit()
 
-    return {'current': 100, 'total': 100, 'status': 'done', 'result': "resultado aqui"}
+    result = {'current': 100, 'total': 100, 'status': 'done', 'result': report}
 
+    # TODO: retornar para o usuario pelo socketio o result
 
-@bp.route('/tasks/<string:uuid>')
-class TasksById(MethodView):
-    @jwt_required
-    @bp.response(code=201)
-    def post(self, uuid):
-        """ Start a new async job """
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
-        job = async_job.apply_async(
-            [uuid, username])  # passando variavel id {id} e username para o apply_async
-        task = Task(id=job.id, name="No name",
-                    description="No description", user=logged_user)
-        db.session.add(task)
-        db.session.commit()
-        return jsonify(job_id=job.id)
+    return result
 
 
 @bp.route('tasks/<string:job_id>/status')

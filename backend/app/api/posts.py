@@ -1,18 +1,16 @@
-import uuid as u
-
 from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_smorest import abort
 
 from app import db
-from app.models import User, Post, Comment, Transformation
+from app.models import User, Post, Comment, Task, Transformation
+from app.api.tasks import celery_process_data
 from app.schemas import (PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema,
                          CommentQuerySchema)
-from cururu.persistence import DuplicateEntryException
 from pjdata.content.specialdata import UUIDData
-from pjdata.creation import read_arff
 from . import bp
+import uuid as u
 
 
 # noinspection PyArgumentList
@@ -33,36 +31,31 @@ class Posts(MethodView):
 
     @jwt_required
     @bp.arguments(PostFilesSchema, location="files")
-    @bp.response(PostBaseSchema(many=True))
+    @bp.response(code=201)
     def post(self, args):
         """
         Create a new post to the logged user
         """
-        storage = current_app.config['CURURU_SERVER']
+
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
         files = args['files']
-        posts = []
+        print(files[0].filename)
+        files_path = []
+        names = []
 
         for file in files:
             full_path = current_app.config['TMP_FOLDER'] + str(u.uuid4())
             file.save(full_path)
-            _, data, name, description = read_arff(full_path)
-            if logged_user.posts.filter_by(data_uuid=data.id).first():
-                abort(422, errors={"json": {"Upload": ["Dataset already exists!"]}})
-            try:
-                storage.store(data)
-            except DuplicateEntryException:
-                print('Duplicate! Ignored.', data.id)
-            finally:
-                post = Post(author=logged_user, data_uuid=data.id, name=name, description=description)
-                for dic in storage.visual_history(data.id, current_app.static_folder):
-                    Transformation(**dic, post=post)
-                db.session.add(post)
-                posts.append(post)
+            files_path.append(full_path)
+            names.append(file.filename)
 
+        job = celery_process_data.apply_async(
+            [files_path, username])  # passando variavel id {id} e username para o apply_async
+        task = Task(id=job.id, name="Data processing",
+                    description="Processing your uploaded files: " + ", ".join(names), user=logged_user)
+        db.session.add(task)
         db.session.commit()
-        return posts
 
 
 @bp.route('/posts/<int:id>')
@@ -157,23 +150,6 @@ class PostsCommentsById(MethodView):
         return comment
 
 
-@bp.route('/posts/<int:id>/history')
-class PostsHistoryById(MethodView):
-    @jwt_required
-    @bp.response(code=200)
-    def get(self, id):
-        """
-        Return the history of a dataset of a post with id {id}
-        """
-        post = Post.query.get(id)
-        if not post or not post.active:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
-
-        storage = current_app.config['CURURU_SERVER']
-        # TODO: show uuid-avatar along with post name in the web interface
-        return storage.visual_history(post.data_uuid, "http://127.0.0.1:5000/", current_app.static_folder)
-
-
 @bp.route('/posts/<int:id>/stats')
 class PostsStatsById(MethodView):
     @jwt_required
@@ -228,11 +204,13 @@ class PostsOnDemand(MethodView):
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
         if logged_user.posts.filter_by(data_uuid=uuid).first():
-            abort(422, errors={"json": {"OnDemand": ["Dataset already exists!"]}})
+            abort(422, errors={
+                  "json": {"OnDemand": ["Dataset already exists!"]}})
 
         # TODO: refactor duplicate code
         post = Post(author=logged_user, data_uuid=uuid,
-                    name="←".join([i["name"] for i in reversed(list(data.historystr))]),
+                    name="←".join([i["name"]
+                                   for i in reversed(list(data.historystr))]),
                     description="Title and description automatically generated."
                     )
         for dic in storage.visual_history(uuid, current_app.static_folder):
