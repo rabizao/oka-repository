@@ -39,21 +39,20 @@ class Posts(MethodView):
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
-        files = args['files']
-        print(files[0].filename)
-        files_path = []
-        names = []
+        
+        original_names = []
+        files = []
 
-        for file in files:
+        for file in args['files']:
             full_path = current_app.config['TMP_FOLDER'] + str(u.uuid4())
             file.save(full_path)
-            files_path.append(full_path)
-            names.append(file.filename)
+            files.append({"path": full_path, "original_name": file.filename})
+            original_names.append(file.filename)
 
         job = celery_process_data.apply_async(
-            [files_path, username])  # passando variavel id {id} e username para o apply_async
+            [files, username])  # passando variavel id {id} e username para o apply_async
         task = Task(id=job.id, name="Data processing",
-                    description="Processing your uploaded files: " + ", ".join(names), user=logged_user)
+                    description="Processing your uploaded files: " + ", ".join(original_names), user=logged_user)
         db.session.add(task)
         db.session.commit()
 

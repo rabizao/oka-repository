@@ -24,7 +24,7 @@ def send_async_email(message):
 
 
 @celery.task(bind=True)
-def celery_process_data(self, files_path, username):
+def celery_process_data(self, files, username):
     """
     Background task to run async post process
     """
@@ -33,24 +33,24 @@ def celery_process_data(self, files_path, username):
     logged_user = User.get_by_username(username)
     report = {}
 
-    for file_path in files_path:
-        actual_index = files_path.index(file_path)
+    for file in files:
+        actual_index = files.index(file)
         self.update_state(state='PROGRESS', meta={
-            'current': actual_index / len(files_path) * 100,
+            'current': actual_index / len(files) * 100,
             'total': 100,
-            'status': f"Processing file {str(actual_index)} of {str(len(files_path))}"
+            'status': f"Processing file {str(actual_index)} of {str(len(files))}"
         })
-        _, data, name, description = read_arff(file_path)
+        _, data, name, description = read_arff(file["path"])
         if logged_user.posts.filter_by(data_uuid=data.id).first():
             print("Dataset already exists!")
-            report[data.id] = "Error! Dataset already exist"
+            report[file["original_name"]] = "Error! Dataset already uploaded"
             continue
         try:
             storage.store(data)
         except DuplicateEntryException:
             print('Duplicate! Ignored.', data.id)
         finally:
-            report[data.id] = "Success!"
+            report[file["original_name"]] = "Success!"
             post = Post(author=logged_user, data_uuid=data.id,
                         name=name, description=description)
             for dic in storage.visual_history(data.id, current_app.static_folder):

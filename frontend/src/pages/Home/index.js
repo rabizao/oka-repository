@@ -90,7 +90,9 @@ export default function Home() {
             await api.post('posts', formData, config);
             setAcceptedFiles([]);
             setDeniedFiles([]);
-            NotificationManager.success("Upload successful", "Finished", 4000)
+            setShowProgress(false);
+            setProgress(0);
+            NotificationManager.success("Upload successful. You can navigate while we process your datasets", "Finished", 10000)
         } catch (error) {
             if (error.response) {
                 for (var prop in error.response.data.errors.json) {
