@@ -39,7 +39,7 @@ class Posts(MethodView):
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
-        
+
         original_names = []
         files = []
 
