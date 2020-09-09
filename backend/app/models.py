@@ -81,7 +81,6 @@ class User(PaginateMixin, db.Model):
     comments = db.relationship('Comment', backref='author', lazy='dynamic')
     tags = db.relationship('Tag', backref='author', lazy='dynamic')
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
-    sessions = db.relationship('Session', backref='user', lazy='dynamic')
     tokens = db.relationship('Token', backref='owner', lazy='dynamic')
     messages_sent = db.relationship('Message',
                                     foreign_keys='Message.sender_id',
@@ -443,11 +442,6 @@ class Task(db.Model):
     # def get_progress(self):
     #     job = self.get_rq_job()
     #     return job.meta.get('progress', 0) if job is not None else 100
-
-
-class Session(db.Model):
-    id = db.Column(db.String(36), primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 
 class Token(db.Model):

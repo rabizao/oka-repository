@@ -212,7 +212,9 @@ class PostEditSchema(SQLAlchemySchema):
 
 
 class PostFilesSchema(SQLAlchemySchema):
+
     files = fields.List(Upload())
+    sid = fields.String()
 
 
 class CururuUploadSchema(SQLAlchemySchema):

@@ -9,6 +9,7 @@ import ContentBox from '../../components/ContentBox';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import api from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
+import { SessionContext } from '../../contexts/SessionContext';
 
 export default function Home() {
     const [acceptedFiles, setAcceptedFiles] = useState([]);
@@ -19,6 +20,7 @@ export default function Home() {
     const dropRegion = useRef();
 
     const loggedUser = useContext(LoginContext);
+    const session = useContext(SessionContext);
 
     function fileListToArray(list) {
         const array = []
@@ -71,8 +73,9 @@ export default function Home() {
     }
 
     async function handleSubmit() {
-        var formData = new FormData();
         setShowProgress(true);
+        var formData = new FormData();
+        formData.append("sid", session.sid);
         acceptedFiles.forEach((value) => {
             formData.append("files", value);
         })

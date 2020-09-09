@@ -24,7 +24,7 @@ def send_async_email(message):
 
 
 @celery.task(bind=True)
-def celery_process_data(self, files, username):
+def celery_process_data(self, files, username, sid):
     """
     Background task to run async post process
     """
@@ -64,9 +64,8 @@ def celery_process_data(self, files, username):
     result = {'current': 100, 'total': 100, 'status': 'done', 'result': report}
 
     # TODO: retornar para o usuario pelo socketio o result
-    for session in logged_user.sessions:
-        print(session)
-        socketio.emit('task_done', {'result': result}, room=session.id)
+
+    socketio.emit('task_done', {'result': result}, room=sid)
 
     return result
 

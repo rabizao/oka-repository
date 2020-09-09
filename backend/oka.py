@@ -1,5 +1,5 @@
 from app import create_app, db, socketio
-from app.models import User, Token, Post, Comment, Tag, Message, Notification, Task, Session
+from app.models import User, Token, Post, Comment, Tag, Message, Notification, Task
 
 app = create_app()
 
@@ -11,4 +11,4 @@ if __name__ == '__main__':
 def make_shell_context():
     return {'db': db, 'User': User, 'Token': Token, 'Post': Post,
             'Comment': Comment, 'Tag': Tag, 'Message': Message,
-            'Notification': Notification, 'Task': Task, 'Session': Session}
+            'Notification': Notification, 'Task': Task}
