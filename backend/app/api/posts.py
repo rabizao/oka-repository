@@ -50,7 +50,7 @@ class Posts(MethodView):
             original_names.append(file.filename)
 
         job = celery_process_data.apply_async(
-            [files, username])  # passando variavel id {id} e username para o apply_async
+            [files, username])
         task = Task(id=job.id, name="Data processing",
                     description="Processing your uploaded files: " + ", ".join(original_names), user=logged_user)
         db.session.add(task)

@@ -173,7 +173,7 @@ export default function Home() {
                             </div>
                         }
                     </div>
-                    <ContentBox title="Feed" fetchUrl={"posts"} maxWidth={700} />
+                    <ContentBox title="Feed" fetchUrl={`/users/${loggedUser.username}/feed`} maxWidth={700} />
                 </div>
                 <div className="column">
                     <ContentBox title="Uploads" titleLink={`/users/${loggedUser.username}/uploads`} fetchUrl={`/users/${loggedUser.username}/posts`} hideAvatar={true} hideAuthor={true} hideActions={true} maxWidth={400} />
