@@ -6,6 +6,7 @@ import './styles.css';
 
 import { LoginContext } from '../../contexts/LoginContext';
 import api from '../../services/api';
+import socket from '../../services/socket';
 
 export default function Register() {
     const history = useHistory();
@@ -29,6 +30,7 @@ export default function Register() {
             localStorage.setItem('username', response.data.username);
             localStorage.setItem('name', response.data.name);
             loginContext.setLogged(true);
+            socket.emit('login', {username: username});
             history.push('/home');
         } catch (error) {
             if (error.response) {

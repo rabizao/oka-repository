@@ -1,4 +1,4 @@
-from app import mail, celery, db
+from app import mail, celery, db, socketio
 from . import bp
 from app.models import User, Task, Transformation, Post
 from app.schemas import TaskBaseSchema
@@ -64,6 +64,9 @@ def celery_process_data(self, files, username):
     result = {'current': 100, 'total': 100, 'status': 'done', 'result': report}
 
     # TODO: retornar para o usuario pelo socketio o result
+    for session in logged_user.sessions:
+        print(session)
+        socketio.emit('task_done', {'result': result}, room=session.id)
 
     return result
 

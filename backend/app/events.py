@@ -1,9 +1,11 @@
-from app import socketio
+from app import socketio, db
 from flask_socketio import emit
+from flask import request
+from app.models import User, Session
 
 
-@socketio.on('my_event')
-def test_message(message):
+@socketio.on('task_done')
+def task_done(message):
     print("event disparado", message['data'])
 
 
@@ -14,11 +16,24 @@ def broadcast_message(message):
 
 
 @socketio.on('connect')
-def test_connect():
+def connect():
     print('Client connected')
-    emit('my response', {'data': 'Connected'})
+    print(request.sid)
+
+
+@socketio.on('login')
+def login(message):
+    print('Client logged')
+    logged_user = User.get_by_username(message["username"])
+    session = Session(id=request.sid, user=logged_user)
+    db.session.add(session)
+    db.session.commit()
 
 
 @socketio.on('disconnect')
-def test_disconnect():
+def disconnect():
     print('Client disconnected')
+    session = Session.query.get(request.sid)
+    if session:
+        db.session.delete(session)
+        db.session.commit()
