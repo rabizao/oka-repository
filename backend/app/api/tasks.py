@@ -54,7 +54,7 @@ def celery_process_data(self, files, username, sid):
             post = Post(author=logged_user, data_uuid=data.id,
                         name=name, description=description)
             for dic in storage.visual_history(data.id, current_app.static_folder):
-                Transformation(**dic, post=post)
+                db.session.add(Transformation(**dic, post=post))
             db.session.add(post)
 
     task = Task.query.get(self.request.id)
