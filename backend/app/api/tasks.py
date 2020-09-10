@@ -29,7 +29,6 @@ def celery_process_data(self, files, username, sid):
     Background task to run async post process
     """
 
-    storage = current_app.config['CURURU_SERVER']
     logged_user = User.get_by_username(username)
     report = {}
 
@@ -41,18 +40,21 @@ def celery_process_data(self, files, username, sid):
             'status': f"Processing file {str(actual_index)} of {str(len(files))}"
         })
         _, data, name, description = read_arff(file["path"])
+
         if logged_user.posts.filter_by(data_uuid=data.id).first():
             print("Dataset already exists!")
             report[file["original_name"]] = "Error! Dataset already uploaded"
             continue
+
+        storage = current_app.config['CURURU_SERVER']
         try:
             storage.store(data)
         except DuplicateEntryException:
             print('Duplicate! Ignored.', data.id)
         finally:
             report[file["original_name"]] = "Success!"
-            post = Post(author=logged_user, data_uuid=data.id,
-                        name=name, description=description)
+            # noinspection PyArgumentList
+            post = Post(author=logged_user, data_uuid=data.id, name=name, description=description)
             for dic in storage.visual_history(data.id, current_app.static_folder):
                 db.session.add(Transformation(**dic, post=post))
             db.session.add(post)

@@ -52,8 +52,12 @@ class Posts(MethodView):
             original_names.append(file.filename)
 
         job = celery_process_data.apply_async([files, username, argsForm["sid"]])
-        task = Task(id=job.id, name="Data processing",
-                    description="Processing your uploaded files: " + ", ".join(original_names), user=logged_user)
+        task = Task(
+            id=job.id,
+            name="Data processing",
+            description="Processing your uploaded files: " + ", ".join(original_names),
+            user=logged_user
+        )
         db.session.add(task)
         db.session.commit()
 
