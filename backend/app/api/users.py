@@ -134,6 +134,29 @@ class UsersFavorites(MethodView):
         return data
 
 
+@bp.route('/users/<string:username>/feed')
+class UsersFeed(MethodView):
+    @jwt_required
+    @bp.arguments(PostQuerySchema, location="query")
+    @bp.response(PostBaseSchema(many=True))
+    @bp.paginate()
+    def get(self, args, pagination_parameters, username):
+        """
+        Show all posts that belong to user with username {username}
+        """
+        logged_user = User.get_by_username(get_jwt_identity())
+        user = User.get_by_username(username)
+        if not user or user != logged_user:
+            abort(422, errors={"json": {"username": ["Does not exist."]}})
+
+        posts = logged_user.followed_posts().paginate(pagination_parameters.page,
+                                                      pagination_parameters.page_size,
+                                                      False)
+        pagination_parameters.item_count = posts.total
+
+        return posts.items
+
+
 @bp.route('/users/<string:username>/follow')
 class UsersFollow(MethodView):
     @jwt_required

@@ -32,8 +32,9 @@ class Posts(MethodView):
 
     @jwt_required
     @bp.arguments(PostFilesSchema, location="files")
+    @bp.arguments(PostFilesSchema, location="form")
     @bp.response(code=201)
-    def post(self, args):
+    def post(self, argsFiles, argsForm):
         """
         Create a new post to the logged user
         """
@@ -44,14 +45,14 @@ class Posts(MethodView):
         original_names = []
         files = []
 
-        for file in args['files']:
+        for file in argsFiles['files']:
             full_path = current_app.config['TMP_FOLDER'] + str(u.uuid4())
             file.save(full_path)
             files.append({"path": full_path, "original_name": file.filename})
             original_names.append(file.filename)
 
         job = celery_process_data.apply_async(
-            [files, username])  # passando variavel id {id} e username para o apply_async
+            [files, username, argsForm["sid"]])
         task = Task(id=job.id, name="Data processing",
                     description="Processing your uploaded files: " + ", ".join(original_names), user=logged_user)
         db.session.add(task)

@@ -2,8 +2,8 @@ from app import socketio
 from flask_socketio import emit
 
 
-@socketio.on('my_event')
-def test_message(message):
+@socketio.on('task_done')
+def task_done(message):
     print("event disparado", message['data'])
 
 
@@ -14,11 +14,10 @@ def broadcast_message(message):
 
 
 @socketio.on('connect')
-def test_connect():
+def connect():
     print('Client connected')
-    emit('my response', {'data': 'Connected'})
 
 
 @socketio.on('disconnect')
-def test_disconnect():
+def disconnect():
     print('Client disconnected')
