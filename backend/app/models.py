@@ -1,4 +1,4 @@
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, asc, text, desc
 from datetime import datetime
 from werkzeug.security import check_password_hash
 from app import db
@@ -257,7 +257,7 @@ class Post(PaginateMixin, db.Model):
     downloads = db.Column(db.Integer(), default=0)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
-    history = db.relationship('Transformation', backref='post', lazy='dynamic')
+    history = db.relationship('Transformation', backref='post', lazy='dynamic', order_by=asc(Transformation.id))
     tags = db.relationship('Tag', backref='post', lazy='dynamic')
     public = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
