@@ -7,8 +7,9 @@ from app import db
 from app.models import User, Post, Comment, Task, Transformation
 from app.api.tasks import celery_process_data
 from app.schemas import (PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema,
-                         CommentQuerySchema)
+                         CommentQuerySchema, TransformQuerySchema)
 from pjdata.content.specialdata import UUIDData
+from pjml.tool.data.evaluation.tssplit import TsSplit
 from . import bp
 import uuid as u
 
@@ -180,9 +181,32 @@ class PostsTwinsById(MethodView):
             abort(422, errors={"json": {"id": ["Does not exist."]}})
 
         filter_by = {"active": True, "data_uuid": post.data_uuid, "id": not id}
-        data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
-                                                          pagination_parameters.page_size, filter_by=filter_by)
+        data, pagination_parameters.item_count = Post.get(
+            args, pagination_parameters.page, pagination_parameters.page_size, filter_by=filter_by
+        )
         return data
+
+
+@bp.route('/posts/<int:id>/transform')
+class PostsTransformById(MethodView):
+    @jwt_required
+    @bp.arguments(TransformQuerySchema, location="query")
+    def get(self, args, id):
+        """
+        Return the twins of a post with id {id}
+        """
+        post = Post.query.get(id)
+        if not post:
+            abort(422, errors={"json": {"id": ["Does not exist."]}})
+
+        storage = current_app.config['CURURU_SERVER']
+        data = storage.fetch(UUIDData(post.data_uuid))
+
+        transformer = args["transformer"]
+        if transformer == "tssplit":
+            return TsSplit().enhancer.transform(data)
+        else:
+            abort(422, errors={"json": {"transformer": ["Does not exist."]}})
 
 
 @bp.route("/posts/<string:uuid>")
@@ -204,7 +228,7 @@ class PostsOnDemand(MethodView):
         logged_user = User.get_by_username(username)
         if logged_user.posts.filter_by(data_uuid=uuid).first():
             abort(422, errors={
-                  "json": {"OnDemand": ["Dataset already exists!"]}})
+                "json": {"OnDemand": ["Dataset already exists!"]}})
 
         # TODO: refactor duplicate code
         post = Post(author=logged_user, data_uuid=uuid,

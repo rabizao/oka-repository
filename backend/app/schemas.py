@@ -50,6 +50,13 @@ class UserQuerySchema(SQLAlchemySchema):
     username = fields.String()
 
 
+class TransformQuerySchema(SQLAlchemySchema):
+    class Meta:
+        unknown = EXCLUDE
+
+    transformer = fields.String()   # TODO: trocar p/ transformer UUID no futuro
+
+
 class PostQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
