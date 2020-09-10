@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import './styles.css';
+import { useHistory } from 'react-router-dom';
 
-export default function OkaFilterBox() {
+export default function OkaFilterBox(props) {
+    const history = useHistory();
+    const query = props.query || "?";
 
     const filterOptions = {
         Tasks: [
@@ -68,7 +71,7 @@ export default function OkaFilterBox() {
             },
             {
                 title: "Numerical",
-                tag: "categorical"
+                tag: "numerical"
             },
             {
                 title: "Text",
@@ -89,15 +92,17 @@ export default function OkaFilterBox() {
         ]
     }
 
-    console.log(filterOptions.Domains);
+    function handleSelection(tag) {
+        history.push(query.concat("&", tag, "=true"));
+    }
 
     return (
         <div className="row-nowrap content-box margin-very-small">
             {Object.entries(filterOptions)
                 .map(([option, obj]) =>
-                    <div className="flex-column padding-small margin-small">
+                    <div key={option} className="flex-column padding-small margin-small">
                         <h3 className="padding-vertical-verysmall">{option}</h3>
-                        {obj.map((item) => <span className="box padding-small"><h6>{item.title}</h6></span>)}
+                        {obj.map((item) => <button key={item.tag} onClick={() => handleSelection(item.tag)} className="box padding-small"><h6>{item.title}</h6></button>)}
                     </div>
                 )}
         </div>

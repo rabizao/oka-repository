@@ -13,12 +13,12 @@ import PopOver from '../PopOver';
 export default function OkaHeader(props) {
 
     const history = useHistory();
-    const [search, setSearch] = useState(props.query);
+    const [search, setSearch] = useState(props.query || "");
     const loggedUser = useContext(LoginContext);
 
     function handleSearch(e) {
         e.preventDefault();
-        history.push('/search/datasets?query=' + search);
+        history.push('/search/datasets?name=' + search);
     }
 
     function handleLogout() {

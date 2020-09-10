@@ -12,67 +12,63 @@ import OkaPostsBox from '../../components/OkaPostsBox';
 export default function Search(props) {
     const location = useLocation();
     const section = props.match.params.section;
-    const queries = queryString.parse(location.search);
-    const query = queries.query ? queries.query : "";
-    const queryStr = query ? `?query=${query}` : "";
-    const [loadingSection, setLoadingSection] = useState(true);
+    const parsedQueries = queryString.parse(location.search);
 
     const [filter, setFilter] = useState(false);
+
+    const textBox = (text) => {
+        return (
+            <div className="content-box margin-very-small">
+                <div className="flex-row flex-space-between padding-sides-small padding-vertical-small text-box">
+                    {text}
+                </div>
+            </div>
+        )
+    }
+
+    const datasets = () => {
+        return (
+            <div className="content-box margin-very-small">
+                <button className="button-primary margin-small" onClick={() => setFilter(!filter)}>
+                    {filter ? "Clear Filters" : "Filter"}
+                </button>
+                {filter &&
+                    <div className="padding-sides-small padding-bottom-medium">
+                        <OkaFilterBox query={location.search} />
+                    </div>
+                }
+                <OkaPostsBox fetch_url={"/posts" + location.search} />
+            </div>
+        )
+    }
 
     const navItems = {
         datasets: {
             "name": "Datasets",
-            "url": "/search/datasets" + queryStr,
-            "fetch_url": "/search/datasets" + queryStr
+            "url": "/search/datasets" + location.search,
+            "content": datasets()
         },
         people: {
             "name": "People",
-            "url": "/search/people" + queryStr,
-            "fetch_url": "/search/people" + queryStr
+            "url": "/search/people" + location.search,
+            "content": textBox("People not implemented yet.")
         },
         tags: {
             "name": "Tags",
-            "url": "/search/tags" + queryStr,
-            "fetch_url": "/search/tags" + queryStr
+            "url": "/search/tags" + location.search,
+            "content": textBox("Tags not implemented yet.")
         }
     }
 
     return (
         <>
-            <OkaHeader query={query} />
+            <OkaHeader query={parsedQueries.name} />
             <div className="oka-hero-background padding-sides-small padding-top-big">
-                <h3 className="color-tertiary">{query ? `Search results for: ${query}` : `Browsing all ${section}`}</h3>
-                {section === "datasets" &&
-                    <button className="button-secondary margin-vertical-small" onClick={() => setFilter(!filter)}>
-                        {filter ? "Clear Filters" : "Filter"}
-                    </button>
-                }
+                <h3 className="color-tertiary">{parsedQueries.name ? `Search results for: ${parsedQueries.name}` : `Browsing all ${section}`}</h3>
             </div>
 
-            <OkaNavBar navItems={navItems} setLoading={setLoadingSection} />
-
-            {section === "datasets" &&
-                (filter &&
-                    <div className="padding-sides-small padding-top-medium">
-                        <OkaFilterBox />
-                    </div>
-                )
-            }
-
-            {
-                section === "datasets" ?
-                    <OkaPostsBox navItems={navItems} section={section} loading={loadingSection} setLoading={setLoadingSection} /> :
-
-                    <div className="content-box margin-very-small padding-big">
-                        {
-                            section === "people" ?
-                                <div>Not supported yet</div> :
-                                section === "tags" ?
-                                    <div>Not supported yet</div> :
-                                    <div>Not found</div>
-                        }
-                    </div>
-            }
+            <OkaNavBar navItems={navItems} />
+            {section in navItems ? <>{navItems[section].content}</> : textBox("Section not found.")}
         </>
     )
 }

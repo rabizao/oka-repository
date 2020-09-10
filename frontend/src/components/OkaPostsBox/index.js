@@ -123,16 +123,14 @@ export default function OkaPostsBox({ fetch_url }) {
                                 </button>
                             }
                         </div>
-                        {filteredPosts.length > 0 &&
-                            <form className="search-form" onKeyUp={(e) => handleFilter(e)} onSubmit={(e) => handleFilter(e)}>
-                                <input
-                                    placeholder="Search..."
-                                    value={filter}
-                                    onChange={e => setFilter(e.target.value)}
-                                />
-                                <button type="submit"><Search className="icon-primary" /></button>
-                            </form>
-                        }
+                        <form className="search-form" onKeyUp={(e) => handleFilter(e)} onSubmit={(e) => handleFilter(e)}>
+                            <input
+                                placeholder="Search..."
+                                value={filter}
+                                onChange={e => setFilter(e.target.value)}
+                            />
+                            <button type="submit"><Search className="icon-primary" /></button>
+                        </form>
                     </div>
 
                     {filteredPosts.map(
@@ -153,7 +151,7 @@ export default function OkaPostsBox({ fetch_url }) {
                                         {post.description}
                                     </div>
                                     <div className="padding-sides-small">
-                                        <TimeAgo className="nowrap" datetime={post.timestamp+'Z'}/>
+                                        <TimeAgo className="nowrap" datetime={post.timestamp + 'Z'} />
                                     </div>
                                 </Link>
                             </div>
