@@ -54,7 +54,7 @@ class TransformQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
-    transformer = fields.String()   # TODO: trocar p/ transformer UUID no futuro
+    transformer = fields.String(required=True)   # TODO: trocar p/ transformer UUID no futuro
 
 
 class PostQuerySchema(SQLAlchemySchema):
