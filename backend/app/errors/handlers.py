@@ -5,7 +5,7 @@ from flask import jsonify
 
 @bp.app_errorhandler(404)
 def not_found_error(error):
-    return jsonify(errors={"json": {"url": ["Does not exist."]}}), 404
+    return jsonify(errors={"json": {"url": ["Does not exist. [handlers]"]}}), 404
 
 
 @bp.app_errorhandler(500)

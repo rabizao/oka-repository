@@ -18,7 +18,7 @@ class CommentsRepliesById(MethodView):
         """
         comment = Comment.query.get(id)
         if not comment or not comment.active:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         replies = comment.replies
         pagination_parameters.item_count = replies.count()
@@ -34,7 +34,7 @@ class CommentsRepliesById(MethodView):
         """
         comment = Comment.query.get(id)
         if not comment or not comment.active:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)

@@ -63,5 +63,5 @@ class ContactsById(MethodView):
 
         contact = Contact.query.get(id)
         if not contact or not contact.active:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
         return contact

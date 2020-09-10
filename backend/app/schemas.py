@@ -139,7 +139,7 @@ class UserLoginSchema(UserBaseSchema):
         user = User.get_by_username(data["username"])
         if not user:
             raise ValidationError(field_name="username",
-                                  message="Does not exist.")
+                                  message="Does not exist. [" + self.__class__.__name__ + "]")
         if not user.active:
             raise ValidationError(field_name="username",
                                   message="Your account was deleted.")

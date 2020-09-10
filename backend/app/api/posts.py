@@ -68,7 +68,7 @@ class PostsById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
         return post
 
     @jwt_required
@@ -82,7 +82,7 @@ class PostsById(MethodView):
         post = Post.query.get(id)
 
         if not post or not post.active:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         if not logged_user.is_admin():
             if logged_user != post.author:
@@ -103,7 +103,7 @@ class PostsFavoriteById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
@@ -125,7 +125,7 @@ class PostsCommentsById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         order_by = getattr(Comment.timestamp, args['order_by'])()
         comments = post.comments.order_by(order_by)
@@ -142,7 +142,7 @@ class PostsCommentsById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
@@ -161,7 +161,7 @@ class PostsStatsById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         # uuid = post.data_uuid
         # TODO
@@ -179,7 +179,7 @@ class PostsTwinsById(MethodView):
         """
         post = Post.query.get(id)
         if not post:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         filter_by = {"active": True, "data_uuid": post.data_uuid, "id": not id}
         data, pagination_parameters.item_count = Post.get(
@@ -198,7 +198,7 @@ class PostsTransformById(MethodView):
         """
         post = Post.query.get(id)
         if not post:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            abort(422, errors={"json": {"id": ["Does not existppp."]}})
 
         storage = current_app.config['CURURU_SERVER']
         data = storage.fetch(UUIDData(post.data_uuid))
@@ -207,7 +207,7 @@ class PostsTransformById(MethodView):
         if transformer == "tssplit":
             return TsSplit().enhancer.transform(data)
         else:
-            abort(422, errors={"json": {"transformer": ["Does not exist."]}})
+            abort(422, errors={"json": {"transformer": ["Does not existtt."]}})
 
 
 @bp.route("/posts/<string:uuid>")

@@ -41,7 +41,7 @@ class UsersById(MethodView):
         """
         user = User.get_by_username(username)
         if not user or not user.active:
-            abort(422, errors={"json": {"username": ["Does not exist."]}})
+            abort(422, errors={"json": {"username": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
         return user
 
     @jwt_required
@@ -55,7 +55,7 @@ class UsersById(MethodView):
         user = User.get_by_username(username)
 
         if not user:
-            abort(422, errors={"json": {"username": ["Does not exist."]}})
+            abort(422, errors={"json": {"username": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
         if not user.active:
             abort(422, errors={
                   "json": {"username": ["Your account was deleted."]}})
@@ -78,7 +78,7 @@ class UsersById(MethodView):
         logged_user = User.get_by_username(get_jwt_identity())
 
         if not User.query.get(username):
-            abort(422, errors={"json": {"username": ["Does not exist."]}})
+            abort(422, errors={"json": {"username": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         if not logged_user.is_admin():
             if logged_user.username != username:
@@ -103,7 +103,7 @@ class UsersPosts(MethodView):
         """
         user = User.get_by_username(username)
         if not user:
-            abort(422, errors={"json": {"username": ["Does not exist."]}})
+            abort(422, errors={"json": {"username": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
         filter_by = {"active": True, "author": user}
         order_by = Post.timestamp.desc()
         data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
@@ -124,7 +124,7 @@ class UsersFavorites(MethodView):
         """
         user = User.get_by_username(username)
         if not user:
-            abort(422, errors={"json": {"username": ["Does not exist."]}})
+            abort(422, errors={"json": {"username": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
         filter_by = {"active": True}
         filter = [getattr(User, 'favorited')]
         order_by = Post.timestamp.desc()
@@ -147,7 +147,7 @@ class UsersFeed(MethodView):
         logged_user = User.get_by_username(get_jwt_identity())
         user = User.get_by_username(username)
         if not user or user != logged_user:
-            abort(422, errors={"json": {"username": ["Does not exist."]}})
+            abort(422, errors={"json": {"username": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         posts = logged_user.followed_posts().paginate(pagination_parameters.page,
                                                       pagination_parameters.page_size,
@@ -168,7 +168,7 @@ class UsersFollow(MethodView):
         user = User.get_by_username(username)
         logged_user = User.get_by_username(get_jwt_identity())
         if not user:
-            abort(422, errors={"json": {"username": ["Does not exist."]}})
+            abort(422, errors={"json": {"username": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
         if logged_user.is_following(user):
             logged_user.unfollow(user)
         else:
