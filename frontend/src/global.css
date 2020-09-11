@@ -89,6 +89,10 @@ button, input[type="submit"], input[type="reset"] {
     padding-bottom: 50px;
 }
 
+.padding-bottom-medium {
+    padding-bottom: 30px;
+}
+
 .padding-top-small {
     padding-top: 10px;
 }
