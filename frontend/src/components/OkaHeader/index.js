@@ -18,7 +18,7 @@ export default function OkaHeader(props) {
 
     function handleSearch(e) {
         e.preventDefault();
-        history.push('/search/datasets?name=' + search);
+        history.push('/search/datasets?name=' + search + "&logic=and");
     }
 
     function handleLogout() {

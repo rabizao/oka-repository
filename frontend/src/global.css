@@ -4,7 +4,8 @@
     --secondary-color: #A5DE37;
     --secondary-color-light: rgba(196,196,196, 0.15);
     --tertiary-color: rgba(255,255,255, 1.0);
-    --tertiary-color-light: rgba(255,255,255, 0.60);
+    --tertiary-color-light: rgba(255,255,255, 0.60); 
+    --error-color: #bd362f;
     --transition-time: 0.4s;
     --border: 1px solid #e5e5e5;
 }
@@ -146,6 +147,11 @@ button, input[type="submit"], input[type="reset"] {
 .margin-vertical-small {
     margin-top: 20px;
     margin-bottom: 20px;
+}
+
+.margin-vertical-verysmall {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .margin-small {
@@ -301,6 +307,18 @@ button, input[type="submit"], input[type="reset"] {
 
 .button-secondary:hover {
     background-color: white;
+}
+
+.button-negative {
+    background-color: var(--error-color);
+    color: var(--tertiary-color);
+    padding: 18px;
+    border-radius: 10px;
+    transition-duration: var(--transition-time);
+}
+
+.button-negative:hover {
+    color: var(--primary-color);
 }
 
 .nav-button-secondary {
@@ -592,7 +610,7 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .notification-error {
-  background-color: #bd362f;
+  background-color: var(--error-color);
 }
 
 .notification-error:before {

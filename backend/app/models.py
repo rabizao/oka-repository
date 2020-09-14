@@ -1,4 +1,4 @@
-from sqlalchemy import or_, and_, asc, text, desc
+from sqlalchemy import or_, and_, asc
 from datetime import datetime
 from werkzeug.security import check_password_hash
 from app import db
