@@ -7,7 +7,7 @@ import { NotificationManager } from 'react-notifications';
 import { saveAs } from 'file-saver';
 import TimeAgo from 'timeago-react';
 
-import api from '../../services/api';
+import api, { downloadsUrl } from '../../services/api';
 
 export default function OkaPostsBox({ fetch_url }) {
     const [selection, setSelection] = useState([]);
@@ -67,25 +67,34 @@ export default function OkaPostsBox({ fetch_url }) {
     }
 
     async function handleDownload() {
-        console.log(selection);
-
         try {
             var serializedSelection = JSON.stringify(selection);
             serializedSelection = serializedSelection.replace(/","/g, '&uuids=').replace('["', "").replace('"]', "")
-            const response = await api.get('/downloads/data?uuids=' + serializedSelection, { responseType: ['blob'] });
-            saveAs(response.data, "datasets.zip");
-        } catch (error) {
-            if (error.response) {
-                var reader = new FileReader();
-                reader.readAsText(error.response.data);
-                reader.onload = function () {
-                    const response = JSON.parse(reader.result);
-                    for (var prop in response.errors.json) {
-                        NotificationManager.error(response.errors.json[prop], `${prop}`, 4000)
+            const resp = await api.get('/downloads/data?uuids=' + serializedSelection);
+            var status = setInterval(async function () {
+                try {
+                    const response = await api.get(`tasks/${resp.data}/status`);
+                    if (response.data.status === "done") {
+                        saveAs(downloadsUrl + response.data.result, "datasets.zip");
+                        clearInterval(status);
+                    }
+                } catch (error) {
+                    if (error.response) {
+                        for (var prop in error.response.data.errors.json) {
+                            NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
+                        }
+                    } else {
+                        NotificationManager.error("network error", "error", 4000)
                     }
                 }
+            }, 1000);
+        } catch (error) {
+            if (error.response) {
+                for (var prop in error.response.data.errors.json) {
+                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
+                }
             } else {
-                NotificationManager.error("Network error", "Error", 4000)
+                NotificationManager.error("network error", "error", 4000)
             }
         }
     }

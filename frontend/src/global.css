@@ -5,7 +5,7 @@
     --secondary-color-light: rgba(196,196,196, 0.15);
     --tertiary-color: rgba(255,255,255, 1.0);
     --tertiary-color-light: rgba(255,255,255, 0.60); 
-    --error-color: #bd362f;
+    --error-color: #E05853;
     --transition-time: 0.4s;
     --border: 1px solid #e5e5e5;
 }
@@ -318,7 +318,7 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .button-negative:hover {
-    color: var(--primary-color);
+    color: var(--secondary-color);
 }
 
 .nav-button-secondary {
@@ -492,6 +492,11 @@ button, input[type="submit"], input[type="reset"] {
 
 .border-dashed {
     border: 2px dashed var(--secondary-color);
+}
+
+.iframe-dash {
+    width: 100%;
+    min-height: 800px;
 }
 
 

@@ -13,7 +13,7 @@ import OkaHeader from '../../components/OkaHeader';
 import OkaNavBar from '../../components/OkaNavBar';
 import OkaPostComments from '../../components/OkaPostComments';
 import OkaPostsBox from '../../components/OkaPostsBox';
-import api from '../../services/api';
+import api, { downloadsUrl } from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 
 export default function Posts(props) {
@@ -43,6 +43,14 @@ export default function Posts(props) {
         )
     }
 
+    const visualizer = (uuid) => {
+        return (
+            <div className="content-box margin-very-small">
+                <iframe title="iframe-dash" className="iframe-dash" src={`http://127.0.0.1:8050/${uuid}`}></iframe>
+            </div>
+        )
+    }
+
     const navItems = {
         description: {
             "name": "Description",
@@ -57,7 +65,7 @@ export default function Posts(props) {
         visualize: {
             "name": "Visualize",
             "url": "/posts/" + id + "/visualize",
-            "content": textBox("Visualize not implemented yet.")
+            "content": visualizer(post.data_uuid)
         },
         stats: {
             "name": "Stats",
@@ -94,20 +102,31 @@ export default function Posts(props) {
 
     async function handleDownload() {
         try {
-            const response = await api.get(`downloads/data?uuids=${post.data_uuid}`, { responseType: ['blob'] });
-            saveAs(response.data, post.name + ".zip");
-        } catch (error) {
-            if (error.response) {
-                var reader = new FileReader();
-                reader.readAsText(error.response.data);
-                reader.onload = function () {
-                    const response = JSON.parse(reader.result);
-                    for (var prop in response.errors.json) {
-                        NotificationManager.error(response.errors.json[prop], `${prop}`, 4000)
+            const resp = await api.get(`downloads/data?uuids=${post.data_uuid}`);
+            var status = setInterval(async function () {
+                try {
+                    const response = await api.get(`tasks/${resp.data}/status`);
+                    if (response.data.status === "done") {
+                        saveAs(downloadsUrl + response.data.result, post.name + ".zip");
+                        clearInterval(status);
+                    }
+                } catch (error) {
+                    if (error.response) {
+                        for (var prop in error.response.data.errors.json) {
+                            NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
+                        }
+                    } else {
+                        NotificationManager.error("network error", "error", 4000)
                     }
                 }
+            }, 1000);
+        } catch (error) {
+            if (error.response) {
+                for (var prop in error.response.data.errors.json) {
+                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
+                }
             } else {
-                NotificationManager.error("Network error", "Error", 4000)
+                NotificationManager.error("network error", "error", 4000)
             }
         }
     }
@@ -178,7 +197,7 @@ export default function Posts(props) {
             NotificationManager.info("All histories begin here!", "NoData");
             return
         }
-        
+
         try {
             const response = await api.post(`posts/${uuid}`);
             history.push(`/posts/${response.data.id}/description`);
@@ -242,7 +261,7 @@ export default function Posts(props) {
                                                     <div className="flex-column flex-axis-center padding-left-very-small">
                                                         <div className="flex-row" title={transformation.help}>
                                                             <Help className="icon-tertiary" />
-                                                            <span className="color-tertiary">{transformation.name}</span>                                                            
+                                                            <span className="color-tertiary">{transformation.name}</span>
                                                         </div>
                                                         <span className="color-tertiary">←</span>
                                                     </div>
