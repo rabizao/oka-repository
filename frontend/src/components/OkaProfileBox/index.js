@@ -59,7 +59,7 @@ export default function OkaProfileBox({ fetch_url }) {
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
                 <>
-                    <div className="flex-row padding-medium">
+                    <div className="flex-wrap flex-crossaxis-center padding-medium">
                             {
                                 users.map((user, index) =>
                                     <div key={user.id} className="flex-column flex-axis-center box padding-medium background-hover width-smallest">
