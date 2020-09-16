@@ -20,6 +20,7 @@
 
 body {
     font: 400 20px/1.4rem  Roboto, sans-serif;
+    line-height: 1.2;
     background: #F8F9FD;
     -webkit-font-smoothing: antialiased;
 }
@@ -360,6 +361,10 @@ button, input[type="submit"], input[type="reset"] {
     padding: 10px
 }
 
+.width-smallest {
+    width: 320px;
+}
+
 .background-hover:hover {
     background-color: #f4f4f4;
     transition-duration: var(--transition-time);
@@ -497,6 +502,10 @@ button, input[type="submit"], input[type="reset"] {
 .iframe-dash {
     width: 100%;
     min-height: 800px;
+}
+
+.text-center {
+    text-align: center
 }
 
 

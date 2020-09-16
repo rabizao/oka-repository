@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router';
 import queryString from 'query-string';
 
@@ -7,6 +7,7 @@ import './styles.css';
 import OkaHeader from '../../components/OkaHeader';
 import OkaNavBar from '../../components/OkaNavBar';
 import OkaPostsBox from '../../components/OkaPostsBox';
+import OkaProfileBox from '../../components/OkaProfileBox';
 
 const filterOptions = {
     Tasks: [
@@ -100,6 +101,10 @@ export default function Search(props) {
     const [parsedQueries, setParsedQueries] = useState(queryString.parse(location.search));
     const [filter, setFilter] = useState(false);
 
+    useEffect(() => {
+        setParsedQueries(queryString.parse(location.search))
+    }, [location.search])
+
     function handleSelection(tag) {
         var newParsedQueries = { ...parsedQueries };
 
@@ -164,6 +169,12 @@ export default function Search(props) {
         )
     }
 
+    const people = () => {
+        return (
+            <OkaProfileBox fetch_url={"/users" + location.search} />
+        )
+    }
+
     const navItems = {
         datasets: {
             "name": "Datasets",
@@ -173,7 +184,7 @@ export default function Search(props) {
         people: {
             "name": "People",
             "url": "/search/people?name=" + parsedQueries.name,
-            "content": textBox("People not implemented yet.")
+            "content": people()
         },
         tags: {
             "name": "Tags",
@@ -184,7 +195,7 @@ export default function Search(props) {
 
     return (
         <>
-            <OkaHeader query={parsedQueries.name} />
+            <OkaHeader query={parsedQueries.name} section={section}/>
             <div className="oka-hero-background padding-sides-small padding-top-big">
                 <h3 className="color-tertiary">{parsedQueries.name ? `Search results for: ${parsedQueries.name}` : `Browsing all ${section}`}</h3>
             </div>
