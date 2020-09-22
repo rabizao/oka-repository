@@ -14,7 +14,7 @@ import OkaHeader from '../../components/OkaHeader';
 import OkaNavBar from '../../components/OkaNavBar';
 import OkaPostComments from '../../components/OkaPostComments';
 import OkaPostsBox from '../../components/OkaPostsBox';
-import api, { downloadsUrl, url } from '../../services/api';
+import api, { downloadsUrl } from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 
 const data = [
@@ -1338,7 +1338,7 @@ export default function Posts(props) {
                         <div className="flex-row flex-space-between flex-axis-center">
                             <div className="flex-row">
                                 <button onClick={(e) => copyToClipboard(e, post.data_uuid)}>
-                                    <img height="100px" src={`${url}/static/${post.data_uuid}.jpg`} title="Copy to clipboard" alt="Copy to clipboard" />
+                                    <img height="100px" src={`${downloadsUrl}${post.data_uuid}.jpg`} title="Copy to clipboard" alt="Copy to clipboard" />
                                 </button>
                                 <div className="flex-column flex-crossaxis-center">
                                     <h1 className="padding-small color-tertiary">{name}</h1>
@@ -1355,7 +1355,7 @@ export default function Posts(props) {
                                                         <span className="color-tertiary">←</span>
                                                     </div>
                                                     <button onClick={(e) => handleCreatePost(e, transformation.label)} className="flex-column flex-crossaxis-center padding-left-very-small">
-                                                        <img height="40px" src={`http://127.0.0.1:5000/static/${transformation.avatar}`} title="Show Dataset" alt="Show Dataset" />
+                                                        <img height="40px" src={`${downloadsUrl}${transformation.avatar}`} title="Show Dataset" alt="Show Dataset" />
                                                     </button>
                                                 </div>
                                             )

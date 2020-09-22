@@ -23,7 +23,7 @@ socketio = SocketIO()
 
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
+    app = Flask(__name__, static_url_path="/media", static_folder='media')
 
     app.config.from_object(config_class)
     app.config['CURURU_SERVER'] = PickleServer(db=app.static_folder)
