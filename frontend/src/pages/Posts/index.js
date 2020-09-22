@@ -1207,6 +1207,7 @@ export default function Posts(props) {
                     } else {
                         NotificationManager.error("network error", "error", 4000)
                     }
+                    clearInterval(status);
                 }
             }, 1000);
         } catch (error) {

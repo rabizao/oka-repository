@@ -86,6 +86,7 @@ export default function OkaPostsBox({ fetch_url }) {
                     } else {
                         NotificationManager.error("network error", "error", 4000)
                     }
+                    clearInterval(status);
                 }
             }, 1000);
         } catch (error) {
