@@ -6,12 +6,12 @@ from pjdata.creation import read_arff
 from util.create import user, token
 
 print("Create user and token...")
-user = user("davips", "pass123", base_url="http://data.analytics.icmc.usp.br/api")[0:2]
-token = token(*user, base_url="http://data.analytics.icmc.usp.br/api")
+user = user("davips", "pass123", base_url="http://data.analytics.icmc.usp.br")[0:2]
+token = token(*user, base_url="http://data.analytics.icmc.usp.br")
 with open("token.txt", "w") as f:
     json.dump({"token": token}, f)
 
-storage = OkaServer(post=True, token=token, url="http://data.analytics.icmc.usp.br/api/cururu")
+storage = OkaServer(post=True, token=token, url="http://data.analytics.icmc.usp.br")
 
 print("Reading file...")
 data = read_arff("iris.arff")[1]

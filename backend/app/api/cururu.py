@@ -46,6 +46,7 @@ class CururuData(MethodView):
         Create a new Data object (without a related post).
         """
         create_post = json.loads(args["json"].read().decode())["create_post"]
+        print("CCCCCCCCCCCCCCCCCCCCCCCCCC", create_post)
         storage = current_app.config['CURURU_SERVER']
         data = unpack(args['file'].read())
         try:

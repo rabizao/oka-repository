@@ -10,10 +10,10 @@ from pjml.tool.data.processing.feature.binarize import Binarize
 from pjml.tool.data.processing.feature.reductor.pca import PCA
 from util.create import user, token
 
-user = user("davips2", "pass123", base_url="http://data.analytics.icmc.usp.br/api")[0:2]
-okatoken = token(*user, base_url="http://data.analytics.icmc.usp.br/api")
-STORAGE_CONFIG["oka"] = {"engine": "oka", "token": okatoken, "url": "http://data.analytics.icmc.usp.br/api"}
-STORAGE_CONFIG["okapost"] = {"engine": "okapost", "token": okatoken, "url": "http://data.analytics.icmc.usp.br/api"}
+user = user("davips", "pass123", base_url="http://data.analytics.icmc.usp.br")[0:2]
+okatoken = token(*user, base_url="http://data.analytics.icmc.usp.br")
+STORAGE_CONFIG["oka"] = {"engine": "oka", "token": okatoken, "url": "http://data.analytics.icmc.usp.br"}
+STORAGE_CONFIG["okapost"] = {"engine": "okapost", "token": okatoken, "url": "http://data.analytics.icmc.usp.br"}
 print("user created")
 
 # TODO: multiple caches are not working regarding whether to post
