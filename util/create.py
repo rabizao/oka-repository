@@ -17,6 +17,7 @@ def user(username=None, password=None, email=None, base_url="http://localhost:50
     url_createuser = base_url + '/users'
     data_createuser = {"username": username, "password": password, "name": "Teste", "email": email}
     response_createuser = requests.post(url_createuser, json=data_createuser)
+    print(response_createuser.text)
     return username, password, email
 
 
