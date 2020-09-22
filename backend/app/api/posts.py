@@ -51,7 +51,8 @@ class Posts(MethodView):
             files.append({"path": full_path, "original_name": file.filename})
             original_names.append(file.filename)
 
-        job = celery_process_data.apply_async([files, username, argsForm["sid"]])
+        job = celery_process_data.apply_async(
+            [files, username, argsForm["sid"]])
         task = Task(
             id=job.id,
             name="Data processing",
@@ -71,7 +72,8 @@ class PostsById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+            abort(422, errors={
+                  "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
         return post
 
     @jwt_required
@@ -85,7 +87,8 @@ class PostsById(MethodView):
         post = Post.query.get(id)
 
         if not post or not post.active:
-            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+            abort(422, errors={
+                  "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         if not logged_user.is_admin():
             if logged_user != post.author:
@@ -106,7 +109,8 @@ class PostsFavoriteById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+            abort(422, errors={
+                  "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
@@ -128,7 +132,8 @@ class PostsCommentsById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+            abort(422, errors={
+                  "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         order_by = getattr(Comment.timestamp, args['order_by'])()
         comments = post.comments.order_by(order_by)
@@ -145,7 +150,8 @@ class PostsCommentsById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+            abort(422, errors={
+                  "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
@@ -164,12 +170,13 @@ class PostsStatsById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+            abort(422, errors={
+                  "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         # uuid = post.data_uuid
-    
+
         # TODO: retornar um json contendo os dados que serao plotados no frontend. Pensar diferentes graficos para
-        # serem feitos la. Possibilidades: Todas as features x target, features x features, etc. Tirar ideias do 
+        # serem feitos la. Possibilidades: Todas as features x target, features x features, etc. Tirar ideias do
         # pandas-profilling. Outra informacao importante sao algumas linhas das tabelas (tipo pd.head() e pd.tail())
         # Pearsons correlation, Missing values, etc.
 
@@ -186,7 +193,8 @@ class PostsTwinsById(MethodView):
         """
         post = Post.query.get(id)
         if not post:
-            abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+            abort(422, errors={
+                  "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         filter_by = {"active": True, "data_uuid": post.data_uuid, "id": not id}
         data, pagination_parameters.item_count = Post.get(

@@ -5,6 +5,7 @@
   "dependencies": {
     "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.9.1",
+    "@nivo/scatterplot": "^0.62.0",
     "axios": "^0.19.2",
     "file-saver": "^2.0.2",
     "jwt-decode": "^2.2.0",
