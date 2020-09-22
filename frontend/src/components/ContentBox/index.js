@@ -104,7 +104,7 @@ export default function ContentBox(props) {
                                                 <span className="padding-top-small">
                                                     <ul className="flex-row ul-padding-sides-not-first">
                                                         <li><button onClick={e => handleFavoriteButton(e, post, index)}>{post.favorites.includes(user.id) ? <><Favorite /> {post.favorites.length}</> : <><FavoriteBorder /> {post.favorites.length}</>}</button></li>
-                                                        <li><button onClick={e => handleShowCommentsBox(e, post)}><Message /> {post.comments_total}</button></li>
+                                                        <li><button onClick={e => handleShowCommentsBox(e, post)}><Message /> {post.comments.length}</button></li>
                                                     </ul>
                                                     <ul>
                                                         {

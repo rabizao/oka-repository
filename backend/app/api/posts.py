@@ -167,7 +167,11 @@ class PostsStatsById(MethodView):
             abort(422, errors={"json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         # uuid = post.data_uuid
-        # TODO
+    
+        # TODO: retornar um json contendo os dados que serao plotados no frontend. Pensar diferentes graficos para
+        # serem feitos la. Possibilidades: Todas as features x target, features x features, etc. Tirar ideias do 
+        # pandas-profilling. Outra informacao importante sao algumas linhas das tabelas (tipo pd.head() e pd.tail())
+        # Pearsons correlation, Missing values, etc.
 
 
 @bp.route('/posts/<int:id>/twins')

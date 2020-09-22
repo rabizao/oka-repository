@@ -188,11 +188,12 @@ export default function Users(props) {
             <div className="flex-column flex-axis-center oka-hero-background padding-sides-small padding-top-big">
                 {loadingHero ?
                     <CircularProgress className="icon-tertiary" /> :
-                    <>
+                    
+                    <div className="flex-column flex-axis-center padding-medium width-smallest">
                         <Avatar name={user.name} size="80" round={true} />
-                        <h1 className="color-tertiary margin-top-medium">{name}</h1>
-                        <h5 className="color-tertiary margin-top-very-small">{about_me}</h5>
-                        <h6 className="color-tertiary margin-top-small">{user.followed && user.followed.length} following | {user.followers && user.followers.length} followers</h6>
+                        <h1 className="color-tertiary margin-top-medium width100 ellipsis text-center">{name}</h1>
+                        <h5 className="color-tertiary margin-top-very-small width100 ellipsis text-center">{about_me}</h5>
+                        <h6 className="color-tertiary margin-top-small width100 ellipsis text-center">{user.followed && user.followed.length} following | {user.followers && user.followers.length} followers</h6>
 
                         {(user.id === loggedUser.id) ?
                             <div className="flex-row flex-axis-center margin-top-small">
@@ -201,7 +202,7 @@ export default function Users(props) {
                             </div> :
                             <button onClick={handleFollow} className="button-secondary margin-vertical-small">{user.followers && user.followers.includes(loggedUser.id) ? "Unfollow" : "Follow"}</button>
                         }
-                    </>
+                    </div>
                 }
 
             </div>

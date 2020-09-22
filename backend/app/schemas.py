@@ -206,6 +206,7 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     author = Nested(UserBaseSchema, dump_only=True)
     history = Nested(TransformationBaseSchema, many=True, dump_only=True)
     favorites = fields.Pluck(UserBaseSchema, "id", many=True, dump_only=True)
+    comments = fields.Pluck(CommentBaseSchema, "id", many=True, dump_only=True)
 
 
 class PostEditSchema(SQLAlchemySchema):
@@ -259,3 +260,4 @@ class TaskBaseSchema(SQLAlchemySchema):
     current = fields.Integer()
     total = fields.Integer()
     status = fields.String()
+    result = fields.String()
