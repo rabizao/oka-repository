@@ -1,16 +1,19 @@
-from app import mail, celery, db, socketio
-from . import bp
-from app.models import User, Task, Transformation, Post
-from app.schemas import TaskBaseSchema
+import os
+from zipfile import ZipFile
+
 from flask import current_app
-from pjdata.creation import read_arff
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from flask_mail import Message
+from flask_smorest import abort
+
+from app import mail, celery, db, socketio
+from app.models import User, Task, Transformation, Post
+from app.schemas import TaskBaseSchema
 from cururu.persistence import DuplicateEntryException
-from zipfile import ZipFile
-import os
 from pjdata.content.specialdata import UUIDData
+from pjdata.creation import read_arff
+from . import bp
 
 
 @celery.task
@@ -50,8 +53,7 @@ def celery_download_data(self, uuids):
                     if data is None:
                         raise Exception(
                             "Download failed: " + uuid + " not found!")
-                    zipped_file.writestr(
-                        uuid + ".arff", data.arff("No name", "No description"))
+                    zipped_file.writestr(uuid + ".arff", data.arff("No name", "No description"))
         except Exception as e:
             os.remove(path_server_zip)
             self.update_state(state='FAILURE', meta={
@@ -59,6 +61,7 @@ def celery_download_data(self, uuids):
                 'total': 100,
                 'status': f"Zip failed with status {e.args[0]}"
             })
+            abort(422, errors={"json": {"zipping&arffing": [str(e)]}})
 
     task = Task.query.get(self.request.id)
     if task:

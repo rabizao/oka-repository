@@ -10,10 +10,12 @@ from pjml.tool.data.processing.feature.binarize import Binarize
 from pjml.tool.data.processing.feature.reductor.pca import PCA
 from util.create import user, token
 
-user = user("davips", "pass123", base_url="http://data.analytics.icmc.usp.br")[0:2]
-okatoken = token(*user, base_url="http://data.analytics.icmc.usp.br")
-STORAGE_CONFIG["oka"] = {"engine": "oka", "token": okatoken, "url": "http://data.analytics.icmc.usp.br"}
-STORAGE_CONFIG["okapost"] = {"engine": "okapost", "token": okatoken, "url": "http://data.analytics.icmc.usp.br"}
+# url = "http://data.analytics.icmc.usp.br"
+url = "http://localhost:5000"
+user = user("davips", "pass123", base_url=url)[0:2]
+okatoken = token(*user, base_url=url)
+STORAGE_CONFIG["oka"] = {"engine": "oka", "token": okatoken, "url": url}
+STORAGE_CONFIG["okapost"] = {"engine": "okapost", "token": okatoken, "url": url}
 print("user created")
 
 # TODO: multiple caches are not working regarding whether to post
@@ -29,3 +31,7 @@ wflow = File("iris.arff") \
     # * Report("metric ... R: $R", enhance=False)
 
 train, test = wflow.dual_transform(NoData, NoData)
+
+print(train.id, test.id)
+print(test.X.shape[1], len(test.Xt))
+print(test.arff("nome", "desc"))

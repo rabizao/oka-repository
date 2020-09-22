@@ -21,5 +21,5 @@ storage.store(data)
 print("ok!")
 
 print("Fetching...")
-d = storage.fetch(UUIDData("ĹЇЖȡfĭϹƗͶэգ8Ƀű"))
+d = storage.fetch(UUIDData(data.uuid))
 print(d)
