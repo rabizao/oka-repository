@@ -59,7 +59,8 @@ class CururuData(MethodView):
             logged_user = User.get_by_username(username)
             if logged_user.posts.filter_by(data_uuid=data.id).first():
                 abort(422, errors={"json": {"Upload": ["Dataset already exists!"]}})
-            name = "←".join([i["name"] for i in reversed(list(data.historystr))])  # TODO: isn't cururu storing historystr?
+            name = "←".join([i["name"] for i in reversed(list(data.historystr))])
+            # TODO: isn't cururu storing historystr?
             post = Post(
                 author=logged_user, data_uuid=data.id,
                 name=name or "No name",

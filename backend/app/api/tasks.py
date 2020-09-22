@@ -100,8 +100,9 @@ def celery_process_data(self, files, username, sid):
         finally:
             report[file["original_name"]] = "Success!"
             post = Post(author=logged_user, data_uuid=data.id,
-                        name=name, description=description)
-            # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances, 
+                        name=name, description=description, number_of_instances=len(
+                            data.X), number_of_features=len(data.Y))
+            # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
             # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
             for dic in storage.visual_history(data.id, current_app.static_folder):
                 db.session.add(Transformation(**dic, post=post))
