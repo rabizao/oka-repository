@@ -10,9 +10,11 @@ from pjml.tool.data.processing.feature.binarize import Binarize
 from pjml.tool.data.processing.feature.reductor.pca import PCA
 from util.create import user, token
 
-okatoken = token(*user("okatest", "pass123")[0:2])
-STORAGE_CONFIG["oka"] = {"engine": "oka", "token": okatoken}
-STORAGE_CONFIG["okapost"] = {"engine": "okapost", "token": okatoken}
+user = user("davips2", "pass123", base_url="http://data.analytics.icmc.usp.br/api")[0:2]
+okatoken = token(*user, base_url="http://data.analytics.icmc.usp.br/api")
+STORAGE_CONFIG["oka"] = {"engine": "oka", "token": okatoken, "url": "http://data.analytics.icmc.usp.br/api"}
+STORAGE_CONFIG["okapost"] = {"engine": "okapost", "token": okatoken, "url": "http://data.analytics.icmc.usp.br/api"}
+print("user created")
 
 # TODO: multiple caches are not working regarding whether to post
 # TIP: TsSplit should come before TrSplit to ensure the same original data is used as input for both.
@@ -24,6 +26,6 @@ wflow = File("iris.arff") \
         * Report("{id}") \
         * SVMC(C=0.5) \
         * Cache(Metric(enhance=False), storage_alias="okapost") \
-        # * Report("metric ... R: $R", enhance=False)
+    # * Report("metric ... R: $R", enhance=False)
 
 train, test = wflow.dual_transform(NoData, NoData)
