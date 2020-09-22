@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getToken, logout } from './auth';
 
 export const url = process.env.REACT_APP_URL ? process.env.REACT_APP_URL : "http://localhost:5000";
-export const downloadsUrl = process.env.REACT_DOWNLOADS_FOLDER ? process.env.REACT_DOWNLOADS_FOLDER : "http://localhost:5000/media/";
+export const downloadsUrl = process.env.REACT_APP_DOWNLOADS_FOLDER ? process.env.REACT_APP_DOWNLOADS_FOLDER : "http://localhost:5000/media/";
 
 const api = axios.create({
 	baseURL: `${url}/api/`
