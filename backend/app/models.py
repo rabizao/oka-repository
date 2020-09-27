@@ -233,7 +233,7 @@ class Transformation(db.Model):
     label = db.Column(db.String(999))  # Visible text describind Data object.
     name = db.Column(db.String(999))  # Name of the Transformer object.
     # Complete description of the Transformer object.
-    help = db.Column(db.String(99999))
+    help = db.Column(db.Text)
     # Whether the Data object is already stored in cururu.
     stored = db.Column(db.Boolean)
     # Filename of the icon representing the Data object.
@@ -251,7 +251,7 @@ class Post(PaginateMixin, db.Model):
         'data_uuid', 'user_id', name='_data_user_unique'),)
 
     name = db.Column(db.String(120), default="No name")
-    description = db.Column(db.String(100000), default="No description")
+    description = db.Column(db.Text, default="No description")
     # avatar = db.Column(db.String(1000))
 
     downloads = db.Column(db.Integer(), default=0)

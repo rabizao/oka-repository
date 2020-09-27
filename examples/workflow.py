@@ -34,4 +34,4 @@ train, test = wflow.dual_transform(NoData, NoData)
 
 print(train.id, test.id)
 print(test.X.shape[1], len(test.Xt))
-print(test.arff("nome", "desc"))
+# print(test.arff("nome", "desc"))
