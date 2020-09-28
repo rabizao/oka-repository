@@ -80,7 +80,7 @@ export default function ContentBox(props) {
     }
 
     return (
-        <div className="content-box margin-very-small padding-bottom-big">
+        <div className={`content-box padding-bottom-big ${props.className}`}>
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
                 <>
@@ -91,15 +91,15 @@ export default function ContentBox(props) {
                             <li key={post.id} className="flex-column background-hover">
                                 <div className="content-item flex-row padding-medium">
                                     {!props.hideAvatar && <Link to={`/users/${post.author.username}/uploads`} ><Avatar name={post.author.name} size="40" round={true} /></Link>}
-                                    <Link className="width100" to={`/posts/${post.id}/description`}>
-                                        <div className="flex-column padding-sides-small" style={{ maxWidth: props.maxWidth ? props.maxWidth : "300px" }}>
+                                    <Link className="padding-left-small" to={`/posts/${post.id}/description`}>
+                                        <div className="flex-column">
                                             <div>
                                                 {!props.hideAuthor && <><span className="font-size-medium bold">{post.author.name}</span> - <span>{post.author.username}</span> - <TimeAgo datetime={post.timestamp+'Z'} /></>}
                                             </div>
                                             <div>
                                                 <span className="bold">{post.name}</span>{props.hideAuthor && <span> - <TimeAgo datetime={post.timestamp+'Z'}/></span>}
                                             </div>
-                                            <span className="ellipsis">{post.description}</span>
+                                            <span className="ellipsis-3">{post.description}</span>
                                             {!props.hideActions &&
                                                 <span className="padding-top-small">
                                                     <ul className="flex-row ul-padding-sides-not-first">

@@ -116,9 +116,8 @@ export default function Home() {
     return (
         <>
             <OkaHeader />
-            <div className="row margin-top-medium">
-                <div className="column">
-                    <div className="content-box margin-very-small">
+            <div className="margin-auto width100 max-width-very-huge padding-small">
+                    <div className="content-box">
                         <div ref={dropRegion} className="padding-big border-dashed background-hover cursor-pointer" onDragOver={e => handleDragOver(e)} onDrop={e => handleDrop(e)} onClick={e => handleClick(e)} onDragLeave={e => handleDragLeave(e)}>
                             <input
                                 ref={fileInputRef}
@@ -176,13 +175,8 @@ export default function Home() {
                             </div>
                         }
                     </div>
-                    <ContentBox title="Feed" fetchUrl={`/users/${loggedUser.username}/feed`} maxWidth={700} />
+                    <ContentBox title="Feed" fetchUrl={`/users/${loggedUser.username}/feed`} className="margin-top-verysmall margin-bottom-huge"/>
                 </div>
-                <div className="column">
-                    <ContentBox title="Uploads" titleLink={`/users/${loggedUser.username}/uploads`} fetchUrl={`/users/${loggedUser.username}/posts`} hideAvatar={true} hideAuthor={true} hideActions={true} maxWidth={400} />
-                    <ContentBox title="Favorites" titleLink={`/users/${loggedUser.username}/favorites`} fetchUrl={`/users/${loggedUser.username}/favorites`} maxWidth={400} hideActions={true} />
-                </div>
-            </div>
         </>
     )
 }
