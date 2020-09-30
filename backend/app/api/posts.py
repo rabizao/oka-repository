@@ -8,8 +8,7 @@ from app.models import User, Post, Comment, Task, Transformation
 from app.api.tasks import celery_process_data
 from app.schemas import (PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema,
                          CommentQuerySchema, TransformQuerySchema)
-from pjdata.content.specialdata import UUIDData
-from pjml.tool.data.evaluation.tssplit import TsSplit
+from aiuna.content.specialdata import UUIDData
 from . import bp
 import uuid as u
 
@@ -215,7 +214,7 @@ class PostsTransformById(MethodView):
         if not post:
             abort(422, errors={"json": {"id": ["Does not existppp."]}})
 
-        storage = current_app.config['CURURU_SERVER']
+        storage = current_app.config['TATU_SERVER']
         data = storage.fetch(UUIDData(post.data_uuid))
 
         transformer = args["transformer"]
@@ -233,7 +232,7 @@ class PostsOnDemand(MethodView):
         """
         Create a new Post on demand.
         """
-        storage = current_app.config['CURURU_SERVER']
+        storage = current_app.config['TATU_SERVER']
         data = storage.fetch(UUIDData(uuid))
         if data is None:
             abort(
@@ -248,7 +247,7 @@ class PostsOnDemand(MethodView):
 
         # TODO: refactor duplicate code
 
-        name = "←".join([i["name"] for i in reversed(list(data.historystr))]) or "No Name"
+        name = "←".join([i["name"] for i in reversed(list(storage.visual_history(data)))]) or "No Name"
 
         # noinspection PyArgumentList
         post = Post(author=logged_user,

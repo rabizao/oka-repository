@@ -1,19 +1,20 @@
-from pjdata.config import STORAGE_CONFIG
-from pjdata.content.specialdata import NoData
-from pjml.tool.data.communication.cache import Cache
-from pjml.tool.data.communication.report import Report
-from pjml.tool.data.evaluation.metric import Metric
-from pjml.tool.data.evaluation.split import TrSplit, TsSplit
-from pjml.tool.data.flow.file import File
-from pjml.tool.data.modeling.supervised.classifier.svmc import SVMC
-from pjml.tool.data.processing.feature.binarize import Binarize
-from pjml.tool.data.processing.feature.reductor.pca import PCA
+from aiuna.config import STORAGE_CONFIG
+from aiuna.file import File
+from kururu.tool.communication.cache import Cache
+from kururu.tool.communication.report import Report
+from kururu.tool.enhancement.binarize import Binarize
+from kururu.tool.enhancement.pca import PCA
+from kururu.tool.evaluation.metric import Metric
+from kururu.tool.evaluation.split import Split
+from kururu.tool.learning.supervised.classification.svm import SVM
+from tatu.pickleserver import PickleServer
+
 from util.create import user, token
 
 # url = "http://data.analytics.icmc.usp.br"
 url = "http://localhost:5000"
-user = user("davips", "pass123", base_url=url)[0:2]
-okatoken = token(*user, base_url=url)
+user = user("davips", "pass123", base_url=url)
+okatoken = token(**user, base_url=url)
 STORAGE_CONFIG["oka"] = {"engine": "oka", "token": okatoken, "url": url}
 STORAGE_CONFIG["okapost"] = {"engine": "okapost", "token": okatoken, "url": url}
 print("user created")
@@ -22,16 +23,15 @@ print("user created")
 # TIP: TsSplit should come before TrSplit to ensure the same original data is used as input for both.
 wflow = File("iris.arff") \
         * Binarize() \
-        * TsSplit() \
-        * TrSplit() \
+        * Cache(Split(), storage_alias="okapost") \
         * PCA(n=3) \
         * Report("{id}") \
-        * SVMC(C=0.5) \
-        * Cache(Metric(enhance=False), storage_alias="okapost") \
+        * SVM(C=0.5) \
+        * Metric()
     # * Report("metric ... R: $R", enhance=False)
 
-train, test = wflow.dual_transform(NoData, NoData)
+data = wflow.data
 
-print(train.id, test.id)
-print(test.X.shape[1], len(test.Xt))
+print("Data ID", data.id)
+print("Shape", data.X.shape[1], len(data.Xt))
 # print(test.arff("nome", "desc"))

@@ -225,10 +225,10 @@ class PostFilesSchema(SQLAlchemySchema):
     sid = fields.String()
 
 
-class CururuUploadSchema(SQLAlchemySchema):
+class TatuUploadSchema(SQLAlchemySchema):
     # @pre_load  # Diferentes estágios de tratamento dos dados: pre/pos load/dump
     # def test(self, data, **kwargs):
-    #     print("test, CururuUploadSchema", data, "----------", kwargs)
+    #     print("test, TatuUploadSchema", data, "----------", kwargs)
     #
     #     return data
 
@@ -236,7 +236,7 @@ class CururuUploadSchema(SQLAlchemySchema):
     json = Upload()
 
 
-class CururuDownloadSchema(SQLAlchemySchema):
+class TatuDownloadSchema(SQLAlchemySchema):
     uuid = fields.String()
 
 
