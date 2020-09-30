@@ -26,3 +26,8 @@ print("ok!")
 print("Fetching...")
 d = storage.fetch(UUIDData(data.uuid))
 print(d.id)
+
+print("Fetching...")
+d = storage.fetch(UUIDData("ØΐEʃωȒȥќǏшġμŃĔ"))
+print(d and d.id)
+print(d and d.inner and d.inner.id)

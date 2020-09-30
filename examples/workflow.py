@@ -4,9 +4,9 @@ from kururu.tool.communication.cache import Cache
 from kururu.tool.communication.report import Report
 from kururu.tool.enhancement.binarize import Binarize
 from kururu.tool.enhancement.pca import PCA
-from kururu.tool.evaluation.metric import Metric
+from kururu.tool.evaluation.metric import Metric, Metric2
 from kururu.tool.evaluation.split import Split
-from kururu.tool.learning.supervised.classification.svm import SVM
+from kururu.tool.learning.supervised.classification.svm import SVM, SVM2
 from tatu.pickleserver import PickleServer
 
 from util.create import user, token
@@ -21,14 +21,17 @@ print("user created")
 
 # TODO: multiple caches are not working regarding whether to post
 # TIP: TsSplit should come before TrSplit to ensure the same original data is used as input for both.
-wflow = File("iris.arff") \
-        * Binarize() \
-        * Cache(Split(), storage_alias="okapost") \
-        * PCA(n=3) \
-        * Report("{id}") \
-        * SVM(C=0.5) \
-        * Metric()
-    # * Report("metric ... R: $R", enhance=False)
+wflow = (
+        File("iris.arff")
+        * Binarize
+        * Cache(Split(), storage_alias="oka")
+        * Cache(PCA(n=3), storage_alias="oka")
+        * Report("{id}")
+        * Cache(SVM2(C=0.5), storage_alias="oka")
+        * Metric2
+        * Report("tr {r}\t\tts {inner.r}")
+)
+
 
 data = wflow.data
 
