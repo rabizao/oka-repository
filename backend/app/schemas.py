@@ -19,8 +19,8 @@ class UserBaseSchema(SQLAlchemyAutoSchema):
         validate.Length(min=6, max=36)], load_only=True)
     email = fields.Email(validate=[
         validate.Length(min=6, max=36)], load_only=True, required=True)
-    followed = fields.Pluck("self", "id", many=True, dump_only=True)
-    followers = fields.Pluck("self", "id", many=True, dump_only=True)
+    followed = fields.Pluck(lambda: UserBaseSchema(), "id", many=True, dump_only=True)
+    followers = fields.Pluck(lambda: UserBaseSchema(), "id", many=True, dump_only=True)
 
 
 class CommentBaseSchema(SQLAlchemyAutoSchema):
@@ -30,7 +30,7 @@ class CommentBaseSchema(SQLAlchemyAutoSchema):
     id = auto_field(dump_only=True)
     text = auto_field(required=True)
     author = Nested(UserBaseSchema, dump_only=True)
-    replies = Nested("self", many=True, dump_only=True)
+    replies = Nested(lambda: CommentBaseSchema(), many=True, dump_only=True)
 
 
 class CommentQuerySchema(SQLAlchemySchema):
@@ -205,8 +205,8 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     id = auto_field(dump_only=True)
     author = Nested(UserBaseSchema, dump_only=True)
     history = Nested(TransformationBaseSchema, many=True, dump_only=True)
-    favorites = fields.Pluck(UserBaseSchema, "id", many=True, dump_only=True)
-    comments = fields.Pluck(CommentBaseSchema, "id", many=True, dump_only=True)
+    comments = Nested(CommentBaseSchema, many=True, dump_only=True)
+    favorites = fields.Pluck(UserBaseSchema, "id", many=True, dump_only=True)    
 
 
 class PostEditSchema(SQLAlchemySchema):
