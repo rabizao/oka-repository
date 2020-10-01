@@ -10,9 +10,11 @@ from flask_smorest import abort
 from app import mail, celery, db, socketio
 from app.models import User, Task, Transformation, Post
 from app.schemas import TaskBaseSchema
-from cururu.persistence import DuplicateEntryException
-from pjdata.content.specialdata import UUIDData
-from pjdata.creation import read_arff
+
+from aiuna.file import File
+from tatu.persistence import DuplicateEntryException
+from aiuna.content.specialdata import UUIDData
+from aiuna.creation import read_arff
 from . import bp
 
 
@@ -35,7 +37,7 @@ def celery_download_data(self, uuids):
     Background task to run async download process
     """
 
-    storage = current_app.config['CURURU_SERVER']
+    storage = current_app.config['TATU_SERVER']
 
     filename_server_zip = "_".join(uuids)
     path_server_zip = current_app.static_folder + "/" + filename_server_zip + ".zip"
@@ -90,14 +92,18 @@ def celery_process_data(self, files, username, sid):
             'total': 100,
             'status': f"Processing file {str(actual_index)} of {str(len(files))}"
         })
-        _, data, name, description = read_arff(file["path"])
+
+        # TODO: remove redundancy
+        f = File(file["path"])
+        name, description = f.dataset, f.description
+        data = f.data
 
         if logged_user.posts.filter_by(data_uuid=data.id).first():
             print("Dataset already exists!")
             report[file["original_name"]] = "Error! Dataset already uploaded"
             continue
 
-        storage = current_app.config['CURURU_SERVER']
+        storage = current_app.config['TATU_SERVER']
         try:
             storage.store(data)
         except DuplicateEntryException:
@@ -106,7 +112,7 @@ def celery_process_data(self, files, username, sid):
             report[file["original_name"]] = "Success!"
             # noinspection PyArgumentList
             post = Post(author=logged_user, data_uuid=data.id, name=name, description=description, number_of_instances=len(
-                            data.X), number_of_features=len(data.Y))
+                data.X), number_of_features=len(data.Y))
             # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
             # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
             for dic in storage.visual_history(data.id, current_app.static_folder):

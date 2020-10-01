@@ -2,8 +2,8 @@ from sqlalchemy import or_, and_, asc
 from datetime import datetime
 from werkzeug.security import check_password_hash
 from app import db
-# from cururu.persistence import DuplicateEntryException
-# from pjdata.data import Data
+# from tatu.persistence import DuplicateEntryException
+# from aiuna.data import Data
 # from flask import current_app
 import json
 from time import time
@@ -233,8 +233,8 @@ class Transformation(db.Model):
     label = db.Column(db.String(999))  # Visible text describind Data object.
     name = db.Column(db.String(999))  # Name of the Transformer object.
     # Complete description of the Transformer object.
-    help = db.Column(db.String(99999))
-    # Whether the Data object is already stored in cururu.
+    help = db.Column(db.Text)
+    # Whether the Data object is already stored in tatu.
     stored = db.Column(db.Boolean)
     # Filename of the icon representing the Data object.
     avatar = db.Column(db.String(999))
@@ -251,7 +251,7 @@ class Post(PaginateMixin, db.Model):
         'data_uuid', 'user_id', name='_data_user_unique'),)
 
     name = db.Column(db.String(120), default="No name")
-    description = db.Column(db.String(100000), default="No description")
+    description = db.Column(db.Text, default="No description")
     # avatar = db.Column(db.String(1000))
 
     downloads = db.Column(db.Integer(), default=0)
@@ -340,7 +340,7 @@ class Post(PaginateMixin, db.Model):
 
     # @staticmethod
     # def new(data, author, name):
-    #     storage = current_app.config['CURURU_SERVER']
+    #     storage = current_app.config['TATU_SERVER']
     #  try:
     #         PickleServer().store(data)
     #         try:
@@ -356,7 +356,7 @@ class Post(PaginateMixin, db.Model):
     #     return self.comments.order_by(Comment.timestamp.desc())
 
     # def get_data_object(self):
-    #     storage = current_app.config['CURURU_SERVER']
+    #     storage = current_app.config['TATU_SERVER']
     #     return PickleServer().fetch(Data.phantom_by_uuid(self.data_uuid))
 
     @staticmethod

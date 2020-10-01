@@ -8,8 +8,7 @@ from app.models import User, Post, Comment, Task, Transformation
 from app.api.tasks import celery_process_data
 from app.schemas import (PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema,
                          CommentQuerySchema, TransformQuerySchema)
-from pjdata.content.specialdata import UUIDData
-from pjml.tool.data.evaluation.tssplit import TsSplit
+from aiuna.content.specialdata import UUIDData
 from . import bp
 import uuid as u
 
@@ -73,7 +72,7 @@ class PostsById(MethodView):
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={
-                  "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
         return post
 
     @jwt_required
@@ -88,7 +87,7 @@ class PostsById(MethodView):
 
         if not post or not post.active:
             abort(422, errors={
-                  "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         if not logged_user.is_admin():
             if logged_user != post.author:
@@ -110,7 +109,7 @@ class PostsFavoriteById(MethodView):
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={
-                  "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
@@ -133,7 +132,7 @@ class PostsCommentsById(MethodView):
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={
-                  "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         order_by = getattr(Comment.timestamp, args['order_by'])()
         comments = post.comments.order_by(order_by)
@@ -151,7 +150,7 @@ class PostsCommentsById(MethodView):
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={
-                  "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
@@ -171,7 +170,7 @@ class PostsStatsById(MethodView):
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={
-                  "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         # uuid = post.data_uuid
 
@@ -194,7 +193,7 @@ class PostsTwinsById(MethodView):
         post = Post.query.get(id)
         if not post:
             abort(422, errors={
-                  "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         filter_by = {"active": True, "data_uuid": post.data_uuid, "id": not id}
         data, pagination_parameters.item_count = Post.get(
@@ -215,7 +214,7 @@ class PostsTransformById(MethodView):
         if not post:
             abort(422, errors={"json": {"id": ["Does not existppp."]}})
 
-        storage = current_app.config['CURURU_SERVER']
+        storage = current_app.config['TATU_SERVER']
         data = storage.fetch(UUIDData(post.data_uuid))
 
         transformer = args["transformer"]
@@ -233,7 +232,7 @@ class PostsOnDemand(MethodView):
         """
         Create a new Post on demand.
         """
-        storage = current_app.config['CURURU_SERVER']
+        storage = current_app.config['TATU_SERVER']
         data = storage.fetch(UUIDData(uuid))
         if data is None:
             abort(
@@ -247,9 +246,13 @@ class PostsOnDemand(MethodView):
                 "json": {"OnDemand": ["Dataset already exists!"]}})
 
         # TODO: refactor duplicate code
-        post = Post(author=logged_user, data_uuid=uuid,
-                    name="←".join([i["name"]
-                                   for i in reversed(list(data.historystr))]),
+
+        name = "←".join([i["name"] for i in reversed(list(storage.visual_history(data)))]) or "No Name"
+
+        # noinspection PyArgumentList
+        post = Post(author=logged_user,
+                    data_uuid=uuid,
+                    name=name,
                     description="Title and description automatically generated."
                     )
         for dic in storage.visual_history(uuid, current_app.static_folder):
@@ -257,4 +260,14 @@ class PostsOnDemand(MethodView):
         db.session.add(post)
         db.session.commit()
 
+        return post
+
+    @jwt_required
+    @bp.response(PostBaseSchema)
+    def get(self, uuid):
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
+        post = logged_user.posts.filter_by(data_uuid=uuid).first()
+        if not post:
+            abort(422, errors={"json": {"OnDemand": ["Dataset does not exist!"]}})
         return post

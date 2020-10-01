@@ -18,10 +18,10 @@ def user(username=None, password=None, email=None, base_url="http://localhost:50
     data_createuser = {"username": username, "password": password, "name": "Teste", "email": email}
     response_createuser = requests.post(url_createuser, json=data_createuser)
     print(response_createuser.text)
-    return username, password, email
+    return {"username": username, "password": password, "email": email}
 
 
-def token(username, password, base_url="http://localhost:5000"):
+def token(username, password, base_url="http://localhost:5000", email=None):
     """Create a new permanent token for the given user."""
     url_login = base_url + '/api/auth/login'
     data_login = {"username": username, "password": password}

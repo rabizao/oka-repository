@@ -1289,13 +1289,28 @@ export default function Posts(props) {
         }
 
         try {
-            const response = await api.post(`posts/${uuid}`);
+            // first, try to get.
+            const response = await api.get(`/posts/${uuid}`);
             history.push(`/posts/${response.data.id}/description`);
+            return
         } catch (error) {
             if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
+
+                // now, try to create
+                try {
+                    const response = await api.post(`posts/${uuid}`);
+                    history.push(`/posts/${response.data.id}/description`);
+                } catch (error) {
+                    if (error.response) {
+                        for (var prop in error.response.data.errors.json) {
+                            NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
+                        }
+                    } else {
+                        NotificationManager.error("Network error", "Error", 4000)
+                    }
                 }
+
+
             } else {
                 NotificationManager.error("Network error", "Error", 4000)
             }

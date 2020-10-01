@@ -45,9 +45,9 @@ url_posts = base_url + 'posts'
 # oka.new_post(data=data, name="teste", description="description", token="token_site")
 # oka.send_job(uuid=$#@%@!#$, code="ml")
 
-# Caso de uso "cururu remoto" (apenas cache de resultado)
-# cururuserver.fetch()      -> busca Data no cururu remote usando credencial de forma transparente
-# cururuserver.store(Data)  -> guarda Data no cururu remote usando credencial de forma transparente
+# Caso de uso "store remoto" (apenas cache de resultado)
+# storeserver.fetch()      -> busca Data no store remote usando credencial de forma transparente
+# storeserver.store(Data)  -> guarda Data no store remote usando credencial de forma transparente
 
 # caso de uso "compartilhamento
 # Oka()
