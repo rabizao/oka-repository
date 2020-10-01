@@ -22,7 +22,7 @@ class Users(MethodView):
         return data
 
     @bp.arguments(UserRegisterSchema)
-    @bp.response(UserRegisterSchema)
+    @bp.response(UserRegisterSchema, code=201)
     def post(self, user):
         """
         Create a new user from a json object
