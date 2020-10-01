@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 :root {
     --primary-color: #2A506F;
+    --primary-color-deactivated: #dddddd;
     --secondary-color: #A5DE37;
     --secondary-color-light: rgba(196,196,196, 0.15);
     --tertiary-color: rgba(255,255,255, 1.0);
@@ -77,16 +78,17 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .ellipsis {
-    white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
 }
 
 .ellipsis-3 {
     overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
 }
 
 .nowrap {
@@ -293,6 +295,10 @@ button, input[type="submit"], input[type="reset"] {
     fill: var(--primary-color);
 }
 
+.icon-primary-deactivated path {
+    fill: var(--primary-color-deactivated);
+}
+
 .icon-secondary path {
     fill: var(--secondary-color);
 }
@@ -476,11 +482,15 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .max-width-very-huge {
+    max-width: 400px;
+}
+
+.max-width-giant {
     max-width: 800px;
 }
 
-.width-very-huge {
-    width: 800px;
+.width-huge {
+    width: 400px;
 }
 
 .modal {

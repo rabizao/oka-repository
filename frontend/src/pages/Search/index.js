@@ -102,7 +102,7 @@ export default function Search(props) {
     const [filter, setFilter] = useState(false);
 
     useEffect(() => {
-        setParsedQueries(queryString.parse(location.search))
+        setParsedQueries(queryString.parse(location.search));
     }, [location.search])
 
     function handleSelection(tag) {

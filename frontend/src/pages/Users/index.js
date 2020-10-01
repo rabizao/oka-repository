@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import './styles.css';
 
@@ -12,10 +13,13 @@ import OkaNavBar from '../../components/OkaNavBar';
 import OkaPostsBox from '../../components/OkaPostsBox';
 import api from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
+import queryString from 'query-string';
 
 export default function Users(props) {
+    const location = useLocation()
     const username = props.match.params.username;
     const section = props.match.params.section;
+    const [parsedQueries, setParsedQueries] = useState({});
     const [loadingHero, setLoadingHero] = useState(true);
     const [user, setUser] = useState({});
     const [openEdit, setOpenEdit] = useState(false);
@@ -32,14 +36,18 @@ export default function Users(props) {
         uploads: {
             "name": "Uploads",
             "url": "/users/" + username + "/uploads",
-            "content": <OkaPostsBox fetch_url={"/users/" + username + "/posts"} />
+            "content": <OkaPostsBox fetch_url={"/users/" + username + "/posts?" + queryString.stringify(parsedQueries)} />
         },
         favorites: {
             "name": "Favorites",
             "url": "/users/" + username + "/favorites",
-            "content": <OkaPostsBox fetch_url={"/users/" + username + "/favorites"} />
+            "content": <OkaPostsBox fetch_url={"/users/" + username + "/favorites?" + queryString.stringify(parsedQueries)} />
         }
     }
+
+    useEffect(() => {
+        setParsedQueries(queryString.parse(location.search));
+    }, [location.search])
 
     useEffect(() => {
         async function fetchUser() {

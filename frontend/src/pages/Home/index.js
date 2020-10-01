@@ -116,7 +116,7 @@ export default function Home() {
     return (
         <>
             <OkaHeader />
-            <div className="margin-auto width100 max-width-very-huge padding-small">
+            <div className="margin-auto width100 max-width-giant padding-small">
                     <div className="content-box">
                         <div ref={dropRegion} className="padding-big border-dashed background-hover cursor-pointer" onDragOver={e => handleDragOver(e)} onDrop={e => handleDrop(e)} onClick={e => handleClick(e)} onDragLeave={e => handleDragLeave(e)}>
                             <input

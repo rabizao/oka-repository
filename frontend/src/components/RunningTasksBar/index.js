@@ -5,7 +5,7 @@ export default function RunningTasksBar() {
     const runningTasksBarContext = useContext(RunningTasksBarContext);
 
     return (
-        <div className="background-primary-color width-very-huge fixed-bottom-right margin-sides-verysmall">
+        <div className="background-primary-color width-huge fixed-bottom-right margin-sides-verysmall">
             <div className={`${!runningTasksBarContext.active && "inactive"} flex-column content-box padding-medium width100`}>
                 {
                     !runningTasksBarContext.tasks.lenght || runningTasksBarContext.tasks.lenght === 0 ?

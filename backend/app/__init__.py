@@ -30,7 +30,7 @@ def create_app(config_class=Config):
 
     db.init_app(app)
     migrate.init_app(app, db)
-    CORS(app)
+    CORS(app, expose_headers=["X-Pagination"])
     mail.init_app(app)
     celery.conf.update(app.config)
     jwt.init_app(app)
