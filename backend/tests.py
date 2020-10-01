@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import unittest
 from app import create_app, db
-from app.models import User, Post
+from app.models import User
 from config import Config
 
 
 user1 = {
-    "username": "user1",
+    "username": "user11123",
     "password": "password123",
     "email": "teste@teste.com",
     "name": "Teste1"
@@ -34,14 +34,21 @@ class UserModelCase(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    def test_new_post(self):
+    # Test functions
+    def test_new_user(self):
         user = User(**user1)
-        post = Post(**post1, author=user)
         db.session.add(user)
-        db.session.add(post)
         db.session.commit()
-        self.assertTrue(user.posts[0].data_uuid == post1['data_uuid'])
-        self.assertTrue(post.author == user)
+        self.assertTrue(user.username == user1['username'])
+
+    # Test routes
+    def test_create_user_route(self):
+        """
+            1 - Create an user
+        """
+        with self.app.test_client() as c:
+            response = c.post("/api/users", json=user1)
+            self.assertEqual(response.status_code, 200)
 
 
 if __name__ == '__main__':
