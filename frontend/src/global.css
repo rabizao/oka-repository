@@ -604,6 +604,10 @@ button, input[type="submit"], input[type="reset"] {
     font-size: 30px;
 }
 
+.icon-medium svg {
+    font-size: 50px;
+}
+
 
 /* Notifications */
 @font-face {

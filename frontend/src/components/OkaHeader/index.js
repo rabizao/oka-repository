@@ -4,7 +4,7 @@ import { useHistory, Link } from 'react-router-dom';
 import './styles.css';
 
 import Avatar from 'react-avatar';
-import { Search, Apps, Notifications, AccountCircle } from '@material-ui/icons';
+import { Search, Apps, Notifications, AccountCircle, AccountBalance } from '@material-ui/icons';
 
 import { LoginContext } from '../../contexts/LoginContext';
 import { logout } from '../../services/auth';
@@ -51,19 +51,10 @@ export default function OkaHeader(props) {
                                 componentClasses="icon-tertiary"
                                 content=
                                 {
-                                    <div className="flex-wrap flex-space-between max-width-huge padding-medium">
-                                        <Apps />
-                                        <Apps />
-                                        <Apps />
-                                        <Apps />
-                                        <Apps />
-                                        <Apps />
-                                        <Apps />
-                                        <Apps />
-                                        <Apps />
-                                        <Apps />
-                                        <Apps />
-                                        <Apps />
+                                    <div className="flex-wrap flex-space-between max-width-huge padding-big">
+                                        <Link to="/" className="icon-medium" title="Go to Tribo">
+                                            <AccountBalance />
+                                        </Link>
                                     </div>
                                 }
                             />

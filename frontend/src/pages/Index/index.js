@@ -11,8 +11,8 @@ import api from '../../services/api';
 import uspLogoImg from '../../assets/usp-logo-png.png';
 import okaIconOnImg from '../../assets/okaicon-on.png';
 import okaIconOffImg from '../../assets/okaicon-off.png';
-import okaViewIconOnImg from '../../assets/exploreicon-on.png';
-import okaViewIconOffImg from '../../assets/exploreicon-off.png';
+// import okaViewIconOnImg from '../../assets/exploreicon-on.png';
+// import okaViewIconOffImg from '../../assets/exploreicon-off.png';
 import e2edsImg from '../../assets/e2eds.png';
 
 import Avatar from 'react-avatar';
@@ -47,7 +47,7 @@ const StaticMenu = () => {
 export default function Index() {
     const loggedUser = useContext(LoginContext);
     const [okaIconOn, setOkaIconOn] = useState(false);
-    const [okaViewIconOn, setOkaViewIconOn] = useState(false);
+    // const [okaViewIconOn, setOkaViewIconOn] = useState(false);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
@@ -119,7 +119,7 @@ export default function Index() {
             <ScrollingProvider>
                 <Section id="home" />
                 <div className="flex-row flex-axis-center flex-space-between background-primary-color padding-medium">
-                    <h1 className="color-secondary">Oka</h1>
+                    <h1 className="color-secondary">Tribo</h1>
                     <img className="max-height-50" src={uspLogoImg} alt="USP Logo" />
                 </div>
 
@@ -155,7 +155,7 @@ export default function Index() {
                             }
                         </Link>
                     </div>
-                    <div className="hero-badges-item" onMouseEnter={() => setOkaViewIconOn(true)} onMouseLeave={() => setOkaViewIconOn(false)}>
+                    {/* <div className="hero-badges-item" onMouseEnter={() => setOkaViewIconOn(true)} onMouseLeave={() => setOkaViewIconOn(false)}>
                         <Link to="/home">
                             <h1 className="color-tertiary">Explore Data</h1>
                             {okaViewIconOn ?
@@ -163,7 +163,7 @@ export default function Index() {
                                 <img src={okaViewIconOffImg} alt="Oka View" />
                             }
                         </Link>
-                    </div>
+                    </div> */}
                 </div>
 
                 <Section id="e2eds" className="margin-vertical-big padding-top-navbar">
