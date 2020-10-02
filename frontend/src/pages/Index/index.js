@@ -33,12 +33,12 @@ const StaticMenu = () => {
     return (
         <div className="flex-wrap flex-space-between">
             <div onClick={homeSection.onClick} selected={homeSection.selected} className={`color-tertiary padding-left-small cursor-pointer ${homeSection.selected && "underline-active"}`}>Home</div>
-            <div onClick={e2edsSection.onClick} selected={e2edsSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${e2edsSection.selected && "underline-active"}`}>End-to-End</div>
-            <div onClick={getSection.onClick} selected={getSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${getSection.selected && "underline-active"}`}>Get</div>
-            <div onClick={exploreSection.onClick} selected={exploreSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${exploreSection.selected && "underline-active"}`}>Explore</div>
-            <div onClick={learnSection.onClick} selected={learnSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${learnSection.selected && "underline-active"}`}>Learn</div>
-            <div onClick={explainSection.onClick} selected={explainSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${explainSection.selected && "underline-active"}`}>Explain</div>
-            <div onClick={reproduceSection.onClick} selected={reproduceSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${reproduceSection.selected && "underline-active"}`}>Reproduce</div>
+            <div id="small-hide" onClick={e2edsSection.onClick} selected={e2edsSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${e2edsSection.selected && "underline-active"}`}>End-to-End</div>
+            <div id="small-hide" onClick={getSection.onClick} selected={getSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${getSection.selected && "underline-active"}`}>Get</div>
+            <div id="small-hide" onClick={exploreSection.onClick} selected={exploreSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${exploreSection.selected && "underline-active"}`}>Explore</div>
+            <div id="small-hide" onClick={learnSection.onClick} selected={learnSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${learnSection.selected && "underline-active"}`}>Learn</div>
+            <div id="small-hide" onClick={explainSection.onClick} selected={explainSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${explainSection.selected && "underline-active"}`}>Explain</div>
+            <div id="small-hide" onClick={reproduceSection.onClick} selected={reproduceSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${reproduceSection.selected && "underline-active"}`}>Reproduce</div>
             <div onClick={whoweareSection.onClick} selected={whoweareSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${whoweareSection.selected && "underline-active"}`}>Who we are</div>
         </div>
     );

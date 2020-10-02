@@ -145,7 +145,7 @@ export default function OkaPostsBox({ fetch_url }) {
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
                 <>
                     <div className="flex-row padding-sides-small padding-vertical-small">
-                        <form className="search-form" onKeyUp={(e) => handleFilter(e)} onSubmit={(e) => handleFilter(e)}>
+                        <form className="search-form-secondary" onKeyUp={(e) => handleFilter(e)} onSubmit={(e) => handleFilter(e)}>
                             <input
                                 placeholder="Filter by name"
                                 value={filter}
