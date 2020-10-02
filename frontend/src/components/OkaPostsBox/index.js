@@ -185,7 +185,7 @@ export default function OkaPostsBox({ fetch_url }) {
                                     <option value={100}>100</option>
                                 </select>
                             </div>
-                            <span className="padding-sides-small">{page} of {totalPages}</span>
+                            <span className="padding-sides-small">{page ? page : 0} of {totalPages}</span>
                             {
                                 page > 1 ?
                                     <button onClick={handlePreviousPage}><ArrowLeft /></button> :

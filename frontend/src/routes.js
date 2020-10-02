@@ -5,7 +5,6 @@ import PrivateRoute from './components/PrivateRoute';
 import Index from './pages/Index';
 import Home from './pages/Home';
 import Search from './pages/Search';
-import Upload from './pages/Upload';
 import Posts from './pages/Posts';
 import Users from './pages/Users';
 import Register from './pages/Register';
@@ -22,7 +21,6 @@ export default function Routes() {
                 <PrivateRoute path="/users/:username/:section" component={Users} />
                 <PrivateRoute path="/search/:section/" component={Search} />
                 <PrivateRoute path="/posts/:id/:section/" component={Posts} />
-                <PrivateRoute path="/upload" component={Upload} />
             </Switch>
         </BrowserRouter>
     );
