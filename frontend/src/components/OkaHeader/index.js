@@ -30,10 +30,8 @@ export default function OkaHeader(props) {
     }
 
     return (
-        <div className="oka-header">
-            <div className="oka-header-logo">
-                <Link to="/home"><h1>Oka</h1></Link>
-            </div>
+        <div className="flex-row flex-axis-center flex-space-between background-primary-color padding-medium">
+            <Link to="/home"><h1 className="color-secondary">Oka</h1></Link>
             <div className="oka-header-search">
                 <form className="oka-header-search-form" onSubmit={handleSearch}>
                     <input

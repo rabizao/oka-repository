@@ -1,17 +1,3 @@
-.oka-header {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 0 20px;
-    height: 80px;
-    background-color: var(--primary-color);
-    align-items: center;
-}
-
-.oka-header-logo h1 {
-    color: var(--secondary-color);
-}
-
 .oka-header-search-form, .oka-header-search-form button, .oka-header-right-buttons ul {
     display: flex;
     flex-direction: row;

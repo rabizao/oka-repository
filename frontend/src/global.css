@@ -116,6 +116,10 @@ button, input[type="submit"], input[type="reset"] {
     padding-top: 50px
 }
 
+.padding-top-navbar {
+    padding-top: 80px
+}
+
 .padding-sides-small {
     padding-left: 20px;
     padding-right: 20px;
@@ -124,6 +128,10 @@ button, input[type="submit"], input[type="reset"] {
 .padding-sides-medium {
     padding-left: 30px;
     padding-right: 30px;
+}
+
+.padding-left-medium {
+    padding-left: 30px;
 }
 
 .padding-left-small {
@@ -142,6 +150,11 @@ button, input[type="submit"], input[type="reset"] {
 .padding-vertical-medium {
     padding-top: 30px;
     padding-bottom: 30px;
+}
+
+.padding-vertical-big {
+    padding-top: 40px;
+    padding-bottom: 40px;
 }
 
 .padding-vertical-verysmall {
@@ -188,6 +201,15 @@ button, input[type="submit"], input[type="reset"] {
     margin-top: 50px;
 }
 
+.margin-vertical-big {
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+
+.margin-top-huge {
+    margin-top: 200px;
+}
+
 .margin-top-medium {
     margin-top: 25px;
 }
@@ -212,7 +234,7 @@ button, input[type="submit"], input[type="reset"] {
     font-weight: bold;
 }
 
-.flex-axis-center, .flex-axis-center div a {
+.flex-axis-center, .flex-axis-center div a , .flex-axis-center div {
     align-items: center;
 }
 
@@ -309,6 +331,14 @@ button, input[type="submit"], input[type="reset"] {
 
 .color-tertiary {
     color: var(--tertiary-color);
+}
+
+.color-primary {
+    color: var(--primary-color);
+}
+
+.color-secondary {
+    color: var(--secondary-color);
 }
 
 .button-primary {
@@ -489,6 +519,12 @@ button, input[type="submit"], input[type="reset"] {
     max-width: 800px;
 }
 
+.max-width-images {
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+}
+
 .width-huge {
     width: 400px;
 }
@@ -505,9 +541,10 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .sticky {
-    position: fixed;
-    top: 0;
-    z-index: 1000;
+    position: sticky;
+  position: -webkit-sticky;
+  top: 0; /* required */
+    z-index: 100;
 }
 
 .inactive {
@@ -535,6 +572,10 @@ button, input[type="submit"], input[type="reset"] {
 
 .text-center {
     text-align: center
+}
+
+.max-height-50 {    
+    max-height: 50px;
 }
 
 

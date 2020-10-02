@@ -1,0 +1,39 @@
+.hero-badges {
+    overflow: auto;
+    width: 100%;
+    height: auto;
+    padding-top: 180px;
+    padding-bottom: 250px;
+    background-color: #2a506f;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-badges img {
+    max-width: 300px;
+    padding-top: 30px;
+}
+
+.hero-badges-item {
+    border: 2px solid #a5de37;
+    border-radius: 10px;
+    text-align: center;
+    display: block;
+    padding: 40px;
+    margin: 30px;
+}
+
+.hero-badges-item a {
+    border-bottom: none;    
+}
+
+.hero-badges-item:hover {
+    border: 2px solid white;
+}
+
+.underline-active {
+    text-decoration: underline 3px #a5de37;
+    text-underline-position: under;
+}
