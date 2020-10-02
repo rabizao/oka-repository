@@ -185,11 +185,6 @@ export default function Search(props) {
             "name": "People",
             "url": "/search/people?name=" + parsedQueries.name,
             "content": people()
-        },
-        tags: {
-            "name": "Tags",
-            "url": "/search/tags?name=" + parsedQueries.name,
-            "content": textBox("Tags not implemented yet.")
         }
     }
 

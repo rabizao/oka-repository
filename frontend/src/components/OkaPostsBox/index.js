@@ -21,8 +21,6 @@ export default function OkaPostsBox({ fetch_url }) {
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState();
     const [totalPages, setTotalPages] = useState();
-    // const [postsTotal, setPostsTotal] = useState();
-    // const [firstPage, setFirstPage] = useState();
     const [lastPage, setLastPage] = useState();
     const [pageSize, setPageSize] = useState(queryString.parse(location.search).page_size || 10);    
 
@@ -33,8 +31,6 @@ export default function OkaPostsBox({ fetch_url }) {
                 const pagination = JSON.parse(response.headers['x-pagination']);
                 setPage(pagination.page);
                 setTotalPages(pagination.total_pages);
-                // setPostsTotal(pagination.total);
-                // setFirstPage(pagination.first_page);
                 setLastPage(pagination.last_page);
                 setPosts(response.data);
                 setFilteredPosts(response.data);
