@@ -189,6 +189,14 @@ button, input[type="submit"], input[type="reset"] {
     margin-bottom: 400px;
 }
 
+.margin-big {
+    margin: 50px;
+}
+
+.margin-medium {
+    margin: 30px;
+}
+
 .margin-small {
     margin: 20px;
 }
@@ -438,11 +446,15 @@ button, input[type="submit"], input[type="reset"] {
     text-decoration: underline;
 }
 
-.form input, .form button {
+.form input, .form button, .form textarea {
     height: 50px;
     padding: 10px;
     border: var(--border);
     margin: 10px;
+}
+
+.form textarea {
+    height: 100px;
 }
 
 .flex-maxcontent {
@@ -561,6 +573,12 @@ button, input[type="submit"], input[type="reset"] {
     right: 0;
 }
 
+.fixed-bottom-right-padding {
+    position: fixed;
+    bottom: 5%;
+    right: 2%;
+}
+
 .border-dashed {
     border: 2px dashed var(--secondary-color);
 }
@@ -578,6 +596,13 @@ button, input[type="submit"], input[type="reset"] {
     max-height: 50px;
 }
 
+.icon-big svg {
+    font-size: 100px;
+}
+
+.icon-normal svg {
+    font-size: 30px;
+}
 
 
 /* Notifications */

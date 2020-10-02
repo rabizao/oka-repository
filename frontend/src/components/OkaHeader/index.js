@@ -39,63 +39,69 @@ export default function OkaHeader(props) {
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                     />
-                    <button type="submit"><Search className="icon-tertiary-light" /></button>
+                    <button className="icon-normal" type="submit"><Search className="icon-tertiary-light" /></button>
                 </form>
             </div>
             <div className="oka-header-right-buttons">
                 <ul className="ul-padding-sides-not-first">
                     <li className="flex-row cursor-pointer">
-                        <PopOver
-                            component={Apps}
-                            componentClasses="icon-tertiary"
-                            content=
-                            {
-                                <div className="flex-wrap flex-space-between max-width-huge padding-medium">
-                                    <Apps />
-                                    <Apps />
-                                    <Apps />
-                                    <Apps />
-                                    <Apps />
-                                    <Apps />
-                                    <Apps />
-                                    <Apps />
-                                    <Apps />
-                                    <Apps />
-                                    <Apps />
-                                    <Apps />
-                                </div>
-                            }
-                        />
-                    </li>
-                    <li className="flex-row cursor-pointer">
-                        <PopOver
-                            component={Notifications}
-                            componentClasses="icon-tertiary"
-                            content=
-                            {
-                                <>
-                                    <h6 className="padding-sides-small padding-top-medium">Notifications</h6>
-                                    <div className="flex-column padding-vertical-small">
-                                        <Link className="padding-sides-small padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/uploads`}>Notification 1</Link>
-                                        <Link className="padding-sides-small padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/favorites`}>Notification 2</Link>
+                        <div className="icon-normal">
+                            <PopOver
+                                component={Apps}
+                                componentClasses="icon-tertiary"
+                                content=
+                                {
+                                    <div className="flex-wrap flex-space-between max-width-huge padding-medium">
+                                        <Apps />
+                                        <Apps />
+                                        <Apps />
+                                        <Apps />
+                                        <Apps />
+                                        <Apps />
+                                        <Apps />
+                                        <Apps />
+                                        <Apps />
+                                        <Apps />
+                                        <Apps />
+                                        <Apps />
                                     </div>
-                                </>
-                            }
-                        />
+                                }
+                            />
+                        </div>
                     </li>
                     <li className="flex-row cursor-pointer">
-                        <PopOver
-                            component={AccountCircle}
-                            componentClasses="icon-tertiary"
-                            content=
-                            {
-                                <div className="flex-column flex-axis-center padding-vertical-medium">
-                                    <Link className="padding-sides-medium" to={`/users/${loggedUser.username}/uploads`}><Avatar name={loggedUser.name} size="70" round={true} /></Link>
-                                    <button onClick={handleLogout} className="margin-top-medium padding-sides-medium padding-vertical-small box background-hover width100">Logout</button>
-                                    {/* <Link className="padding-sides-medium padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/favorites`}>Your favorites</Link> */}
-                                </div>
-                            }
-                        />
+                        <div className="icon-normal">
+                            <PopOver
+                                component={Notifications}
+                                componentClasses="icon-tertiary"
+                                content=
+                                {
+                                    <>
+                                        <h6 className="padding-sides-small padding-top-medium">Notifications</h6>
+                                        <div className="flex-column padding-vertical-small">
+                                            <Link className="padding-sides-small padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/uploads`}>Notification 1</Link>
+                                            <Link className="padding-sides-small padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/favorites`}>Notification 2</Link>
+                                        </div>
+                                    </>
+                                }
+                            />
+                        </div>
+                    </li>
+                    <li className="flex-row cursor-pointer">
+                        <div className="icon-normal">
+                            <PopOver
+                                component={AccountCircle}
+                                componentClasses="icon-tertiary"
+                                content=
+                                {
+                                    <div className="flex-column flex-axis-center padding-vertical-medium">
+                                        <Link className="padding-sides-medium" to={`/users/${loggedUser.username}/uploads`}><Avatar name={loggedUser.name} size="70" round={true} /></Link>
+                                        <button onClick={handleLogout} className="margin-top-medium padding-sides-medium padding-vertical-small box background-hover width100">Logout</button>
+                                        {/* <Link className="padding-sides-medium padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/favorites`}>Your favorites</Link> */}
+                                    </div>
+                                }
+                            />
+                        </div>
                     </li>
                 </ul>
             </div>

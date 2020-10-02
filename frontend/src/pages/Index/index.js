@@ -6,7 +6,7 @@ import './styles.css';
 import { LoginContext } from '../../contexts/LoginContext';
 import { logout } from '../../services/auth';
 import PopOver from '../../components/PopOver';
-
+import api from '../../services/api';
 
 import uspLogoImg from '../../assets/usp-logo-png.png';
 import okaIconOnImg from '../../assets/okaicon-on.png';
@@ -16,8 +16,9 @@ import okaViewIconOffImg from '../../assets/exploreicon-off.png';
 import e2edsImg from '../../assets/e2eds.png';
 
 import Avatar from 'react-avatar';
-import { AccountCircle } from '@material-ui/icons';
+import { AccountCircle, Help } from '@material-ui/icons';
 import { ScrollingProvider, useScrollSection, Section } from 'react-scroll-section';
+import { NotificationManager } from 'react-notifications';
 
 const StaticMenu = () => {
     const homeSection = useScrollSection('home');
@@ -47,6 +48,9 @@ export default function Index() {
     const loggedUser = useContext(LoginContext);
     const [okaIconOn, setOkaIconOn] = useState(false);
     const [okaViewIconOn, setOkaViewIconOn] = useState(false);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [message, setMessage] = useState('');
 
     function handleLogout() {
         logout();
@@ -54,37 +58,91 @@ export default function Index() {
         return
     }
 
+    async function handleContactSubmit(e) {
+        e.preventDefault()
+        const data = {
+            name: name,
+            email: email,
+            message: message
+        }
+
+        try {
+            await api.post('contacts', data);
+            alert("Thanks for the message. We will answer as soon as possible.")
+            setName('');
+            setEmail('');
+            setMessage('');
+        } catch (error) {
+            if (error.response) {
+                for (var prop in error.response.data.errors.json) {
+                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
+                }
+            } else {
+                NotificationManager.error("network error", "error", 4000)
+            }
+        }
+    }
+
     return (
-        <ScrollingProvider>
-            <>
-                <Section id="home">
-                    <div className="flex-row flex-axis-center flex-space-between background-primary-color padding-medium">
-                        <h1 className="color-secondary">Oka</h1>
-                        <img className="max-height-50" src={uspLogoImg} alt="USP Logo" />
-                    </div>
-                </Section>
+        <>
+            <div className="fixed-bottom-right-padding icon-big">
+                <PopOver
+                    component={Help}
+                    componentClasses="icon-secondary cursor-pointer"
+                    content=
+                    {
+                        <div className="margin-medium flex-column flex-axis-center">
+                            <h1><Link to="/home">Contact us</Link></h1>
+                            <form className="form flex-column margin-small" onSubmit={handleContactSubmit}>
+                                <input
+                                    placeholder="Name"
+                                    value={name}
+                                    onChange={e => setName(e.target.value)}
+                                />
+                                <input
+                                    type="email"
+                                    placeholder="Email"
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
+                                />
+                                <textarea
+                                    placeholder="Message"
+                                    value={message}
+                                    onChange={e => setMessage(e.target.value)}
+                                />
+                                <button className="button-primary" type="submit">Submit</button>
+                            </form>
+                        </div>
+                    }
+                />
+            </div>
+            <ScrollingProvider>
+                <Section id="home" />
+                <div className="flex-row flex-axis-center flex-space-between background-primary-color padding-medium">
+                    <h1 className="color-secondary">Oka</h1>
+                    <img className="max-height-50" src={uspLogoImg} alt="USP Logo" />
+                </div>
 
                 <div className="flex-row flex-space-between background-primary-color padding-big sticky">
                     <StaticMenu />
-
-
                     <div className="padding-left-medium">
                         {loggedUser.logged ?
-                            <PopOver
-                                component={AccountCircle}
-                                componentClasses="icon-tertiary cursor-pointer"
-                                content=
-                                {
-                                    <div className="flex-column flex-axis-center padding-vertical-medium">
-                                        <Link className="padding-sides-medium" to={`/users/${loggedUser.username}/uploads`}><Avatar name={loggedUser.name} size="70" round={true} /></Link>
-                                        <button onClick={handleLogout} className="margin-top-medium padding-sides-medium padding-vertical-small box background-hover width100">Logout</button>
-                                    </div>
-                                }
-                            /> :
+                            <div className="icon-normal">
+                                <PopOver
+                                    component={AccountCircle}
+                                    componentClasses="icon-tertiary cursor-pointer"
+                                    content=
+                                    {
+                                        <div className="flex-column flex-axis-center padding-vertical-medium">
+                                            <Link className="padding-sides-medium" to={`/users/${loggedUser.username}/uploads`}><Avatar name={loggedUser.name} size="70" round={true} /></Link>
+                                            <button onClick={handleLogout} className="margin-top-medium padding-sides-medium padding-vertical-small box background-hover width100">Logout</button>
+                                        </div>
+                                    }
+                                />
+                            </div> :
                             <Link className="color-tertiary" to="/login">Login</Link>
                         }
                     </div>
-
                 </div>
 
                 <div className="hero-badges">
@@ -166,7 +224,8 @@ export default function Index() {
                 <footer className="padding-big flex-wrap flex-crossaxis-center background-primary-color">
                     <h6 className="color-tertiary">CeMEAI - ICMC - University of São Paulo | Av. Trabalhador São Carlense, 200 - São Carlos/SP - Brazil</h6>
                 </footer>
-            </>
-        </ScrollingProvider>
+            </ScrollingProvider>
+        </>
+
     );
 }
