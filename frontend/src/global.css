@@ -209,6 +209,10 @@ button, input[type="submit"], input[type="reset"] {
     margin-top: 50px;
 }
 
+.margin-bottom-big {
+    margin-bottom: 50px;
+}
+
 .margin-vertical-big {
     margin-top: 50px;
     margin-bottom: 50px;
