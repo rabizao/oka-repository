@@ -226,6 +226,10 @@ button, input[type="submit"], input[type="reset"] {
     margin-top: 15px;
 }
 
+.margin-bottom-small {
+    margin-bottom: 15px;
+}
+
 .margin-top-very-small {
     margin-top: 5px;
 }
@@ -568,8 +572,8 @@ button, input[type="submit"], input[type="reset"] {
 
 .sticky {
     position: sticky;
-  position: -webkit-sticky;
-  top: 0; /* required */
+    position: -webkit-sticky;
+    top: 0;
     z-index: 100;
 }
 

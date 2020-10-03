@@ -119,7 +119,7 @@ export default function Index() {
             <ScrollingProvider>
                 <Section id="home" />
                 <div className="flex-row flex-axis-center flex-space-between background-primary-color padding-medium">
-                    <h1 className="color-secondary">Tribo</h1>
+                    <h1 className="color-secondary">Analytics Lab</h1>
                     <img className="max-height-50" src={uspLogoImg} alt="USP Logo" />
                 </div>
 

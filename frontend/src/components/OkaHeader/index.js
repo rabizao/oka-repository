@@ -4,7 +4,7 @@ import { useHistory, Link } from 'react-router-dom';
 import './styles.css';
 
 import Avatar from 'react-avatar';
-import { Search, Apps, Notifications, AccountCircle, AccountBalance } from '@material-ui/icons';
+import { Search, Apps, Notifications, AccountBalance, ExpandMore } from '@material-ui/icons';
 
 import { LoginContext } from '../../contexts/LoginContext';
 import { logout } from '../../services/auth';
@@ -73,7 +73,7 @@ export default function OkaHeader(props) {
                             content=
                             {
                                 <div className="flex-wrap flex-space-between max-width-huge padding-big">
-                                    <Link to="/" className="icon-medium" title="Go to Tribo">
+                                    <Link to="/" className="icon-medium" title="Go to Analytics Lab">
                                         <AccountBalance />
                                     </Link>
                                 </div>
@@ -98,14 +98,16 @@ export default function OkaHeader(props) {
                     </li>
                     <li className="flex-row cursor-pointer icon-normal">
                         <PopOver
-                            component={AccountCircle}
+                            component={ExpandMore}
                             componentClasses="icon-tertiary"
                             content=
                             {
-                                <div className="flex-column flex-axis-center padding-vertical-medium">
-                                    <Link className="padding-sides-medium" to={`/users/${loggedUser.username}/uploads`}><Avatar name={loggedUser.name} size="70" round={true} /></Link>
-                                    <button onClick={handleLogout} className="margin-top-medium padding-sides-medium padding-vertical-small box background-hover width100">Logout</button>
-                                    {/* <Link className="padding-sides-medium padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/favorites`}>Your favorites</Link> */}
+                                <div className="flex-column flex-axis-center padding-big">
+                                    <Link className="margin-top-small" to={`/users/${loggedUser.username}/uploads`}><Avatar name={loggedUser.name} size="70" round={true} /></Link>
+                                    <Link className="margin-top-small ellipsis" to={`/users/${loggedUser.username}/uploads`}><h1>{loggedUser.name}</h1></Link>
+                                    <button className="margin-top-medium padding-vertical-small box background-hover width100"><Link to={`/users/${loggedUser.username}/uploads`}>Uploads/Favorites</Link></button>
+                                    <button className="padding-vertical-small box background-hover width100"><Link to={`/users/${loggedUser.username}/uploads`}>API</Link></button>
+                                    <button onClick={handleLogout} className="margin-bottom-small padding-vertical-small box background-hover width100">Logout</button>
                                 </div>
                             }
                         />
