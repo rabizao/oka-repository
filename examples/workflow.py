@@ -24,12 +24,12 @@ print("user created")
 wflow = (
         File("iris.arff")
         * Binarize
-        * Cache(Split(), storage_alias="oka")
+        * Cache(Split(test_size=0.23), storage_alias="okapost")
         * Cache(PCA(n=3), storage_alias="oka")
         * Report("{id}")
         * Cache(SVM2(C=0.5), storage_alias="oka")
         * Metric2
-        * Report("tr {r}\t\tts {inner.r}")
+        * Report("tr {r}\t\tts {inner.r} \t\t{history^name}")
 )
 
 
