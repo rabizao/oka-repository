@@ -105,8 +105,8 @@ export default function OkaHeader(props) {
                                 <div className="flex-column flex-axis-center padding-big">
                                     <Link className="margin-top-small" to={`/users/${loggedUser.username}/uploads`}><Avatar name={loggedUser.name} size="70" round={true} /></Link>
                                     <Link className="margin-top-small ellipsis" to={`/users/${loggedUser.username}/uploads`}><h1>{loggedUser.name}</h1></Link>
-                                    <button className="margin-top-medium padding-vertical-small box background-hover width100"><Link to={`/users/${loggedUser.username}/uploads`}>Uploads/Favorites</Link></button>
-                                    <button className="padding-vertical-small box background-hover width100"><Link to={`/client`}>Oka Client</Link></button>
+                                    <Link className="flex-row flex-crossaxis-center margin-top-medium padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/uploads`}>Uploads/Favorites</Link>
+                                    <Link className="flex-row flex-crossaxis-center padding-vertical-small box background-hover width100" to={`/client`}>Oka Client</Link>
                                     <button onClick={handleLogout} className="margin-bottom-small padding-vertical-small box background-hover width100">Logout</button>
                                 </div>
                             }
