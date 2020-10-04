@@ -27,8 +27,6 @@ export default function Users(props) {
     const [about_me, setAbout_me] = useState('');
     const [nameEdit, setNameEdit] = useState('');
     const [about_meEdit, setAbout_meEdit] = useState('');
-    const [openApiToken, setOpenApiToken] = useState(false);
-    const [apiToken, setApiToken] = useState('');
 
     const loggedUser = useContext(LoginContext);
 

@@ -3,12 +3,11 @@ import { useHistory, Link } from 'react-router-dom';
 
 import './styles.css';
 
-import Avatar from 'react-avatar';
-import { Search, Apps, Notifications, AccountBalance, ExpandMore } from '@material-ui/icons';
+import { Search, Apps, Notifications, AccountBalance } from '@material-ui/icons';
 
 import { LoginContext } from '../../contexts/LoginContext';
-import { logout } from '../../services/auth';
 import PopOver from '../PopOver';
+import OkaMyAccount from '../OkaMyAccount';
 
 export default function OkaHeader(props) {
 
@@ -21,12 +20,6 @@ export default function OkaHeader(props) {
         history.push(`${props.section ?
             `/search/${props.section}?name=${search}&logic=and` :
             `/search/datasets?name=${search}&logic=and`}`);
-    }
-
-    function handleLogout() {
-        logout();
-        window.location.href = '/';
-        return
     }
 
     return (
@@ -97,20 +90,7 @@ export default function OkaHeader(props) {
                         />
                     </li>
                     <li className="flex-row cursor-pointer icon-normal">
-                        <PopOver
-                            component={ExpandMore}
-                            componentClasses="icon-tertiary"
-                            content=
-                            {
-                                <div className="flex-column flex-axis-center padding-big">
-                                    <Link className="margin-top-small" to={`/users/${loggedUser.username}/uploads`}><Avatar name={loggedUser.name} size="70" round={true} /></Link>
-                                    <Link className="margin-top-small ellipsis" to={`/users/${loggedUser.username}/uploads`}><h1>{loggedUser.name}</h1></Link>
-                                    <Link className="flex-row flex-crossaxis-center margin-top-medium padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/uploads`}>Uploads/Favorites</Link>
-                                    <Link className="flex-row flex-crossaxis-center padding-vertical-small box background-hover width100" to={`/client`}>Oka Client</Link>
-                                    <button onClick={handleLogout} className="margin-bottom-small padding-vertical-small box background-hover width100">Logout</button>
-                                </div>
-                            }
-                        />
+                        <OkaMyAccount />
                     </li>
                 </ul>
             </div>
