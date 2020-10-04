@@ -96,7 +96,7 @@ export default function ContentBox(props) {
                                             <div>
                                                 {!props.hideAuthor && <><span className="font-size-medium bold">{post.author.name}</span> - <span>{post.author.username}</span> - <TimeAgo datetime={post.timestamp+'Z'} /></>}
                                             </div>
-                                            <div>
+                                            <div className="ellipsis-15ch">
                                                 <span className="bold">{post.name}</span>{props.hideAuthor && <span> - <TimeAgo datetime={post.timestamp+'Z'}/></span>}
                                             </div>
                                             <span className="ellipsis-3">{post.description}</span>

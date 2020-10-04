@@ -78,10 +78,9 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .ellipsis {
+    white-space: nowrap;
     overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
 }
 
 .ellipsis-3 {
@@ -89,6 +88,13 @@ button, input[type="submit"], input[type="reset"] {
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
+}
+
+.ellipsis-15ch {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 15ch;
 }
 
 .nowrap {
@@ -260,6 +266,10 @@ button, input[type="submit"], input[type="reset"] {
 
 .flex-space-between {
     justify-content: space-between;
+}
+
+.flex-right {
+    justify-content: right;
 }
 
 .flex-column {
@@ -763,6 +773,6 @@ button, input[type="submit"], input[type="reset"] {
     }
 
     #small-show {
-        display: flex;
+        display: block;
     }
 }

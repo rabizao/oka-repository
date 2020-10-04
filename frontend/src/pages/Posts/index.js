@@ -1357,7 +1357,7 @@ export default function Posts(props) {
                                     <img height="100px" src={`${downloadsUrl}${post.data_uuid}.jpg`} title="Copy to clipboard" alt="Copy to clipboard" />
                                 </button>
                                 <div className="flex-column flex-crossaxis-center">
-                                    <h1 className="padding-small color-tertiary">{name}</h1>
+                                    <h1 id="small-hide" className="padding-small color-tertiary ellipsis-15ch">{name}</h1>
                                     <div className="padding-top-small flex-row">
                                         {
                                             post.history.slice(0).reverse().map((transformation) =>
@@ -1380,10 +1380,11 @@ export default function Posts(props) {
                                 </div>
                             </div>
                             <div>
-                                <button onClick={handleOpenEdit} className="button-secondary">Edit</button>
-                                <button className="button-secondary margin-left-small">Publish</button>
+                                <button onClick={handleOpenEdit} className="button-secondary margin-very-small">Edit</button>
+                                <button className="button-secondary margin-very-small">Publish</button>
                             </div>
                         </div>
+                        <h1 id="small-show" className="color-tertiary ellipsis">{name}</h1>
                         <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
                         <h6 className="color-tertiary">{post.downloads} downloads | {post.favorites.length} favorited</h6>
                         <div className="margin-top-very-small" >
