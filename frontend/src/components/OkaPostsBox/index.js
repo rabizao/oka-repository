@@ -210,14 +210,14 @@ export default function OkaPostsBox({ fetch_url }) {
                                     }
                                 </button>
                                 <Link className="flex-row flex-space-between padding-vertical-small width100" to={`/posts/${post.id}/description`}>
-                                    <div className="bold padding-sides-small ellipsis width100">
+                                    <div className="bold padding-sides-small min-width-big max-width-very-huge ellipsis width100">
                                         {post.name}
                                     </div>
                                     <div id="small-hide" className="ellipsis padding-sides-small width100">
                                         {post.description}
                                     </div>
                                     <div className="padding-sides-small">
-                                        <TimeAgo className="nowrap" datetime={post.timestamp + 'Z'} />
+                                        <TimeAgo  className="nowrap" datetime={post.timestamp + 'Z'} />
                                     </div>
                                 </Link>
                             </div>

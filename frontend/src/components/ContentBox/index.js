@@ -93,10 +93,10 @@ export default function ContentBox(props) {
                                     {!props.hideAvatar && <Link to={`/users/${post.author.username}/uploads`} ><Avatar name={post.author.name} size="40" round={true} /></Link>}
                                     <Link className="padding-left-small" to={`/posts/${post.id}/description`}>
                                         <div className="flex-column">
-                                            <div>
+                                            <div className="ellipsis-15ch">
                                                 {!props.hideAuthor && <><span className="font-size-medium bold">{post.author.name}</span> - <span>{post.author.username}</span> - <TimeAgo datetime={post.timestamp+'Z'} /></>}
                                             </div>
-                                            <div className="ellipsis-15ch">
+                                            <div className="ellipsis-1">
                                                 <span className="bold">{post.name}</span>{props.hideAuthor && <span> - <TimeAgo datetime={post.timestamp+'Z'}/></span>}
                                             </div>
                                             <span className="ellipsis-3">{post.description}</span>
