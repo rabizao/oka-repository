@@ -1387,7 +1387,7 @@ export default function Posts(props) {
                                 <img height="100px" src={`${downloadsUrl}${post.data_uuid}.jpg`} title="Copy to clipboard" alt="Copy to clipboard" />
                             </button>
                         </div>
-                        <h1 className="color-tertiary ellipsis-2">{name}</h1>
+                        <h1 className="color-tertiary ellipsis">{name}</h1>
                         <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
                         <h6 className="color-tertiary">{post.downloads} downloads | {post.favorites.length} favorited</h6>
                         <div className="margin-top-very-small" >
