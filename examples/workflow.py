@@ -55,7 +55,8 @@ print("user created")
 wflow = (
         File("iris.arff")
         * Binarize
-        * Cache(Split(), storage="pickle")
+        * Split
+        * Cache(PCA, storage="pickle")
         # * Cache(PCA(n=3), storage="sqlite")
         * Report("{id}")
         * SVM2(C=0.5)
