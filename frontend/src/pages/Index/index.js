@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import './styles.css';
 
 import { LoginContext } from '../../contexts/LoginContext';
-import { logout } from '../../services/auth';
 import PopOver from '../../components/PopOver';
 import api from '../../services/api';
 
@@ -14,9 +13,9 @@ import okaIconOffImg from '../../assets/okaicon-off.png';
 // import okaViewIconOnImg from '../../assets/exploreicon-on.png';
 // import okaViewIconOffImg from '../../assets/exploreicon-off.png';
 import e2edsImg from '../../assets/e2eds.png';
+import OkaMyAccount from '../../components/OkaMyAccount';
 
-import Avatar from 'react-avatar';
-import { AccountCircle, Help } from '@material-ui/icons';
+import { Help } from '@material-ui/icons';
 import { ScrollingProvider, useScrollSection, Section } from 'react-scroll-section';
 import { NotificationManager } from 'react-notifications';
 
@@ -51,12 +50,6 @@ export default function Index() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
-
-    function handleLogout() {
-        logout();
-        window.location.href = '/';
-        return
-    }
 
     async function handleContactSubmit(e) {
         e.preventDefault()
@@ -119,7 +112,7 @@ export default function Index() {
             <ScrollingProvider>
                 <Section id="home" />
                 <div className="flex-row flex-axis-center flex-space-between background-primary-color padding-medium">
-                    <h1 className="color-secondary">Tribo</h1>
+                    <h1 className="color-secondary">Oka</h1>
                     <img className="max-height-50" src={uspLogoImg} alt="USP Logo" />
                 </div>
 
@@ -128,17 +121,7 @@ export default function Index() {
                     <div className="padding-left-medium">
                         {loggedUser.logged ?
                             <div className="icon-normal">
-                                <PopOver
-                                    component={AccountCircle}
-                                    componentClasses="icon-tertiary cursor-pointer"
-                                    content=
-                                    {
-                                        <div className="flex-column flex-axis-center padding-vertical-medium">
-                                            <Link className="padding-sides-medium" to={`/users/${loggedUser.username}/uploads`}><Avatar name={loggedUser.name} size="70" round={true} /></Link>
-                                            <button onClick={handleLogout} className="margin-top-medium padding-sides-medium padding-vertical-small box background-hover width100">Logout</button>
-                                        </div>
-                                    }
-                                />
+                                <OkaMyAccount/>
                             </div> :
                             <Link className="color-tertiary" to="/login">Login</Link>
                         }

@@ -78,9 +78,22 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ellipsis-1 {
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+}
+
+.ellipsis-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
 }
 
@@ -89,6 +102,13 @@ button, input[type="submit"], input[type="reset"] {
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
+}
+
+.ellipsis-15ch {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 15ch;
 }
 
 .nowrap {
@@ -140,6 +160,10 @@ button, input[type="submit"], input[type="reset"] {
 
 .padding-left-very-small {
     padding-left: 10px;
+}
+
+.padding-right-very-small {
+    padding-right: 10px;
 }
 
 .padding-vertical-small {
@@ -209,6 +233,10 @@ button, input[type="submit"], input[type="reset"] {
     margin-top: 50px;
 }
 
+.margin-bottom-big {
+    margin-bottom: 50px;
+}
+
 .margin-vertical-big {
     margin-top: 50px;
     margin-bottom: 50px;
@@ -224,6 +252,10 @@ button, input[type="submit"], input[type="reset"] {
 
 .margin-top-small {
     margin-top: 15px;
+}
+
+.margin-bottom-small {
+    margin-bottom: 15px;
 }
 
 .margin-top-very-small {
@@ -252,6 +284,10 @@ button, input[type="submit"], input[type="reset"] {
 
 .flex-space-between {
     justify-content: space-between;
+}
+
+.flex-right {
+    justify-content: right;
 }
 
 .flex-column {
@@ -568,8 +604,8 @@ button, input[type="submit"], input[type="reset"] {
 
 .sticky {
     position: sticky;
-  position: -webkit-sticky;
-  top: 0; /* required */
+    position: -webkit-sticky;
+    top: 0;
     z-index: 100;
 }
 
@@ -755,6 +791,6 @@ button, input[type="submit"], input[type="reset"] {
     }
 
     #small-show {
-        display: flex;
+        display: block;
     }
 }

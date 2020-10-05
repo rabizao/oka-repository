@@ -94,7 +94,9 @@ def celery_process_data(self, files, username, sid):
         })
 
         # TODO: remove redundancy
-        f = File(file["path"])
+        name = file["path"].split("/")[-1]
+        path = "/".join(file["path"].split("/")[:-1]) + "/"
+        f = File(name, path)
         name, description = f.dataset, f.description
         data = f.data
 

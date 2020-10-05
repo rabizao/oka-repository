@@ -209,15 +209,15 @@ export default function OkaPostsBox({ fetch_url }) {
                                             <CheckBoxOutlineBlank className="icon-primary" />
                                     }
                                 </button>
-                                <Link className="flex-row padding-vertical-small width100" to={`/posts/${post.id}/description`}>
-                                    <div className="bold padding-sides-small max-width-very-huge min-width-huge ellipsis">
+                                <Link className="flex-row flex-space-between padding-vertical-small width100" to={`/posts/${post.id}/description`}>
+                                    <div className="bold padding-sides-small min-width-big max-width-very-huge ellipsis width100">
                                         {post.name}
                                     </div>
-                                    <div className="ellipsis padding-sides-small width100">
+                                    <div id="small-hide" className="ellipsis padding-sides-small width100">
                                         {post.description}
                                     </div>
                                     <div className="padding-sides-small">
-                                        <TimeAgo className="nowrap" datetime={post.timestamp + 'Z'} />
+                                        <TimeAgo  className="nowrap" datetime={post.timestamp + 'Z'} />
                                     </div>
                                 </Link>
                             </div>

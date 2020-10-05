@@ -47,13 +47,9 @@ class TatuData(MethodView):
         """
         Create a new Data object (without a related post).
         """
-        print("post tatu")
         create_post = json.loads(args["json"].read().decode())["create_post"]
-        print("CCCCCCCCCCCCCCCCCCCCCCCCCC", create_post)
         storage = current_app.config['TATU_SERVER']
-        print("Unpacking...")
         data = unpack(args['file'].read())
-        print("Unpacking ok")
         try:
             print(f"storing...{type(data)} {data} <<<<<<<<<<<")
             storage.store(data)
@@ -62,12 +58,9 @@ class TatuData(MethodView):
         print("storing OK")
 
         # TODO: deduplicate this code somewhere else through a function
-        print("create post...?")
         if create_post:
-            print("create post...")
             username = get_jwt_identity()
             logged_user = User.get_by_username(username)
-            print("check already exists...")
             if logged_user.posts.filter_by(data_uuid=data.id).first():
                 abort(422, errors={"json": {"Upload": ["Dataset already exists!"]}})
             name = "←".join([i["name"] for i in reversed(list(storage.visual_history(data)))])
@@ -77,10 +70,7 @@ class TatuData(MethodView):
                 name=name or "No name",
                 description="Title and description automatically generated."
             )
-            print("create Transformations...")
             for dic in storage.visual_history(data.id, current_app.static_folder):
                 Transformation(**dic, post=post)
             db.session.add(post)
-            print("commit...")
             db.session.commit()
-            print("commit ok")

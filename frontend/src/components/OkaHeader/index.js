@@ -3,12 +3,11 @@ import { useHistory, Link } from 'react-router-dom';
 
 import './styles.css';
 
-import Avatar from 'react-avatar';
-import { Search, Apps, Notifications, AccountCircle, AccountBalance } from '@material-ui/icons';
+import { Search, Apps, Notifications, AccountBalance } from '@material-ui/icons';
 
 import { LoginContext } from '../../contexts/LoginContext';
-import { logout } from '../../services/auth';
 import PopOver from '../PopOver';
+import OkaMyAccount from '../OkaMyAccount';
 
 export default function OkaHeader(props) {
 
@@ -21,12 +20,6 @@ export default function OkaHeader(props) {
         history.push(`${props.section ?
             `/search/${props.section}?name=${search}&logic=and` :
             `/search/datasets?name=${search}&logic=and`}`);
-    }
-
-    function handleLogout() {
-        logout();
-        window.location.href = '/';
-        return
     }
 
     return (
@@ -73,7 +66,7 @@ export default function OkaHeader(props) {
                             content=
                             {
                                 <div className="flex-wrap flex-space-between max-width-huge padding-big">
-                                    <Link to="/" className="icon-medium" title="Go to Tribo">
+                                    <Link to="/" className="icon-medium" title="Go to Analytics Lab">
                                         <AccountBalance />
                                     </Link>
                                 </div>
@@ -97,18 +90,7 @@ export default function OkaHeader(props) {
                         />
                     </li>
                     <li className="flex-row cursor-pointer icon-normal">
-                        <PopOver
-                            component={AccountCircle}
-                            componentClasses="icon-tertiary"
-                            content=
-                            {
-                                <div className="flex-column flex-axis-center padding-vertical-medium">
-                                    <Link className="padding-sides-medium" to={`/users/${loggedUser.username}/uploads`}><Avatar name={loggedUser.name} size="70" round={true} /></Link>
-                                    <button onClick={handleLogout} className="margin-top-medium padding-sides-medium padding-vertical-small box background-hover width100">Logout</button>
-                                    {/* <Link className="padding-sides-medium padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/favorites`}>Your favorites</Link> */}
-                                </div>
-                            }
-                        />
+                        <OkaMyAccount />
                     </li>
                 </ul>
             </div>

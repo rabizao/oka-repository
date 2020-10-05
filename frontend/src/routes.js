@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import PrivateRoute from './components/PrivateRoute';
 import Index from './pages/Index';
 import Home from './pages/Home';
+import OkaClient from './pages/OkaClient';
 import Search from './pages/Search';
 import Posts from './pages/Posts';
 import Users from './pages/Users';
@@ -18,6 +19,7 @@ export default function Routes() {
                 <Route path="/register" component={Register} />
                 <Route path="/login" component={Login} />
                 <PrivateRoute path="/home" component={Home} />
+                <PrivateRoute path="/client" component={OkaClient} />
                 <PrivateRoute path="/users/:username/:section" component={Users} />
                 <PrivateRoute path="/search/:section/" component={Search} />
                 <PrivateRoute path="/posts/:id/:section/" component={Posts} />

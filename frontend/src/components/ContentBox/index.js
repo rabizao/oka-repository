@@ -85,22 +85,19 @@ export default function ContentBox(props) {
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
                 <>
                     <h2 className="padding-sides-small margin-top-medium">{props.titleLink ? <Link to={props.titleLink}>{props.title}</Link> : props.title}</h2>
-                    {posts.length === 0 ? <h4 className="padding-sides-small margin-top-medium">Nothing to show yet</h4>: 
-                    <ul className="content-list margin-top-medium">
-                        {posts.map((post, index) =>
-                            <li key={post.id} className="flex-column background-hover">
-                                <div className="content-item flex-row padding-medium">
-                                    {!props.hideAvatar && <Link to={`/users/${post.author.username}/uploads`} ><Avatar name={post.author.name} size="40" round={true} /></Link>}
-                                    <Link className="padding-left-small" to={`/posts/${post.id}/description`}>
-                                        <div className="flex-column">
-                                            <div>
-                                                {!props.hideAuthor && <><span className="font-size-medium bold">{post.author.name}</span> - <span>{post.author.username}</span> - <TimeAgo datetime={post.timestamp+'Z'} /></>}
-                                            </div>
-                                            <div>
-                                                <span className="bold">{post.name}</span>{props.hideAuthor && <span> - <TimeAgo datetime={post.timestamp+'Z'}/></span>}
-                                            </div>
-                                            <span className="ellipsis-3">{post.description}</span>
-                                            {!props.hideActions &&
+                    {posts.length === 0 ? <h4 className="padding-sides-small margin-top-medium">Nothing to show yet</h4> :
+                        <ul className="content-list margin-top-medium">
+                            {posts.map((post, index) =>
+                                <li key={post.id} className="background-hover">
+                                    <div className="content-item flex-row padding-medium">
+                                        <Link to={`/users/${post.author.username}/uploads`} ><Avatar name={post.author.name} size="40" round={true} /></Link>
+                                        <Link className="padding-left-small width100 nowrap" to={`/posts/${post.id}/description`}>
+                                            <div className="flex-column">
+                                                <div className="ellipsis">
+                                                    <span className="font-size-medium bold">{post.author.name}</span> - <span>{post.author.username}</span> - <TimeAgo datetime={post.timestamp + 'Z'} />
+                                                </div>
+                                                <span className="bold ellipsis width100">{post.name}</span>
+                                                <span className="ellipsis-3 text-box">{post.description}</span>
                                                 <span className="padding-top-small">
                                                     <ul className="flex-row ul-padding-sides-not-first">
                                                         <li><button onClick={e => handleFavoriteButton(e, post, index)}>{post.favorites.includes(user.id) ? <><Favorite /> {post.favorites.length}</> : <><FavoriteBorder /> {post.favorites.length}</>}</button></li>
@@ -119,13 +116,12 @@ export default function ContentBox(props) {
                                                         }
                                                     </ul>
                                                 </span>
-                                            }
-                                        </div>
-                                    </Link>
-                                </div>
-                            </li>
-                        )}
-                    </ul>
+                                            </div>
+                                        </Link>
+                                    </div>
+                                </li>
+                            )}
+                        </ul>
                     }
                 </>
             }

@@ -142,7 +142,7 @@ class UsersFeed(MethodView):
     @bp.paginate()
     def get(self, args, pagination_parameters, username):
         """
-        Show all posts that belong to user with username {username}
+        Return posts of the feed for the user with username {username}
         """
         logged_user = User.get_by_username(get_jwt_identity())
         user = User.get_by_username(username)
