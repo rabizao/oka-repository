@@ -28,7 +28,7 @@ class TatuData(MethodView):
         storage = current_app.config['TATU_SERVER']
         uuid = args["uuid"]
         # REMINDER: returns PickableData
-        packed = pack(storage.fetch_pickable(UUIDData(uuid)))
+        packed = pack(storage.fetch_picklable(UUIDData(uuid)))
         filename = f"{uuid}.packed"
         with open(current_app.static_folder + "/" + filename, "wb") as f:
             f.write(packed)

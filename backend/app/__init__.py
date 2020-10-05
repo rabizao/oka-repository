@@ -10,7 +10,7 @@ from flask_smorest import Api
 from flask_jwt_extended import JWTManager
 from config import Config
 from celery import Celery
-from tatu.pickleserver import PickleServer
+from tatu.pickle import Pickle
 from flask_socketio import SocketIO
 import eventlet
 
@@ -26,7 +26,7 @@ def create_app(config_class=Config):
     app = Flask(__name__, static_url_path="/media", static_folder='media')
 
     app.config.from_object(config_class)
-    app.config['TATU_SERVER'] = PickleServer(db=app.static_folder)
+    app.config['TATU_SERVER'] = Pickle(db=app.static_folder)
 
     db.init_app(app)
     migrate.init_app(app, db)
