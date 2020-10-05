@@ -1410,7 +1410,7 @@ export default function Posts(props) {
                     <div className="flex-row flex-crossaxis-center"><CircularProgress className="icon-tertiary" /></div> :
                     <>
                         {
-                            !post.public &&
+                            !post.public && post.author && post.author.username === loggedUser.username &&
                             <div className="flex-row flex-crossaxis-center">
                                 <button onClick={handleOpenEdit} className="button-secondary margin-very-small">Edit</button>
                                 <button onClick={() => setOpenPublish(true)} className="button-secondary margin-very-small">Publish</button>
