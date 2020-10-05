@@ -45,7 +45,7 @@ class Posts(MethodView):
         files = []
 
         for file in argsFiles['files']:
-            full_path = current_app.config['TMP_FOLDER'] + str(u.uuid4())
+            full_path = current_app.config['TMP_FOLDER'] + str(u.uuid4()) + file.filename[-10:]
             file.save(full_path)
             files.append({"path": full_path, "original_name": file.filename})
             original_names.append(file.filename)
