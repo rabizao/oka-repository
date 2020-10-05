@@ -256,6 +256,7 @@ class Post(PaginateMixin, db.Model):
 
     downloads = db.Column(db.Integer(), default=0)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    publish_timestamp = db.Column(db.DateTime, index=True)
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
     history = db.relationship('Transformation', backref='post', lazy='dynamic', order_by=asc(Transformation.id))
     tags = db.relationship('Tag', backref='post', lazy='dynamic')

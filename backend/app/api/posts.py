@@ -2,6 +2,7 @@ from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_smorest import abort
+from datetime import datetime
 
 from app import db
 from app.models import User, Post, Comment, Task, Transformation
@@ -45,7 +46,8 @@ class Posts(MethodView):
         files = []
 
         for file in argsFiles['files']:
-            full_path = current_app.config['TMP_FOLDER'] + str(u.uuid4()) + file.filename[-10:]
+            full_path = current_app.config['TMP_FOLDER'] + \
+                str(u.uuid4()) + file.filename[-10:]
             file.save(full_path)
             files.append({"path": full_path, "original_name": file.filename})
             original_names.append(file.filename)
@@ -117,6 +119,32 @@ class PostsFavoriteById(MethodView):
             logged_user.unfavorite(post)
         else:
             logged_user.favorite(post)
+
+
+@bp.route('/posts/<int:id>/publish')
+class PostsPublishById(MethodView):
+    @jwt_required
+    @bp.response(code=200)
+    def post(self, id):
+        """
+        Publish post with id {id}
+        """
+        post = Post.query.get(id)
+        if not post or not post.active:
+            abort(422, errors={
+                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
+        if post.author != logged_user:
+            abort(422, errors={
+                "json": {"id": ["Only the author can publish the post. [" + self.__class__.__name__ + "]"]}})
+
+        # TODO: Verify if the post has all classification variables before next steps
+
+        post.public = True
+        post.publish_timestamp = datetime.utcnow()
+        db.session.commit()
 
 
 @bp.route('/posts/<int:id>/comments')
@@ -247,7 +275,8 @@ class PostsOnDemand(MethodView):
 
         # TODO: refactor duplicate code
 
-        name = "←".join([i["name"] for i in reversed(list(storage.visual_history(data)))]) or "No Name"
+        name = "←".join([i["name"] for i in reversed(
+            list(storage.visual_history(data)))]) or "No Name"
 
         # noinspection PyArgumentList
         post = Post(author=logged_user,
@@ -269,5 +298,6 @@ class PostsOnDemand(MethodView):
         logged_user = User.get_by_username(username)
         post = logged_user.posts.filter_by(data_uuid=uuid).first()
         if not post:
-            abort(422, errors={"json": {"OnDemand": ["Dataset does not exist!"]}})
+            abort(422, errors={
+                  "json": {"OnDemand": ["Dataset does not exist!"]}})
         return post

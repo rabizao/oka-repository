@@ -4,7 +4,7 @@ import { Link, useHistory } from 'react-router-dom';
 import './styles.css';
 
 import { NotificationManager } from 'react-notifications';
-import { CloudDownload, Favorite, FavoriteBorder, ChevronLeft, ChevronRight } from '@material-ui/icons';
+import { CloudDownload, Favorite, FavoriteBorder, ChevronLeft, ChevronRight, FormatQuote } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 import Modal from '@material-ui/core/Modal';
 import { saveAs } from 'file-saver';
@@ -16,6 +16,7 @@ import OkaPostComments from '../../components/OkaPostComments';
 import OkaPostsBox from '../../components/OkaPostsBox';
 import api, { downloadsUrl } from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
+import { frontendUrl } from '../../services/api';
 
 const data = [
     {
@@ -1051,6 +1052,8 @@ export default function Posts(props) {
     const [loadingHero, setLoadingHero] = useState(true);
     const [post, setPost] = useState({});
     const [openEdit, setOpenEdit] = useState(false);
+    const [openCite, setOpenCite] = useState(false);
+    const [openPublish, setOpenPublish] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -1169,6 +1172,26 @@ export default function Posts(props) {
         }
     }
 
+    const citation = () => {
+        const year = new Date(post.publish_timestamp).getFullYear();
+        const postUrl = frontendUrl + `/posts/${post.id}/description`
+        return (
+            <>
+                <h4 className="margin-top-small bold">Plain</h4>
+                <h5>{post.author && post.author.name}, {post.name}. OKA Knowledge Archive - {postUrl}. </h5>
+                <h4 className="margin-top-small bold">BibTeX</h4>
+                <h5>
+                    @misc&#123;oka-{post.id},<br />
+                    author = "{post.author && post.author.name}",<br />
+                    title = "{post.name}",<br />
+                    howpublished = &#123;OKA Knowledge Archive \url&#123;{postUrl}&#125;&#125;,<br />
+                    year = "{year}"<br />
+                    &#125;
+                </h5>
+            </>
+        )
+    }
+
     useEffect(() => {
         async function fetchPost() {
             try {
@@ -1250,10 +1273,6 @@ export default function Posts(props) {
         setDescriptionEdit(description);
     }
 
-    function handleCloseEdit() {
-        setOpenEdit(false);
-    }
-
     async function handleEditSubmit(e) {
         e.preventDefault()
         const data = {
@@ -1265,6 +1284,22 @@ export default function Posts(props) {
             setOpenEdit(false);
             setName(nameEdit);
             setDescription(descriptionEdit);
+        } catch (error) {
+            if (error.response) {
+                for (var prop in error.response.data.errors.json) {
+                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
+                }
+            } else {
+                NotificationManager.error("Network error", "Error", 4000)
+            }
+        }
+    }
+
+    async function handlePublish() {
+        try {
+            await api.post(`posts/${id}/publish`);
+            NotificationManager.success("Post was successfully published. Now it is available to everyone.", "Publish", 8000)
+            setOpenPublish(false);
         } catch (error) {
             if (error.response) {
                 for (var prop in error.response.data.errors.json) {
@@ -1320,7 +1355,7 @@ export default function Posts(props) {
         <>
             <Modal
                 open={openEdit}
-                onClose={handleCloseEdit}
+                onClose={() => setOpenEdit(false)}
             >
                 <div className="modal padding-big">
                     <h3 className="margin-top-small">Update dataset data</h3>
@@ -1345,15 +1380,43 @@ export default function Posts(props) {
                     </form>
                 </div>
             </Modal>
+            <Modal
+                open={openCite}
+                onClose={() => setOpenCite(false)}
+            >
+                <div className="modal padding-big">
+                    <h3 className="margin-bottom-small">Cite this data</h3>
+                    {
+                        post.public ?
+                            citation() :
+                            <h5>The author must publish the post before it can be cited. </h5>
+                    }
+                </div>
+            </Modal>
+            <Modal
+                open={openPublish}
+                onClose={() => setOpenPublish(false)}
+            >
+                <div className="modal padding-big">
+                    <h3>Publish your post</h3>
+                    <h5 className="margin-top-small">You can not undo this action. Please note that after publishing your post it will be available to everyone forever. If you want to make this post available to a specific group of people please use share button instead.
+                    </h5>
+                    <button onClick={handlePublish} className="button-primary margin-top-small">I want to make {post.name} of author {post.author && post.author.name} available to everyone forever!</button>
+                </div>
+            </Modal>
             <OkaHeader />
             <div className="oka-hero-background padding-sides-small padding-top-big">
                 {loadingHero ?
                     <div className="flex-row flex-crossaxis-center"><CircularProgress className="icon-tertiary" /></div> :
                     <>
-                        <div className="flex-row flex-crossaxis-center">
-                            <button onClick={handleOpenEdit} className="button-secondary margin-very-small">Edit</button>
-                            <button className="button-secondary margin-very-small">Publish</button>
-                        </div>
+                        {
+                            !post.public &&
+                            <div className="flex-row flex-crossaxis-center">
+                                <button onClick={handleOpenEdit} className="button-secondary margin-very-small">Edit</button>
+                                <button onClick={() => setOpenPublish(true)} className="button-secondary margin-very-small">Publish</button>
+                            </div>
+                        }
+
                         <div className="flex-row flex-axis-center margin-top-small">
                             <div className="flex-column flex-crossaxis-center">
                                 <div className="flex-wrap">
@@ -1391,8 +1454,9 @@ export default function Posts(props) {
                         <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
                         <h6 className="color-tertiary">{post.downloads} downloads | {post.favorites.length} favorited</h6>
                         <div className="margin-top-very-small" >
-                            <button onClick={handleDownload}><CloudDownload className="icon-secondary" /></button>
-                            {post.favorites && post.favorites.includes(loggedUser.id) ? <button onClick={handleFavorite}><Favorite className="icon-secondary margin-left-very-small" /></button> : <button onClick={handleFavorite}><FavoriteBorder className="icon-secondary margin-left-very-small" /></button>}
+                            <button title="Download" onClick={handleDownload}><CloudDownload className="icon-secondary" /></button>
+                            {post.favorites && post.favorites.includes(loggedUser.id) ? <button title="Favorite" onClick={handleFavorite}><Favorite className="icon-secondary margin-left-very-small" /></button> : <button onClick={handleFavorite}><FavoriteBorder className="icon-secondary margin-left-very-small" /></button>}
+                            <button title="Cite" onClick={() => setOpenCite(true)}><FormatQuote className="icon-secondary" /></button>
                         </div>
                     </>
                 }
