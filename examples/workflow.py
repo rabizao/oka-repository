@@ -2,6 +2,7 @@ import threading
 
 from aiuna.file import File
 from kururu.tool.communication.cache import Cache
+from kururu.tool.communication.log import Log
 from kururu.tool.communication.report import Report
 from kururu.tool.enhancement.binarize import Binarize
 from kururu.tool.enhancement.pca import PCA
@@ -52,16 +53,20 @@ from kururu.tool.learning.supervised.classification.svm import SVM2
 # okatoken = token(**user, base_url=url)
 # print("user created")
 
+
+
+
 # TODO: multiple caches are not working regarding whether to post
 # TIP: TsSplit should come before TrSplit to ensure the same original data is used as input for both.
 wflow = (
         File("iris.arff")
         * Binarize
         * Split
-        * Cache(PCA, storage="pickle")
-        # * Cache(PCA(n=3), storage="sqlite")
+        * Cache(PCA(n=3), storage="sqlite")
+            # *PCA(n=3)
+        * Log(">>>>>>>>>>>>>>>>> {X.shape} {inner.X.shape}")
         * Report("{id}")
-        * SVM2(C=0.5)
+        * Cache(SVM2(C=0.5), storage="pickle")
         * Metric2
         * Report("tr {r}\t\tts {inner.r}")
 )
