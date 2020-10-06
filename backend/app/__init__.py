@@ -10,7 +10,7 @@ from flask_smorest import Api
 from flask_jwt_extended import JWTManager
 from config import Config
 from celery import Celery
-from tatu.pickle import Pickle
+from tatu.pickle_ import Pickle
 from flask_socketio import SocketIO
 import eventlet
 

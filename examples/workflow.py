@@ -1,3 +1,5 @@
+import threading
+
 from aiuna.file import File
 from kururu.tool.communication.cache import Cache
 from kururu.tool.communication.report import Report
@@ -11,44 +13,44 @@ import random
 import requests
 from kururu.tool.learning.supervised.classification.svm import SVM2
 
-
-def user(username=None, password=None, email=None, base_url="http://localhost:5000"):
-    """Create a new user."""
-
-    username = username or ("username" + str(random.randint(1, 100000)))
-    password = password or ("password" + str(random.randint(1, 100000)))
-    email = email or ("email@" + str(random.randint(1, 100000)) + ".com")
-
-    url_createuser = base_url + '/api/users'
-    data_createuser = {"username": username,
-                       "password": password, "name": "Teste", "email": email}
-    response_createuser = requests.post(url_createuser, json=data_createuser)
-    print(response_createuser.text)
-    return {"username": username, "password": password, "email": email}
-
-
-def token(username, password, base_url="http://localhost:5000", email=None):
-    """Create a new permanent token for the given user."""
-    url_login = base_url + '/api/auth/login'
-    data_login = {"username": username, "password": password}
-    response_login = requests.post(url_login, json=data_login)
-
-    # Temporary token
-    access_token = response_login.json()['access_token']
-    print("####################TOKEN####################\n" + access_token)
-
-    # Permanent token
-    headers = {'Authorization': 'Bearer ' + access_token}
-    response_login = requests.post(
-        base_url + "/api/auth/create-api-token", headers=headers)
-    return response_login.json()['api_token']
-
-
-url = "http://data.analytics.icmc.usp.br"
+#
+# def user(username=None, password=None, email=None, base_url="http://localhost:5000"):
+#     """Create a new user."""
+#
+#     username = username or ("username" + str(random.randint(1, 100000)))
+#     password = password or ("password" + str(random.randint(1, 100000)))
+#     email = email or ("email@" + str(random.randint(1, 100000)) + ".com")
+#
+#     url_createuser = base_url + '/api/users'
+#     data_createuser = {"username": username,
+#                        "password": password, "name": "Teste", "email": email}
+#     response_createuser = requests.post(url_createuser, json=data_createuser)
+#     print(response_createuser.text)
+#     return {"username": username, "password": password, "email": email}
+#
+#
+# def token(username, password, base_url="http://localhost:5000", email=None):
+#     """Create a new permanent token for the given user."""
+#     url_login = base_url + '/api/auth/login'
+#     data_login = {"username": username, "password": password}
+#     response_login = requests.post(url_login, json=data_login)
+#
+#     # Temporary token
+#     access_token = response_login.json()['access_token']
+#     print("####################TOKEN####################\n" + access_token)
+#
+#     # Permanent token
+#     headers = {'Authorization': 'Bearer ' + access_token}
+#     response_login = requests.post(
+#         base_url + "/api/auth/create-api-token", headers=headers)
+#     return response_login.json()['api_token']
+#
+#
+# # url = "http://data.analytics.icmc.usp.br"
 # url = "http://localhost:5000"
-user = user("davips", "pass123", base_url=url)
-okatoken = token(**user, base_url=url)
-print("user created")
+# user = user("davips", "pass123", base_url=url)
+# okatoken = token(**user, base_url=url)
+# print("user created")
 
 # TODO: multiple caches are not working regarding whether to post
 # TIP: TsSplit should come before TrSplit to ensure the same original data is used as input for both.
