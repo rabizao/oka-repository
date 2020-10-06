@@ -65,8 +65,8 @@ class TatuData(MethodView):
 
         # Remove delimiters
         name = []
-        for i in reversed(list(storage.visual_history(data))):
-            if i["name"] not in ["B", "Rev", "E", "AutoIns", "In"]:
+        for i in list(storage.visual_history(data)):
+            if i["name"] not in ["B", "Rev", "E", "AutoIns", "In", "DelIn", "DelStream"]:
                 name.append(i["name"])
 
         if alias:
@@ -75,7 +75,7 @@ class TatuData(MethodView):
         post = Post(
             author=logged_user, data_uuid=data.id,
             name=name or "No name",
-            description="Title and description automatically generated." + str(list(storage.visual_history(data)))
+            description="Title and description automatically generated."
         )
         for dic in storage.visual_history(data.id, current_app.static_folder):
             Transformation(**dic, post=post)
