@@ -68,12 +68,12 @@ wflow = (
         File("iris.arff")
         * Binarize
         * Split
-        * PCA(n=1)
-        # * Cache(PCA(n=3), storage=OkaSt(okatoken, post=False))
+        * PCA(n=3)
+        * Cache(PCA(n=3), storage=OkaSt(okatoken, alias="Iris"))
             # *PCA(n=3)
         * Log(">>>>>>>>>>>>>>>>> {X.shape} {inner.X.shape}")
         * Report("{id}")
-        * Cache(SVM2(C=0.5), storage=OkaSt(okatoken, post=True)) #SQLite() )#MySQL(db="oka:xxxxxxxxx@localhost/oka"))
+        * Cache(SVM2(C=0.25), storage=OkaSt(okatoken, alias="Iris")) #SQLite() )#MySQL(db="oka:xxxxxxxxx@localhost/oka"))
         # * Metric2
         * Report("tr {r}\t\tts {inner.r}")
 )

@@ -5,7 +5,7 @@ from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_smorest import abort
 
-from tatu.persistence import DuplicateEntryException
+from tatu.storage import DuplicateEntryException
 from aiuna.compression import unpack, pack
 from aiuna.content.specialdata import UUIDData
 from . import bp
@@ -47,7 +47,7 @@ class TatuData(MethodView):
         """
         Create a new Data object (without a related post).
         """
-        create_post = json.loads(args["json"].read().decode())["create_post"]
+        alias = json.loads(args["json"].read().decode())["alias"]
         storage = current_app.config['TATU_SERVER']
         data = unpack(args['file'].read())
         try:
@@ -58,19 +58,26 @@ class TatuData(MethodView):
         print("storing OK")
 
         # TODO: deduplicate this code somewhere else through a function
-        if create_post:
-            username = get_jwt_identity()
-            logged_user = User.get_by_username(username)
-            if logged_user.posts.filter_by(data_uuid=data.id).first():
-                abort(422, errors={"json": {"Upload": ["Dataset already exists!"]}})
-            name = "←".join([i["name"] for i in reversed(list(storage.visual_history(data)))])
-            # TODO: isn't cururu storing historystr?
-            post = Post(
-                author=logged_user, data_uuid=data.id,
-                name=name or "No name",
-                description="Title and description automatically generated."
-            )
-            for dic in storage.visual_history(data.id, current_app.static_folder):
-                Transformation(**dic, post=post)
-            db.session.add(post)
-            db.session.commit()
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
+        if logged_user.posts.filter_by(data_uuid=data.id).first():
+            abort(422, errors={"json": {"Upload": ["Dataset already exists!"]}})
+
+        # Remove delimiters
+        name = []
+        for i in reversed(list(storage.visual_history(data))):
+            if i["name"] not in ["B", "Rev", "E", "AutoIns", "In"]:
+                name.append(i["name"])
+
+        if alias:
+            name = f"{alias}[{data.id[:4]}] : {' ·'.join(name)}"
+        # TODO: isn't cururu storing historystr?
+        post = Post(
+            author=logged_user, data_uuid=data.id,
+            name=name or "No name",
+            description="Title and description automatically generated." + str(list(storage.visual_history(data)))
+        )
+        for dic in storage.visual_history(data.id, current_app.static_folder):
+            Transformation(**dic, post=post)
+        db.session.add(post)
+        db.session.commit()

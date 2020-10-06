@@ -12,7 +12,7 @@ from app.models import User, Task, Transformation, Post
 from app.schemas import TaskBaseSchema
 
 from aiuna.file import File
-from tatu.persistence import DuplicateEntryException
+from tatu.storage import DuplicateEntryException
 from aiuna.content.specialdata import UUIDData
 from aiuna.creation import read_arff
 from . import bp
