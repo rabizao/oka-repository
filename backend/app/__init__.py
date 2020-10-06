@@ -26,7 +26,7 @@ def create_app(config_class=Config):
     app = Flask(__name__, static_url_path="/media", static_folder='media')
 
     app.config.from_object(config_class)
-    app.config['TATU_SERVER'] = Pickle(db=app.static_folder)
+    app.config['TATU_SERVER'] = Pickle(blocking=True, db=app.static_folder)
 
     db.init_app(app)
     migrate.init_app(app, db)
