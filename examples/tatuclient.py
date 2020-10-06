@@ -15,7 +15,7 @@ with open("token.txt", "w") as f:
     json.dump({"token": token}, f)
 
 print("OkaS")
-storage = OkaSt(post=True, token=token)#, url="http://data.analytics.icmc.usp.br")
+storage = OkaSt(token=token)#, url="http://data.analytics.icmc.usp.br")
 
 print("Reading file...")
 data = File("iris.arff").data
