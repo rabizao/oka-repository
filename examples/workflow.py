@@ -13,6 +13,7 @@ from kururu.tool.learning.supervised.classification.svm import SVM2
 import random
 import requests
 from kururu.tool.learning.supervised.classification.svm import SVM2
+from tatu.pickle_ import Pickle
 from util.create import user, token
 
 #
@@ -69,7 +70,7 @@ wflow = (
             # *PCA(n=3)
         * Log(">>>>>>>>>>>>>>>>> {X.shape} {inner.X.shape}")
         * Report("{id}")
-        # * Cache(SVM2(C=0.5), storage="pickle")
+        * Cache(SVM2(C=0.5), storage=Pickle(True))
         # * Metric2
         * Report("tr {r}\t\tts {inner.r}")
 )
