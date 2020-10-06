@@ -7,13 +7,15 @@ from kururu.tool.communication.report import Report
 from kururu.tool.enhancement.binarize import Binarize
 from kururu.tool.enhancement.pca import PCA
 from kururu.tool.evaluation.metric import Metric2
-from kururu.tool.evaluation.split import Split
+from kururu.tool.evaluation.split import Split, Split1
 from kururu.tool.learning.supervised.classification.svm import SVM2
 
 import random
 import requests
 from kururu.tool.learning.supervised.classification.svm import SVM2
 from tatu.pickle_ import Pickle
+from tatu.sql.mysql import MySQL
+from tatu.sql.sqlite import SQLite
 from util.create import user, token
 
 #
@@ -66,11 +68,12 @@ wflow = (
         File("iris.arff")
         * Binarize
         * Split
-        # * Cache(PCA(n=3), storage=OkaSt(okatoken))
+        * PCA(n=1)
+        # * Cache(PCA(n=3), storage=OkaSt(okatoken, post=False))
             # *PCA(n=3)
         * Log(">>>>>>>>>>>>>>>>> {X.shape} {inner.X.shape}")
         * Report("{id}")
-        * Cache(SVM2(C=0.5), storage=Pickle(True))
+        * Cache(SVM2(C=0.5), storage=OkaSt(okatoken, post=True)) #SQLite() )#MySQL(db="oka:xxxxxxxxx@localhost/oka"))
         # * Metric2
         * Report("tr {r}\t\tts {inner.r}")
 )
