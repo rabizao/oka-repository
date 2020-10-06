@@ -67,10 +67,10 @@ class TatuData(MethodView):
         name = []
         for i in list(storage.visual_history(data)):
             if i["name"] not in ["B", "Rev", "E", "AutoIns", "In", "DelIn", "DelStream"]:
-                name.append(i["name"])
+                name.append(i["name"][0:3])
 
         if alias:
-            name = f"{alias}[{data.id[:4]}] : {' ·'.join(name)}"
+            name = f"{alias}[{data.id[:4]}] : {''.join(name)}"
         # TODO: isn't cururu storing historystr?
         post = Post(
             author=logged_user, data_uuid=data.id,
@@ -78,6 +78,7 @@ class TatuData(MethodView):
             description="Title and description automatically generated."
         )
         for dic in storage.visual_history(data.id, current_app.static_folder):
-            Transformation(**dic, post=post)
+            if dic["name"] not in ["B", "Rev", "E", "AutoIns", "In", "DelIn", "DelStream"]:
+                Transformation(**dic, post=post)
         db.session.add(post)
         db.session.commit()
