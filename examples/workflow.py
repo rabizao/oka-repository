@@ -13,6 +13,7 @@ from kururu.tool.learning.supervised.classification.svm import SVM2
 import random
 import requests
 from kururu.tool.learning.supervised.classification.svm import SVM2
+from util.create import user, token
 
 #
 # def user(username=None, password=None, email=None, base_url="http://localhost:5000"):
@@ -47,27 +48,29 @@ from kururu.tool.learning.supervised.classification.svm import SVM2
 #     return response_login.json()['api_token']
 #
 #
-# # url = "http://data.analytics.icmc.usp.br"
-# url = "http://localhost:5000"
-# user = user("davips", "pass123", base_url=url)
-# okatoken = token(**user, base_url=url)
-# print("user created")
+# url = "http://data.analytics.icmc.usp.br"
+url = "http://localhost:5000"
+user = user("davips", "pass123", base_url=url)
+okatoken = token(**user, base_url=url)
+print("user created")
 
 
 
 
 # TODO: multiple caches are not working regarding whether to post
 # TIP: TsSplit should come before TrSplit to ensure the same original data is used as input for both.
+from tatu.okast import OkaSt
+
 wflow = (
         File("iris.arff")
         * Binarize
         * Split
-        * Cache(PCA(n=3), storage="sqlite")
+        # * Cache(PCA(n=3), storage=OkaSt(okatoken))
             # *PCA(n=3)
         * Log(">>>>>>>>>>>>>>>>> {X.shape} {inner.X.shape}")
         * Report("{id}")
-        * Cache(SVM2(C=0.5), storage="pickle")
-        * Metric2
+        # * Cache(SVM2(C=0.5), storage="pickle")
+        # * Metric2
         * Report("tr {r}\t\tts {inner.r}")
 )
 

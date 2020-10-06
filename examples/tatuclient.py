@@ -1,7 +1,7 @@
 import json
 
 from aiuna.file import File
-from tatu.okastorage import OkaStorage
+from tatu.okast import OkaSt
 from aiuna.content.specialdata import UUIDData
 from aiuna.creation import read_arff
 from util.create import user, token
@@ -15,7 +15,7 @@ with open("token.txt", "w") as f:
     json.dump({"token": token}, f)
 
 print("OkaS")
-storage = OkaStorage(post=True, token=token)#, url="http://data.analytics.icmc.usp.br")
+storage = OkaSt(post=True, token=token)#, url="http://data.analytics.icmc.usp.br")
 
 print("Reading file...")
 data = File("iris.arff").data
