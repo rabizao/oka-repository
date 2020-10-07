@@ -2,8 +2,6 @@ import json
 
 from aiuna.file import File
 from tatu.okast import OkaSt
-from aiuna.content.specialdata import UUIDData
-from aiuna.creation import read_arff
 from util.create import user, token
 
 print("Create user...")
@@ -25,10 +23,10 @@ storage.store(data)
 print("ok!")
 
 print("Fetching...")
-d = storage.fetch(UUIDData(data.uuid))
+d = storage.fetch(data.uuid)
 print(d.id)
 
 print("Fetching...")
-d = storage.fetch(UUIDData("ØΐEʃωȒȥќǏшġμŃĔ"))
+d = storage.fetch("ØΐEʃωȒȥќǏшġμŃĔ")
 print(d and d.id)
 print(d and d.inner and d.inner.id)

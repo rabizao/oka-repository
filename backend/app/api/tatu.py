@@ -7,7 +7,6 @@ from flask_smorest import abort
 
 from tatu.storage import DuplicateEntryException
 from aiuna.compression import unpack, pack
-from aiuna.content.specialdata import UUIDData
 from . import bp
 # noinspection PyArgumentList
 from .. import db
@@ -28,7 +27,7 @@ class TatuData(MethodView):
         storage = current_app.config['TATU_SERVER']
         uuid = args["uuid"]
         # REMINDER: returns PickableData
-        packed = pack(storage.fetch_picklable(UUIDData(uuid)))
+        packed = pack(storage.fetch_picklable(uuid))
         filename = f"{uuid}.packed"
         with open(current_app.static_folder + "/" + filename, "wb") as f:
             f.write(packed)
