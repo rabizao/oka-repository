@@ -32,9 +32,8 @@ class Posts(MethodView):
 
     @jwt_required
     @bp.arguments(PostFilesSchema, location="files")
-    @bp.arguments(PostFilesSchema, location="form")
     @bp.response(code=201)
-    def post(self, argsFiles, argsForm):
+    def post(self, argsFiles):
         """
         Create a new post to the logged user
         """
@@ -53,15 +52,12 @@ class Posts(MethodView):
             original_names.append(file.filename)
 
         job = celery_process_data.apply_async(
-            [files, username, argsForm["sid"]])
-        task = Task(
-            id=job.id,
-            name="Data processing",
-            description="Processing your uploaded files: " + ", ".join(original_names),
-            user=logged_user
-        )
+            [files, username])
+        task = Task(id=job.id, name="Data processing",
+                    description="Processing your uploaded files: " + ", ".join(original_names), user=logged_user)
         db.session.add(task)
         db.session.commit()
+        return job.id
 
 
 @bp.route('/posts/<int:id>')
@@ -242,14 +238,14 @@ class PostsTransformById(MethodView):
         if not post:
             abort(422, errors={"json": {"id": ["Does not existppp."]}})
 
-        storage = current_app.config['TATU_SERVER']
-        data = storage.fetch(UUIDData(post.data_uuid))
+        # storage = current_app.config['TATU_SERVER']
+        # data = storage.fetch(UUIDData(post.data_uuid))
 
-        transformer = args["transformer"]
-        if transformer == "tssplit":
-            return TsSplit().enhancer.transform(data)
-        else:
-            abort(422, errors={"json": {"transformer": ["Does not existtt."]}})
+        # transformer = args["transformer"]
+        # if transformer == "tssplit":
+        #     return TsSplit().enhancer.transform(data)
+        # else:
+        #     abort(422, errors={"json": {"transformer": ["Does not existtt."]}})
 
 
 @bp.route("/posts/<string:uuid>")

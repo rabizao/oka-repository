@@ -1,5 +1,6 @@
 import os
 from zipfile import ZipFile
+import json
 
 from flask import current_app
 from flask.views import MethodView
@@ -7,14 +8,13 @@ from flask_jwt_extended import jwt_required
 from flask_mail import Message
 from flask_smorest import abort
 
-from app import mail, celery, db, socketio
+from app import mail, celery, db
 from app.models import User, Task, Transformation, Post
 from app.schemas import TaskBaseSchema
 
 from aiuna.file import File
 from tatu.storage import DuplicateEntryException
 from aiuna.content.specialdata import UUIDData
-from aiuna.creation import read_arff
 from . import bp
 
 
@@ -55,7 +55,8 @@ def celery_download_data(self, uuids):
                     if data is None:
                         raise Exception(
                             "Download failed: " + uuid + " not found!")
-                    zipped_file.writestr(uuid + ".arff", data.arff("No name", "No description"))
+                    zipped_file.writestr(
+                        uuid + ".arff", data.arff("No name", "No description"))
         except Exception as e:
             os.remove(path_server_zip)
             self.update_state(state='FAILURE', meta={
@@ -77,7 +78,7 @@ def celery_download_data(self, uuids):
 
 
 @celery.task(bind=True)
-def celery_process_data(self, files, username, sid):
+def celery_process_data(self, files, username):
     """
     Background task to run async post process
     """
@@ -102,7 +103,8 @@ def celery_process_data(self, files, username, sid):
 
         if logged_user.posts.filter_by(data_uuid=data.id).first():
             print("Dataset already exists!")
-            report[file["original_name"]] = "Error! Dataset already uploaded"
+            report[file['original_name']] = {
+                'message': 'Error! Dataset already uploaded', 'code': 'error'}
             continue
 
         storage = current_app.config['TATU_SERVER']
@@ -111,25 +113,24 @@ def celery_process_data(self, files, username, sid):
         except DuplicateEntryException:
             print('Duplicate! Ignored.', data.id)
         finally:
-            report[file["original_name"]] = "Success!"
             # noinspection PyArgumentList
-            post = Post(author=logged_user, data_uuid=data.id, name=name, description=description, number_of_instances=len(
-                data.X), number_of_features=len(data.Y))
+            post = Post(author=logged_user, data_uuid=data.id, name=name, description=description,
+                        number_of_instances=len(data.X), number_of_features=len(data.Y))
             # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
             # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
             for dic in storage.visual_history(data.id, current_app.static_folder):
                 db.session.add(Transformation(**dic, post=post))
             db.session.add(post)
+            db.session.commit()
+            report[file['original_name']] = {
+                'message': 'Dataset successfully uploaded', 'code': 'success', 'id': post.id}
 
     task = Task.query.get(self.request.id)
     task.complete = True
     db.session.commit()
 
-    result = {'current': 100, 'total': 100, 'status': 'done', 'result': report}
-
-    # TODO: retornar para o usuario pelo socketio o result
-
-    socketio.emit('task_done', {'result': result}, room=sid)
+    result = {'current': 100, 'total': 100,
+              'status': 'done', 'result': json.dumps(report)}
 
     return result
 
