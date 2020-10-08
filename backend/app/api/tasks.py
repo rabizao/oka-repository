@@ -1,6 +1,6 @@
 import os
-from zipfile import ZipFile
 import json
+from zipfile import ZipFile
 
 from flask import current_app
 from flask.views import MethodView
@@ -20,9 +20,9 @@ from . import bp
 
 @celery.task
 def send_async_email(message):
-    """
+    '''
     Background task to send an email
-    """
+    '''
     msg = Message('[Oka - Contato]', sender=current_app.config['ADMINS'][0],
                   recipients=[*current_app.config['ADMINS']])
     msg.html = message
@@ -33,14 +33,14 @@ def send_async_email(message):
 
 @celery.task(bind=True)
 def celery_download_data(self, uuids):
-    """
+    '''
     Background task to run async download process
-    """
+    '''
 
     storage = current_app.config['TATU_SERVER']
 
-    filename_server_zip = "_".join(uuids)
-    path_server_zip = current_app.static_folder + "/" + filename_server_zip + ".zip"
+    filename_server_zip = '_'.join(uuids)
+    path_server_zip = current_app.static_folder + '/' + filename_server_zip + '.zip'
     if not os.path.isfile(path_server_zip):
         try:
             with ZipFile(path_server_zip, 'w') as zipped_file:
@@ -49,22 +49,22 @@ def celery_download_data(self, uuids):
                     self.update_state(state='PROGRESS', meta={
                         'current': actual_index / len(uuids) * 100,
                         'total': 100,
-                        'status': f"Processing file {str(actual_index)} of {str(len(uuids))}"
+                        'status': f'Processing file {str(actual_index)} of {str(len(uuids))}'
                     })
                     data = storage.fetch(UUIDData(uuid))
                     if data is None:
                         raise Exception(
-                            "Download failed: " + uuid + " not found!")
+                            'Download failed: ' + uuid + ' not found!')
                     zipped_file.writestr(
-                        uuid + ".arff", data.arff("No name", "No description"))
+                        uuid + '.arff', data.arff('No name', 'No description'))
         except Exception as e:
             os.remove(path_server_zip)
             self.update_state(state='FAILURE', meta={
                 'current': 100,
                 'total': 100,
-                'status': f"Zip failed with status {e.args[0]}"
+                'status': f'Zip failed with status {e.args[0]}'
             })
-            abort(422, errors={"json": {"zipping&arffing": [str(e)]}})
+            abort(422, errors={'json': {'zipping&arffing': [str(e)]}})
 
     task = Task.query.get(self.request.id)
     if task:
@@ -72,39 +72,45 @@ def celery_download_data(self, uuids):
         db.session.commit()
 
     result = {'current': 100, 'total': 100,
-              'status': 'done', 'result': filename_server_zip + ".zip"}
+              'status': 'done', 'result': filename_server_zip + '.zip'}
 
     return result
 
 
 @celery.task(bind=True)
 def celery_process_data(self, files, username):
-    """
+    '''
     Background task to run async post process
-    """
+    '''
 
     logged_user = User.get_by_username(username)
-    report = {}
+    report = []
 
     for file in files:
         actual_index = files.index(file)
         self.update_state(state='PROGRESS', meta={
             'current': actual_index / len(files) * 100,
             'total': 100,
-            'status': f"Processing file {str(actual_index)} of {str(len(files))}"
+            'status': f'Processing file {str(actual_index)} of {str(len(files))}'
         })
 
         # TODO: remove redundancy
-        name = file["path"].split("/")[-1]
-        path = "/".join(file["path"].split("/")[:-1]) + "/"
+        name = file['path'].split('/')[-1]
+        path = '/'.join(file['path'].split('/')[:-1]) + '/'
         f = File(name, path)
         name, description = f.dataset, f.description
         data = f.data
 
-        if logged_user.posts.filter_by(data_uuid=data.id).first():
-            print("Dataset already exists!")
-            report[file['original_name']] = {
-                'message': 'Error! Dataset already uploaded', 'code': 'error'}
+        existing_post = logged_user.posts.filter_by(data_uuid=data.id).first()
+
+        if existing_post:
+            print('Dataset already exists!')
+            obj = {'original_name': file['original_name'],
+                   'message': 'Error! Dataset already uploaded', 'code': 'error', 'id': existing_post.id}
+            report.append(obj)
+            notification = logged_user.add_notification(
+                name='task_finished', data=obj)
+            db.session.add(notification)
             continue
 
         storage = current_app.config['TATU_SERVER']
@@ -122,8 +128,12 @@ def celery_process_data(self, files, username):
                 db.session.add(Transformation(**dic, post=post))
             db.session.add(post)
             db.session.commit()
-            report[file['original_name']] = {
-                'message': 'Dataset successfully uploaded', 'code': 'success', 'id': post.id}
+            obj = {'original_name': file['original_name'],
+                   'message': 'Dataset successfully uploaded', 'code': 'success', 'id': post.id}
+            report.append(obj)
+            notification = logged_user.add_notification(
+                name='task_finished', data=obj)
+            db.session.add(notification)
 
     task = Task.query.get(self.request.id)
     task.complete = True

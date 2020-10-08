@@ -5,7 +5,7 @@ from marshmallow_sqlalchemy.fields import Nested
 from werkzeug.security import generate_password_hash
 
 from app import db
-from app.models import User, Post, Comment, Transformation, Contact
+from app.models import User, Post, Comment, Transformation, Contact, Notification
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -41,6 +41,20 @@ class CommentQuerySchema(SQLAlchemySchema):
 
     order_by = fields.String(validate=validate.OneOf(
         ['asc', 'desc']), missing='desc')
+
+
+class NotificationBaseSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Notification
+
+    id = auto_field(dump_only=True)
+
+
+class NotificationQuerySchema(SQLAlchemySchema):
+    class Meta:
+        unknown = EXCLUDE
+
+    since = fields.Number(missing=0.0)
 
 
 class UserQuerySchema(SQLAlchemySchema):

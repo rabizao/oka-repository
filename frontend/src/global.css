@@ -87,21 +87,29 @@ button, input[type="submit"], input[type="reset"] {
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 1;
+    -moz-box-orient: vertical;
     -webkit-box-orient: vertical;
+    word-break: break-word;
 }
 
 .ellipsis-2 {
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    -moz-box-orient: vertical;
     -webkit-box-orient: vertical;
+    word-break: break-word;
+    word-wrap: break-word;
 }
 
 .ellipsis-3 {
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 3;
+    -moz-box-orient: vertical;
     -webkit-box-orient: vertical;
+    word-break: break-word;
+    word-wrap: break-word;
 }
 
 .ellipsis-15ch {
@@ -385,6 +393,10 @@ button, input[type="submit"], input[type="reset"] {
     color: var(--secondary-color);
 }
 
+.color-error {
+    color: var(--error-color);
+}
+
 .button-primary {
     background-color: var(--primary-color);
     color: var(--tertiary-color);
@@ -419,6 +431,15 @@ button, input[type="submit"], input[type="reset"] {
 
 .button-negative:hover {
     color: var(--secondary-color);
+}
+
+.button-primary-disabled {
+    background-color: var(--primary-color-deactivated);
+    color: var(--tertiary-color);
+    padding: 18px;
+    border-radius: 10px;
+    transition-duration: var(--transition-time);
+    cursor: default;
 }
 
 .nav-button-secondary {
@@ -614,6 +635,10 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .active {
+    display: block;
+}
+
+.block {
     display: block;
 }
 

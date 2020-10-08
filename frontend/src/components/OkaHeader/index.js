@@ -1,11 +1,10 @@
 import React, { useState, useContext } from 'react';
 import { useHistory, Link } from 'react-router-dom';
+import { Search, Apps, Notifications, AccountBalance } from '@material-ui/icons';
 
 import './styles.css';
 
-import { Search, Apps, Notifications, AccountBalance } from '@material-ui/icons';
-
-import { LoginContext } from '../../contexts/LoginContext';
+import { NotificationsContext } from '../../contexts/NotificationsContext';
 import PopOver from '../PopOver';
 import OkaMyAccount from '../OkaMyAccount';
 
@@ -13,7 +12,7 @@ export default function OkaHeader(props) {
 
     const history = useHistory();
     const [search, setSearch] = useState(props.query || "");
-    const loggedUser = useContext(LoginContext);
+    const notificationsContext = useContext(NotificationsContext);
 
     function handleSearch(e) {
         e.preventDefault();
@@ -79,13 +78,25 @@ export default function OkaHeader(props) {
                             componentClasses="icon-tertiary"
                             content=
                             {
-                                <>
-                                    <h6 className="padding-sides-small padding-top-medium">Notifications</h6>
+                                <div className="max-width-very-huge">
+                                    <h1 className="padding-sides-small padding-top-medium">Notifications</h1>
                                     <div className="flex-column padding-vertical-small">
-                                        <Link className="padding-sides-small padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/uploads`}>Notification 1</Link>
-                                        <Link className="padding-sides-small padding-vertical-small box background-hover width100" to={`/users/${loggedUser.username}/favorites`}>Notification 2</Link>
+                                        {
+                                            notificationsContext.notifications.length > 0 ?
+                                                notificationsContext.notifications.slice(0).reverse().map((notification) =>
+                                                    notification.payload_json.code === "success" ?
+                                                        <Link key={notification.id} className="padding-medium box background-hover width100 ellipsis-1" to={`/posts/${notification.payload_json.id}/description`}>
+                                                            {notification.payload_json.original_name}
+                                                        </Link> :
+                                                        <Link key={notification.id} className="padding-medium box background-hover width100" to={`/posts/${notification.payload_json.id}/description`}>
+                                                            <span className="ellipsis-3">{notification.payload_json.original_name}: </span>
+                                                            <span className="ellipsis-3 color-error"> {notification.payload_json.message}</span>
+                                                        </Link>
+                                                ) :
+                                                <div className="padding-sides-small padding-vertical-small width100">Nothing to show yet</div>
+                                        }
                                     </div>
-                                </>
+                                </div>
                             }
                         />
                     </li>

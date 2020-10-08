@@ -16,6 +16,7 @@ export default function Home() {
     const [deniedFiles, setDeniedFiles] = useState([]);
     const [progress, setProgress] = useState(0);
     const [showProgress, setShowProgress] = useState(false);
+    const [blockSubmit, setBlockSubmit] = useState(false);
     const fileInputRef = useRef();
     const dropRegion = useRef();
     const history = useHistory();
@@ -74,6 +75,7 @@ export default function Home() {
 
     async function handleSubmit() {
         setShowProgress(true);
+        setBlockSubmit(true);
         var formData = new FormData();
         acceptedFiles.forEach((value) => {
             formData.append("files", value);
@@ -94,20 +96,26 @@ export default function Home() {
             setDeniedFiles([]);
             setShowProgress(false);
             setProgress(0);
+            setBlockSubmit(false);
             NotificationManager.success("Upload successful. You can navigate while we process your datasets", "Finished", 10000)
             var status = setInterval(async function () {
                 try {
                     const response = await api.get(`tasks/${resp.data}/status`);
                     if (response.data.status === "done") {
+                        const notification = JSON.parse(response.data.result);
                         var index = 0;
-                        for (let [key, prop] of Object.entries(JSON.parse(response.data.result))) {
-                            if (prop["code"] === "success") {
-                                NotificationManager.success(prop["message"], `${key}`, 10000 + index, 
-                                ()=> {
-                                    history.push(`/posts/${prop["id"]}/description`);
-                                });
+                        for (var i = 0; i < notification.length; i++) {
+                            const postId = notification[i]["id"];
+                            if (notification[i]["code"] === "success") {
+                                NotificationManager.success(notification[i]["message"], `${notification[i]['original_name']}`, 10000 + index,
+                                    () => {
+                                        history.push(`/posts/${postId}/description`);
+                                    });
                             } else {
-                                NotificationManager.error(prop["message"], `${key}`, 10000 + index);
+                                NotificationManager.error(notification[i]["message"], `${notification[i]['original_name']}`, 10000 + index,
+                                    () => {
+                                        history.push(`/posts/${postId}/description`);
+                                    });
                             }
                             index += 2000;
                         }
@@ -199,7 +207,11 @@ export default function Home() {
                                     <h5 className="margin-sides-verysmall min-width-small">{progress}%</h5>
                                 </div>
                             }
-                            {(acceptedFiles.length > 0 && deniedFiles.length <= 0) && <button className="margin-top-medium button-primary" onClick={() => handleSubmit()}>Submit</button>}
+                            {(acceptedFiles.length > 0 && deniedFiles.length <= 0) &&
+                                blockSubmit ?
+                                <button className="margin-top-medium button-primary-disabled">Submit</button> :
+                                <button className="margin-top-medium button-primary" onClick={() => handleSubmit()}>Submit</button>
+                            }
                         </div>
                     }
                 </div>
