@@ -8,20 +8,20 @@ import { NotificationContainer } from 'react-notifications';
 
 import LoginProvider from './contexts/LoginContext';
 import RunningTasksBarProvider from './contexts/RunningTasksBarContext';
-import SessionProvider from './contexts/SessionContext';
+import NotificationsProvider from './contexts/NotificationsContext';
 
 function App() {
     return (
         <div>
             <NotificationContainer />
             <RunningTasksBarProvider>
-                <SessionProvider>
+                <NotificationsProvider>
                     <LoginProvider>
                         <ConfigProvider colors={['gainsboro', 'cornsilk', 'cadetblue', 'cyan', 'lavender', 'pink']}>
                             <Routes />
                         </ConfigProvider>
                     </LoginProvider>
-                </SessionProvider>
+                </NotificationsProvider>
             </RunningTasksBarProvider>
         </div>
     );

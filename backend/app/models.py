@@ -150,11 +150,12 @@ class User(PaginateMixin, db.Model):
     #     return Message.query.filter_by(recipient=self).filter(
     #         Message.timestamp > last_read_time).count()
 
-    # def add_notification(self, name, data):
-    #     self.notifications.filter_by(name=name).delete()
-    #     n = Notification(name=name, payload_json=json.dumps(data), user=self)
-    #     db.session.add(n)
-    #     return n
+    def add_notification(self, name, data, overwrite=False):
+        if overwrite:
+            self.notifications.filter_by(name=name).delete()
+        n = Notification(name=name, payload_json=json.dumps(data), user=self)
+        db.session.add(n)
+        return n
 
     def follow(self, user):
         if not self.is_following(user):
@@ -258,7 +259,8 @@ class Post(PaginateMixin, db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     publish_timestamp = db.Column(db.DateTime, index=True)
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
-    history = db.relationship('Transformation', backref='post', lazy='dynamic', order_by=asc(Transformation.id))
+    history = db.relationship(
+        'Transformation', backref='post', lazy='dynamic', order_by=asc(Transformation.id))
     tags = db.relationship('Tag', backref='post', lazy='dynamic')
     public = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)

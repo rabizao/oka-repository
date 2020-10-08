@@ -1,10 +1,10 @@
-from app import create_app, db, socketio
+from app import create_app, db
 from app.models import User, Token, Post, Comment, Tag, Message, Notification, Task
 
 app = create_app()
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    app.run(debug=True)
 
 
 @app.shell_context_processor
