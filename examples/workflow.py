@@ -83,3 +83,7 @@ data = wflow.data
 print("Data ID", data.id)
 print("Shape", data.X.shape[1], len(data.Xt))
 # print(test.arff("nome", "desc"))
+
+
+data >>= PCA()
+print(data.id)
