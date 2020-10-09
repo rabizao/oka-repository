@@ -14,15 +14,15 @@ function App() {
     return (
         <div>
             <NotificationContainer />
-            <RunningTasksBarProvider>
-                <NotificationsProvider>
-                    <LoginProvider>
+            <LoginProvider>
+                <RunningTasksBarProvider>
+                    <NotificationsProvider>
                         <ConfigProvider colors={['gainsboro', 'cornsilk', 'cadetblue', 'cyan', 'lavender', 'pink']}>
                             <Routes />
                         </ConfigProvider>
-                    </LoginProvider>
-                </NotificationsProvider>
-            </RunningTasksBarProvider>
+                    </NotificationsProvider>
+                </RunningTasksBarProvider>
+            </LoginProvider>
         </div>
     );
 }

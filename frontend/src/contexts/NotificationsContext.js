@@ -1,12 +1,15 @@
-import React, { useState, useEffect, createContext } from 'react';
+import React, { useState, useEffect, useContext, createContext } from 'react';
 
 import api from '../services/api';
-import { useInterval } from '../hooks/useInterval'
+import { useInterval } from '../hooks/useInterval';
+import { LoginContext } from './LoginContext';
+
 export const NotificationsContext = createContext();
 
 const NotificationsProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const [since, setSince] = useState(0);
+    const loggedUser = useContext(LoginContext);
 
     async function repeat() {
         let newNotifications = [...notifications];
@@ -26,11 +29,13 @@ const NotificationsProvider = ({ children }) => {
     }
 
     useEffect(() => {
-        repeat();
+        if (loggedUser.logged) {
+            repeat();
+        }
         // eslint-disable-next-line
-    }, [])
+    }, [loggedUser.logged])
 
-    useInterval(repeat, 10000);
+    useInterval(repeat, 10000, loggedUser.logged);
 
     return (
         <NotificationsContext.Provider value={{ notifications }}>

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 import Avatar from 'react-avatar';
 import { ExpandMore } from '@material-ui/icons';
@@ -13,11 +13,12 @@ import api from '../../services/api';
 
 export default function OkaMyAccount() {
     const loggedUser = useContext(LoginContext);
+    const history = useHistory();
 
     function handleLogout() {
         logout();
-        window.location.href = '/';
-        return
+        loggedUser.setLogged(false);
+        history.push('/');
     }
 
     async function handleLogoutAllDevices() {

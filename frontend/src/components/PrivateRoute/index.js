@@ -6,13 +6,13 @@ import { LoginContext } from '../../contexts/LoginContext';
 import RunningTasksBar from '../../components/RunningTasksBar';
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
-    const context = useContext(LoginContext);
+    const loggedUser = useContext(LoginContext);
 
     return (
         <Route
             {...rest}
             render={props =>
-                context.logged ? (
+                loggedUser.logged ? (
                     <>
                         <Component {...props} />
                         <RunningTasksBar />
