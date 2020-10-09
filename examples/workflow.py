@@ -69,7 +69,7 @@ wflow = (
         * Binarize
         * Split
         * PCA(n=3)
-        * Cache(PCA(n=3), storage=OkaSt(okatoken, alias="Iris"))
+        * Cache(PCA(n=3)) #, storage=OkaSt(okatoken, alias="Iris"))
             # *PCA(n=3)
         * Log(">>>>>>>>>>>>>>>>> {X.shape} {inner.X.shape}")
         * Report("{id}")
@@ -83,3 +83,7 @@ data = wflow.data
 print("Data ID", data.id)
 print("Shape", data.X.shape[1], len(data.Xt))
 # print(test.arff("nome", "desc"))
+
+
+data >>= PCA()
+print(data.id)

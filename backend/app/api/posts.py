@@ -9,7 +9,8 @@ from app.models import User, Post, Comment, Task, Transformation
 from app.api.tasks import celery_process_data
 from app.schemas import (PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema,
                          CommentQuerySchema, TransformQuerySchema)
-from aiuna.content.specialdata import UUIDData
+
+from kururu.tool.evaluation.split import Split
 from . import bp
 import uuid as u
 
@@ -239,13 +240,13 @@ class PostsTransformById(MethodView):
             abort(422, errors={"json": {"id": ["Does not existppp."]}})
 
         # storage = current_app.config['TATU_SERVER']
-        # data = storage.fetch(UUIDData(post.data_uuid))
+        # data = storage.fetch(post.data_uuid)
 
-        # transformer = args["transformer"]
-        # if transformer == "tssplit":
-        #     return TsSplit().enhancer.transform(data)
+        # transformer = args["step"]
+        # if transformer == "split":
+        #     return Split.process(data)
         # else:
-        #     abort(422, errors={"json": {"transformer": ["Does not existtt."]}})
+        #     abort(422, errors={"json": {"step": ["Does not exist."]}})
 
 
 @bp.route("/posts/<string:uuid>")
@@ -257,7 +258,7 @@ class PostsOnDemand(MethodView):
         Create a new Post on demand.
         """
         storage = current_app.config['TATU_SERVER']
-        data = storage.fetch(UUIDData(uuid))
+        data = storage.fetch(uuid)
         if data is None:
             abort(
                 422, errors={"json": {"OnDemand": [f"Data {uuid} was not cached nor uploaded, so it does not exist!"]}}

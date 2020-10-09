@@ -14,7 +14,6 @@ from app.schemas import TaskBaseSchema
 
 from aiuna.file import File
 from tatu.storage import DuplicateEntryException
-from aiuna.content.specialdata import UUIDData
 from . import bp
 
 
@@ -51,7 +50,7 @@ def celery_download_data(self, uuids):
                         'total': 100,
                         'status': f'Processing file {str(actual_index)} of {str(len(uuids))}'
                     })
-                    data = storage.fetch(UUIDData(uuid))
+                    data = storage.fetch(uuid)
                     if data is None:
                         raise Exception(
                             'Download failed: ' + uuid + ' not found!')
