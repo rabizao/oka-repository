@@ -14,7 +14,6 @@ from app.schemas import TaskBaseSchema
 
 from aiuna.file import File
 from tatu.storage import DuplicateEntryException
-from aiuna.content.specialdata import UUIDData
 from . import bp
 
 
