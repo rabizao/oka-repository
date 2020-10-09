@@ -11,5 +11,10 @@ flask db migrate
 flask db upgrade
 cd -
 echo "Restart services..."
-systemctl restart oka nginx celery
+echo "oka..."
+systemctl restart oka
+echo "nginx..."
+systemctl restart nginx
+echo "celery..."
+systemctl restart celery
 
