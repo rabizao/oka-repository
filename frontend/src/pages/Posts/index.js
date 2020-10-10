@@ -1417,7 +1417,7 @@ export default function Posts(props) {
                             </div>
                         }
 
-                        <div className="flex-row flex-axis-center margin-top-small">
+                        <div className="flex-row margin-top-small">
                             <div className="flex-column flex-crossaxis-center">
                                 <div className="flex-wrap">
                                     {
@@ -1446,11 +1446,20 @@ export default function Posts(props) {
                                     }
                                 </div>
                             </div>
-                            <button onClick={(e) => copyToClipboard(e, post.data_uuid)}>
-                                <img height="100px" src={`${downloadsUrl}${post.data_uuid}.jpg`} title="Copy to clipboard" alt="Copy to clipboard" />
+                            <button
+                                onClick={(e) => copyToClipboard(e, post.data_uuid)}
+                                className="box-square-medium padding-very-small ellipsis-n font-courier"
+                                style={{ backgroundColor: `rgb(${post.data_uuid_colors[0][0]}, ${post.data_uuid_colors[0][1]}, ${post.data_uuid_colors[0][2]})`, border: `var(--border)` }}>
+                                <span>&nbsp;</span>
+                                {
+                                    post.data_uuid_colors.slice(1).map((color, index) =>
+                                        <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{post.data_uuid[index]}</span>
+                                    )
+                                }
                             </button>
                         </div>
                         <h1 className="color-tertiary ellipsis">{name}</h1>
+                        <h6 className="color-tertiary">OID: <span className="font-courier color-tertiary">{post.data_uuid}</span></h6>
                         <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
                         <h6 className="color-tertiary">{post.downloads} downloads | {post.favorites.length} favorited</h6>
                         <div className="margin-top-very-small" >

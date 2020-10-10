@@ -119,6 +119,15 @@ button, input[type="submit"], input[type="reset"] {
     max-width: 15ch;
 }
 
+.ellipsis-n {
+    overflow: hidden;
+    display: -webkit-box;
+    -moz-box-orient: vertical;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+    word-wrap: break-word;
+}
+
 .nowrap {
     white-space: nowrap;
     overflow: hidden;
@@ -481,6 +490,10 @@ button, input[type="submit"], input[type="reset"] {
     padding: 10px
 }
 
+.padding-very-small {
+    padding: 5px
+}
+
 .width-smallest {
     width: 320px;
 }
@@ -682,6 +695,15 @@ button, input[type="submit"], input[type="reset"] {
 .icon-medium svg {
     font-size: 50px;
 }
+
+.box-square-medium {
+    height: 110px;
+    width: 90px;
+}
+
+.font-courier {
+    font-family: "Courier New", Courier, monospace;
+  }
 
 
 /* Notifications */
