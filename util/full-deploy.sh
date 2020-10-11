@@ -1,21 +1,20 @@
-cd /home/oka/oka-repository/ && sudo -u oka git pull; cd -
-cd /home/oka/tatu/ && sudo -u oka git pull; cd -
-cd /home/oka/akangatu/ && sudo -u oka git pull; cd -
-cd /home/oka/transf/ && sudo -u oka git pull; cd -
-cd /home/oka/aiuna/ && sudo -u oka git pull; cd -
-cd /home/oka/kururu/ && sudo -u oka git pull; cd -
-cd /home/oka/cruipto/ && sudo -u oka git pull; cd -
-cd /home/oka/oka-repository/frontend && sudo -u oka npm run-script build; cd -
-cd /home/oka/oka-repository/backend
-source venv/bin/activate
-flask db migrate
-flask db upgrade
+echo "Reseting mysql..."
+mysql -e 'drop database oka; create database oka'
+
+echo "Running oka user commands..."
+sudo -u oka /home/oka/oka-repository/util/full-deploy-okauser-part.sh
+
+echo "Ensuring ownership..."
+chown oka.oka /home/oka/ -R
+
 cd -
-echo "Restart services..."
+echo "Restart services:"
 echo "oka..."
 systemctl restart oka
 echo "nginx..."
 systemctl restart nginx
 echo "celery..."
 systemctl restart celery
+
+
 
