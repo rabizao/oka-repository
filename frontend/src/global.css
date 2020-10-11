@@ -705,6 +705,10 @@ button, input[type="submit"], input[type="reset"] {
     font-family: "Courier New", Courier, monospace;
   }
 
+.font-uuid {
+    font-family: "Courier", Courier, monospace;
+  }
+
 
 /* Notifications */
 @font-face {

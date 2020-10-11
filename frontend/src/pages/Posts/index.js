@@ -1448,7 +1448,7 @@ export default function Posts(props) {
                             </div>
                             <button
                                 onClick={(e) => copyToClipboard(e, post.data_uuid)}
-                                className="box-square-medium padding-very-small ellipsis-n font-courier"
+                                className="box-square-medium padding-very-small ellipsis-n font-uuid bold"
                                 style={{ backgroundColor: `rgb(${post.data_uuid_colors[0][0]}, ${post.data_uuid_colors[0][1]}, ${post.data_uuid_colors[0][2]})`, border: `var(--border)` }}>
                                 <span>&nbsp;</span>
                                 {
