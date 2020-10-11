@@ -41,3 +41,7 @@ backend/app/media/
 # IDE
 .idea/
 *.iml
+*.arff
+*/token.txt
+package-lock.json
+token.txt
