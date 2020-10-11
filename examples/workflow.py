@@ -51,8 +51,8 @@ from util.create import user, token
 #     return response_login.json()['api_token']
 #
 #
-# url = "http://data.analytics.icmc.usp.br"
-url = "http://localhost:5000"
+url = "http://data.analytics.icmc.usp.br"
+# url = "http://localhost:5000"
 user = user("davips", "pass123", base_url=url)
 okatoken = token(**user, base_url=url)
 print("user created")
