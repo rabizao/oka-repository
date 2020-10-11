@@ -1,3 +1,4 @@
+from . import bp
 from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -9,9 +10,6 @@ from app.models import User, Post, Comment, Task, Transformation
 from app.api.tasks import celery_process_data
 from app.schemas import (PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema,
                          CommentQuerySchema, TransformQuerySchema)
-
-from kururu.tool.evaluation.split import Split
-from . import bp
 import uuid as u
 
 
@@ -27,8 +25,10 @@ class Posts(MethodView):
         Show all posts
         """
         filter_by = {"active": True}
+        filter = []
         data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
-                                                          pagination_parameters.page_size, filter_by=filter_by)
+                                                          pagination_parameters.page_size,
+                                                          filter_by=filter_by, filter=filter)
         return data
 
     @jwt_required
@@ -38,7 +38,6 @@ class Posts(MethodView):
         """
         Create a new post to the logged user
         """
-
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
 
@@ -63,15 +62,23 @@ class Posts(MethodView):
 
 @bp.route('/posts/<int:id>')
 class PostsById(MethodView):
+    @jwt_required
     @bp.response(PostBaseSchema)
     def get(self, id):
         """
         Show info about the post with id {id}
         """
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
+
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+        if not logged_user.has_access(post):
+            abort(422, errors={
+                "json": {"id": ["You dont have access to this post. [" + self.__class__.__name__ + "]"]}})
+
         return post
 
     @jwt_required

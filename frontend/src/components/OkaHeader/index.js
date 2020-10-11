@@ -83,14 +83,11 @@ export default function OkaHeader(props) {
                                     <div className="flex-column padding-vertical-small">
                                         {
                                             notificationsContext.notifications.length > 0 ?
-                                                notificationsContext.notifications.slice(0).reverse().map((notification) =>
-                                                    notification.payload_json.code === "success" ?
-                                                        <Link key={notification.id} className="padding-medium box background-hover width100 ellipsis-1" to={`/posts/${notification.payload_json.id}/description`}>
-                                                            {notification.payload_json.original_name}
-                                                        </Link> :
+                                                notificationsContext.notifications.slice(0).reverse().map((notification) =>                                                    
+                                                    notification.name === "task_finished" &&
                                                         <Link key={notification.id} className="padding-medium box background-hover width100" to={`/posts/${notification.payload_json.id}/description`}>
                                                             <span className="ellipsis-3">{notification.payload_json.original_name}: </span>
-                                                            <span className="ellipsis-3 color-error"> {notification.payload_json.message}</span>
+                                                            <span className={`ellipsis-3 ${notification.payload_json.code === "error" && "color-error"}`}> {notification.payload_json.message}</span>
                                                         </Link>
                                                 ) :
                                                 <div className="padding-sides-small padding-vertical-small width100">Nothing to show yet</div>

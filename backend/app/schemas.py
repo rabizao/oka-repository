@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash
 
 from app import db
 from app.models import User, Post, Comment, Transformation, Contact, Notification
+from cruipto.avatar23 import colors
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -224,6 +225,8 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     history = Nested(TransformationBaseSchema, many=True, dump_only=True)
     comments = Nested(CommentBaseSchema, many=True, dump_only=True)
     favorites = fields.Pluck(UserBaseSchema, "id", many=True, dump_only=True)
+    data_uuid_colors = fields.Function(
+        lambda obj: colors(obj.data_uuid), dump_only=True)
 
 
 class PostEditSchema(SQLAlchemySchema):

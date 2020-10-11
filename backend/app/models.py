@@ -195,7 +195,13 @@ class User(PaginateMixin, db.Model):
 
     def has_access(self, post):
         return self.accessible.filter(
-            access.c.post_id == post.id).count() > 0
+            access.c.post_id == post.id).count() > 0 or post.author == self
+
+    def accessible_posts(self):
+        can_see = self.accessible.filter(Post.active is True)
+        own = Post.query.filter_by(user_id=self.id)
+        return can_see.union(own)
+        # return self.accessible.filter(access.c.post_id == post.id).all() and self.posts
 
     # def launch_task(self, name, description, *args, **kwargs):
     #     rq_job = current_app.task_queue.enqueue('current_app.tasks.' + name, self.id,
