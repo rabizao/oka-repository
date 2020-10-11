@@ -2,12 +2,15 @@ echo "Deleting venv..."
 rm /home/oka/oka-repository/backend/venv -rf
 
 echo "Deleting media and tatu-* ..."
+cd /home/oka/
 rm -rf $(find . -name "tatu-*") /home/oka/oka-repository/backend/app/media/*
 
 echo "Creating venv..."
 cd /home/oka/oka-repository/backend/
 python3.8 -m venv venv
 source venv/bin/activate
+
+echo "pipping..."
 pip install -r requirements.txt
 pip install -e ~/cruipto
 pip install -e ~/transf

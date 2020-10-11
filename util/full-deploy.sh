@@ -2,7 +2,7 @@ echo "Reseting mysql..."
 mysql -e 'drop database oka; create database oka'
 
 echo "Running oka user commands..."
-sudo -u oka /home/oka/oka-repository/util/full-deploy-okauser-part.sh
+sudo -i -u oka /home/oka/oka-repository/util/full-deploy-okauser-part.sh
 
 echo "Ensuring ownership..."
 chown oka.oka /home/oka/ -R
