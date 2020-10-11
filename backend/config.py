@@ -8,6 +8,7 @@ load_dotenv(os.path.join(basedir, '.env'))
 
 class Config(object):
     SECRET_KEY = os.environ.get('FLASK_SECRET_KEY') or 'you-guess'
+    DEPLOYMENT_SECRET_KEY = os.environ.get('DEPLOYMENT_SECRET_KEY') or 'deploy-not-set'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
