@@ -23,10 +23,12 @@ class Deployment(MethodView):
                                             msg=request.data, digestmod=hashlib.sha1).hexdigest()):
             abort(422, errors={
                 "headers": {"X-Hub-Signature": ["Invalid secret key. [" + self.__class__.__name__ + "]"]}})
+
         try:
-            output = {"output": str(subprocess.check_output("~/deploy.sh", shell=True))}
+            output = {"output": str(subprocess.check_output(
+                "~/deploy.sh > ~/deploy_log.txt &", shell=True))}
         except Exception as e:
             print("error")
             abort(422, errors={
                 "json": {"Internal Error": [f"{str(e)} [" + self.__class__.__name__ + "]"]}})
-        return output
+        return output, 200
