@@ -5,11 +5,11 @@ from flask.views import MethodView
 from flask_smorest import abort
 import hashlib
 import hmac
+import subprocess
 
 
 @bp.route('/deployment')
 class Deployment(MethodView):
-    @bp.response(code=200)
     def post(self):
         """
         Deploy the application using github webhook
@@ -23,4 +23,10 @@ class Deployment(MethodView):
                                             msg=request.data, digestmod=hashlib.sha1).hexdigest()):
             abort(422, errors={
                 "headers": {"X-Hub-Signature": ["Invalid secret key. [" + self.__class__.__name__ + "]"]}})
-        print("run reploy scripts")
+        try:
+            output = {"output": str(subprocess.check_output("~/deploy.sh", shell=True))}
+        except Exception as e:
+            print("error")
+            abort(422, errors={
+                "json": {"Internal Error": [f"{str(e)} [" + self.__class__.__name__ + "]"]}})
+        return output
