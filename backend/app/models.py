@@ -40,8 +40,9 @@ access = db.Table('access',
 
 class PaginateMixin(object):
     @classmethod
-    def get(cls, data, page, page_size, filter_by={}, filter=[], order_by=None):
+    def get(cls, data, page, page_size, query=None, filter_by={"active": True}, filter=[], order_by=None):
         logic = data['logic'] if 'logic' in data else 'or'
+        query = query or cls.query
         data.pop('logic', None)
         search_conds = []
         for key, values in data.items():
@@ -55,10 +56,10 @@ class PaginateMixin(object):
             else:
                 search_conds += [getattr(cls, key).like(f"%{values}%")]
         if logic == "or":
-            resources = cls.query.filter_by(**filter_by).filter(
+            resources = query.filter_by(**filter_by).filter(
                 or_(*search_conds)).filter(*filter).order_by(order_by).paginate(page, page_size, False)
         else:
-            resources = cls.query.filter_by(**filter_by).filter(
+            resources = query.filter_by(**filter_by).filter(
                 and_(*search_conds)).filter(*filter).order_by(order_by).paginate(page, page_size, False)
         return resources.items, resources.total
 

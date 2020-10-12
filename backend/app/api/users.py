@@ -16,9 +16,8 @@ class Users(MethodView):
     @bp.paginate()
     def get(self, args, pagination_parameters):
         """List all users"""
-        filter_by = {"active": True}
         data, pagination_parameters.item_count = User.get(args, pagination_parameters.page,
-                                                          pagination_parameters.page_size, filter_by=filter_by)
+                                                          pagination_parameters.page_size)
         return data
 
     @bp.arguments(UserRegisterSchema)
@@ -104,7 +103,7 @@ class UsersPosts(MethodView):
         user = User.get_by_username(username)
         if not user:
             abort(422, errors={"json": {"username": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
-        filter_by = {"active": True, "author": user}
+        filter_by = {"author": user}
         order_by = Post.timestamp.desc()
         data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
                                                           pagination_parameters.page_size,
@@ -125,11 +124,10 @@ class UsersFavorites(MethodView):
         user = User.get_by_username(username)
         if not user:
             abort(422, errors={"json": {"username": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
-        filter_by = {"active": True}
         filter = [getattr(User, 'favorited')]
         order_by = Post.timestamp.desc()
         data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
-                                                          pagination_parameters.page_size, filter_by=filter_by,
+                                                          pagination_parameters.page_size,
                                                           filter=filter, order_by=order_by)
         return data
 
@@ -149,12 +147,13 @@ class UsersFeed(MethodView):
         if not user or user != logged_user:
             abort(422, errors={"json": {"username": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
-        posts = logged_user.followed_posts().paginate(pagination_parameters.page,
-                                                      pagination_parameters.page_size,
-                                                      False)
-        pagination_parameters.item_count = posts.total
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
 
-        return posts.items
+        data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
+                                                          pagination_parameters.page_size,
+                                                          query=logged_user.followed_posts())
+        return data
 
 
 @bp.route('/users/<string:username>/follow')
