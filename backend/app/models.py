@@ -41,6 +41,9 @@ access = db.Table('access',
 class PaginateMixin(object):
     @classmethod
     def get(cls, data, page, page_size, query=None, filter_by={"active": True}, filter=[], order_by=None):
+        """
+        Return a collection of items already paginated of the selected class
+        """
         logic = data['logic'] if 'logic' in data else 'or'
         query = query or cls.query
         data.pop('logic', None)
