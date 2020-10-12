@@ -4,7 +4,6 @@ import { useLocation } from 'react-router-dom';
 import './styles.css';
 
 import Avatar from 'react-avatar';
-import { NotificationManager } from 'react-notifications';
 import { CircularProgress } from '@material-ui/core';
 import Modal from '@material-ui/core/Modal';
 
@@ -14,6 +13,7 @@ import OkaPostsBox from '../../components/OkaPostsBox';
 import api from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 import queryString from 'query-string';
+import { notifyError } from '../../utils';
 
 export default function Users(props) {
     const location = useLocation()
@@ -56,13 +56,7 @@ export default function Users(props) {
                 setAbout_me(response.data.about_me ? response.data.about_me : '');
                 setLoadingHero(false);
             } catch (error) {
-                if (error.response) {
-                    for (var prop in error.response.data.errors.json) {
-                        NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000);
-                    }
-                } else {
-                    NotificationManager.error("Network error", "Error", 4000);
-                }
+                notifyError(error);
             }
         }
         fetchUser();
@@ -78,13 +72,7 @@ export default function Users(props) {
                 newUser.followers.push(loggedUser.id)
             }
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
         setUser(newUser);
     }
@@ -101,13 +89,7 @@ export default function Users(props) {
             setName(nameEdit);
             setAbout_me(about_meEdit);
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
     }
 

@@ -1,11 +1,11 @@
 import React, { useState, useContext } from 'react';
 import { Link, useHistory } from 'react-router-dom';
-import { NotificationManager } from 'react-notifications';
 
 import './styles.css';
 
 import { LoginContext } from '../../contexts/LoginContext';
 import api from '../../services/api';
+import { notifyError } from '../../utils';
 
 export default function Register() {
     const history = useHistory();
@@ -31,13 +31,7 @@ export default function Register() {
             loginContext.setLogged(true);
             history.push('/home');
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("network error", "error", 4000)
-            }
+            notifyError(error);
         }
     }
 

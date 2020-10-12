@@ -3,12 +3,12 @@ import { Link, useHistory } from 'react-router-dom';
 
 import Avatar from 'react-avatar';
 import { ExpandMore } from '@material-ui/icons';
-import { NotificationManager } from 'react-notifications';
 
 import { LoginContext } from '../../contexts/LoginContext';
 import { logout } from '../../services/auth';
 import PopOver from '../PopOver';
 import api from '../../services/api';
+import { notifyError } from '../../utils';
 
 
 export default function OkaMyAccount() {
@@ -26,13 +26,7 @@ export default function OkaMyAccount() {
             await api.delete('/auth/revoke-all-tokens');
             handleLogout();
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("network error", "error", 4000)
-            }
+            notifyError(error);
         }
     }
 

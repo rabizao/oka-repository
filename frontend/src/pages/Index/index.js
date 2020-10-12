@@ -17,7 +17,7 @@ import OkaMyAccount from '../../components/OkaMyAccount';
 
 import { Help } from '@material-ui/icons';
 import { ScrollingProvider, useScrollSection, Section } from 'react-scroll-section';
-import { NotificationManager } from 'react-notifications';
+import { notifyError } from "../../utils";
 
 const StaticMenu = () => {
     const homeSection = useScrollSection('home');
@@ -66,13 +66,7 @@ export default function Index() {
             setEmail('');
             setMessage('');
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("network error", "error", 4000)
-            }
+            notifyError(error);
         }
     }
 

@@ -9,7 +9,7 @@ from app import db
 from app.models import User, Post, Comment, Task, Transformation
 from app.api.tasks import celery_process_data
 from app.schemas import (PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema,
-                         CommentQuerySchema, TransformQuerySchema)
+                         CommentQuerySchema, TransformQuerySchema, PostCollaboratorSchema)
 import uuid as u
 
 
@@ -103,6 +103,39 @@ class PostsById(MethodView):
 
         post.update(args)
         db.session.commit()
+
+
+@bp.route('/posts/<int:id>/collaborators')
+class PostsCollaboratorsById(MethodView):
+    @jwt_required
+    @bp.arguments(PostCollaboratorSchema)
+    @bp.response(code=201)
+    def post(self, args, id):
+        """
+        Grant/Deny access to a collaborator to the post with id {id}
+        """
+        post = Post.query.get(id)
+        if not post or not post.active:
+            abort(422, errors={
+                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+
+        collaborator = User.get_by_username(args["username"])
+        if not collaborator:
+            abort(422, errors={
+                "json": {"username": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
+
+        if not post.author == logged_user:
+            abort(422, errors={
+                "json": {"username":
+                         ["Only the author can invite collaborators to the post. [" + self.__class__.__name__ + "]"]}})
+
+        if collaborator.has_access(post):
+            collaborator.deny_access(post)
+        else:
+            collaborator.grant_access(post)
 
 
 @bp.route('/posts/<int:id>/favorite')

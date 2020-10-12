@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 
 import './styles.css';
 
-import { NotificationManager } from 'react-notifications';
 import { Message } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 
@@ -11,6 +10,7 @@ import TimeAgo from 'timeago-react';
 import Avatar from 'react-avatar';
 
 import api from '../../services/api';
+import { notifyError } from '../../utils';
 
 export default function OkaPostComments({ postId }) {
     const [comments, setComments] = useState([]);
@@ -26,13 +26,7 @@ export default function OkaPostComments({ postId }) {
                 setComments(response.data);
                 setLoading(false);
             } catch (error) {
-                if (error.response) {
-                    for (var prop in error.response.data.errors.json) {
-                        NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                    }
-                } else {
-                    NotificationManager.error("Network error", "Error", 4000)
-                }
+                notifyError(error);
             }
         }
         fetchData();
@@ -65,13 +59,7 @@ export default function OkaPostComments({ postId }) {
             newComments[index].replies.push(response.data); //unshift to put at the beginning
             setComments(newComments);
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
 
         var newReplies = [...replies];
@@ -101,13 +89,7 @@ export default function OkaPostComments({ postId }) {
             newComments.unshift(response.data);
             setComments(newComments);
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
         setNewComment('');
     }

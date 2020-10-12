@@ -3,12 +3,12 @@ import { Link, useHistory, useLocation } from 'react-router-dom';
 
 import { CheckBoxOutlineBlank, CheckBox, CloudDownload, Search, ArrowLeft, ArrowRight } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
-import { NotificationManager } from 'react-notifications';
 import { saveAs } from 'file-saver';
 import TimeAgo from 'timeago-react';
 import queryString from 'query-string';
 
 import api, { downloadsUrl } from '../../services/api';
+import { notifyError } from '../../utils';
 
 export default function OkaPostsBox({ fetch_url }) {
     let location = useLocation();
@@ -36,13 +36,7 @@ export default function OkaPostsBox({ fetch_url }) {
                 setFilteredPosts(response.data);
                 setLoading(false);
             } catch (error) {
-                if (error.response) {
-                    for (var prop in error.response.data.errors.json) {
-                        NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                    }
-                } else {
-                    NotificationManager.error("Network error", "Error", 4000)
-                }
+                notifyError(error);
             }
         }
         fetchData();
@@ -90,24 +84,12 @@ export default function OkaPostsBox({ fetch_url }) {
                         clearInterval(status);
                     }
                 } catch (error) {
-                    if (error.response) {
-                        for (var prop in error.response.data.errors.json) {
-                            NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                        }
-                    } else {
-                        NotificationManager.error("network error", "error", 4000)
-                    }
+                    notifyError(error);
                     clearInterval(status);
                 }
             }, 1000);
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("network error", "error", 4000)
-            }
+            notifyError(error);
         }
     }
 

@@ -3,13 +3,13 @@ import { Link, useHistory } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import { Message, Favorite, FavoriteBorder } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
-import { NotificationManager } from 'react-notifications';
 import TimeAgo from 'timeago-react';
 
 import api from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 
 import './styles.css';
+import { notifyError } from '../../utils';
 
 export default function ContentBox(props) {
     const [posts, setPosts] = useState([]);
@@ -26,13 +26,7 @@ export default function ContentBox(props) {
                 setPosts(response.data);
                 setLoading(false);
             } catch (error) {
-                if (error.response) {
-                    for (var prop in error.response.data.errors.json) {
-                        NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                    }
-                } else {
-                    NotificationManager.error("Network error", "Error", 4000)
-                }
+                notifyError(error);
             }
         }
 
@@ -51,13 +45,7 @@ export default function ContentBox(props) {
                 newPosts[index].favorites.push(user.id)
             }
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
 
         setPosts(newPosts);
