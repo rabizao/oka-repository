@@ -40,8 +40,12 @@ access = db.Table('access',
 
 class PaginateMixin(object):
     @classmethod
-    def get(cls, data, page, page_size, filter_by={}, filter=[], order_by=None):
+    def get(cls, data, page, page_size, query=None, filter_by={"active": True}, filter=[], order_by=None):
+        """
+        Return a collection of items already paginated of the selected class
+        """
         logic = data['logic'] if 'logic' in data else 'or'
+        query = query or cls.query
         data.pop('logic', None)
         search_conds = []
         for key, values in data.items():
@@ -55,10 +59,10 @@ class PaginateMixin(object):
             else:
                 search_conds += [getattr(cls, key).like(f"%{values}%")]
         if logic == "or":
-            resources = cls.query.filter_by(**filter_by).filter(
+            resources = query.filter_by(**filter_by).filter(
                 or_(*search_conds)).filter(*filter).order_by(order_by).paginate(page, page_size, False)
         else:
-            resources = cls.query.filter_by(**filter_by).filter(
+            resources = query.filter_by(**filter_by).filter(
                 and_(*search_conds)).filter(*filter).order_by(order_by).paginate(page, page_size, False)
         return resources.items, resources.total
 
@@ -172,9 +176,9 @@ class User(PaginateMixin, db.Model):
     def followed_posts(self):  # feed
         followed = Post.query.join(
             followers, (followers.c.followed_id == Post.user_id)).filter(
-            followers.c.follower_id == self.id, Post.public is True)
+            followers.c.follower_id == self.id, Post.public)
         own = Post.query.filter_by(user_id=self.id)
-        return followed.union(own).order_by(Post.timestamp.desc())
+        return followed.union(own)
 
     def favorite(self, post):
         if not self.has_favorited(post):
@@ -197,9 +201,17 @@ class User(PaginateMixin, db.Model):
         return self.accessible.filter(
             access.c.post_id == post.id).count() > 0 or post.author == self
 
+    def grant_access(self, post):
+        if not self.has_access(post):
+            self.accessible.append(post)
+
+    def deny_access(self, post):
+        if self.has_access(post):
+            self.accessible.remove(post)
+
     def accessible_posts(self):
-        can_see = self.accessible.filter(Post.active is True)
-        own = Post.query.filter_by(user_id=self.id)
+        can_see = self.accessible.filter(Post.active)
+        own = Post.query.filter_by(user_id=self.id, active=True)
         return can_see.union(own)
         # return self.accessible.filter(access.c.post_id == post.id).all() and self.posts
 
@@ -338,9 +350,6 @@ class Post(PaginateMixin, db.Model):
     # def set_private(self):
     #     self.public = False
     #     db.session.commit()
-
-    def can_be_shown_to(self, user):
-        return self.is_public() or self.author == user
 
     def update(self, args):
         for key, value in args.items():

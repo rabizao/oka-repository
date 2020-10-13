@@ -4,7 +4,7 @@ import { Link, useHistory } from 'react-router-dom';
 import './styles.css';
 
 import { NotificationManager } from 'react-notifications';
-import { CloudDownload, Favorite, FavoriteBorder, ChevronLeft, ChevronRight, FormatQuote } from '@material-ui/icons';
+import { CloudDownload, Favorite, FavoriteBorder, ChevronLeft, ChevronRight, FormatQuote, Share } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 import Modal from '@material-ui/core/Modal';
 import { saveAs } from 'file-saver';
@@ -17,6 +17,7 @@ import OkaPostsBox from '../../components/OkaPostsBox';
 import api, { downloadsUrl } from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 import { frontendUrl } from '../../services/api';
+import { notifyError } from '../../utils';
 
 const data = [
     {
@@ -1053,6 +1054,8 @@ export default function Posts(props) {
     const [post, setPost] = useState({});
     const [openEdit, setOpenEdit] = useState(false);
     const [openCite, setOpenCite] = useState(false);
+    const [openShare, setOpenShare] = useState(false);
+    const [collaboratorUsername, setCollaboratorUsername] = useState('');
     const [openPublish, setOpenPublish] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
     const [name, setName] = useState('');
@@ -1201,13 +1204,7 @@ export default function Posts(props) {
                 setDescription(response.data.description ? response.data.description : '');
                 setLoadingHero(false);
             } catch (error) {
-                if (error.response) {
-                    for (var prop in error.response.data.errors.json) {
-                        NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000);
-                    }
-                } else {
-                    NotificationManager.error("Network error", "Error", 4000);
-                }
+                notifyError(error);
             }
         }
         fetchPost();
@@ -1224,24 +1221,12 @@ export default function Posts(props) {
                         clearInterval(status);
                     }
                 } catch (error) {
-                    if (error.response) {
-                        for (var prop in error.response.data.errors.json) {
-                            NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                        }
-                    } else {
-                        NotificationManager.error("network error", "error", 4000)
-                    }
+                    notifyError(error);
                     clearInterval(status);
                 }
             }, 1000);
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("network error", "error", 4000)
-            }
+            notifyError(error);
         }
     }
 
@@ -1256,13 +1241,7 @@ export default function Posts(props) {
                 newPost.favorites.push(loggedUser.id)
             }
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
         setPost(newPost);
     }
@@ -1285,13 +1264,7 @@ export default function Posts(props) {
             setName(nameEdit);
             setDescription(descriptionEdit);
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
     }
 
@@ -1301,13 +1274,7 @@ export default function Posts(props) {
             NotificationManager.success("Post was successfully published. Now it is available to everyone.", "Publish", 8000)
             setOpenPublish(false);
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
     }
 
@@ -1337,17 +1304,26 @@ export default function Posts(props) {
                     const response = await api.post(`posts/${uuid}`);
                     history.push(`/posts/${response.data.id}/description`);
                 } catch (error) {
-                    if (error.response) {
-                        for (var prop in error.response.data.errors.json) {
-                            NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                        }
-                    } else {
-                        NotificationManager.error("Network error", "Error", 4000)
-                    }
+                    notifyError(error);
                 }
             } else {
                 NotificationManager.error("Network error", "Error", 4000)
             }
+        }
+    }
+
+    async function handleSubmitCollaborator(e) {
+        e.preventDefault();
+
+        const data = {
+            username: collaboratorUsername
+        }
+
+        try {
+            await api.post(`posts/${id}/collaborators`, data);
+            NotificationManager.success(`Successfully edited ${collaboratorUsername} access.`, "Collaborator", 8000)
+        } catch (error) {
+            notifyError(error);
         }
     }
 
@@ -1391,6 +1367,25 @@ export default function Posts(props) {
                             citation() :
                             <h5>The author must publish the post before it can be cited. </h5>
                     }
+                </div>
+            </Modal>
+            <Modal
+                open={openShare}
+                onClose={() => setOpenShare(false)}
+            >
+                <div className="modal padding-big">
+                    <h3 className="margin-bottom-small">Share dataset with collaborators</h3>
+                    <form className="form flex-column" onSubmit={e => handleSubmitCollaborator(e)}>
+                        <label>
+                            Username
+                            <input
+                                placeholder="Username"
+                                value={collaboratorUsername}
+                                onChange={e => setCollaboratorUsername(e.target.value)}
+                            />
+                        </label>
+                        <button className="button-primary" type="submit">Invite</button>
+                    </form>
                 </div>
             </Modal>
             <Modal
@@ -1466,6 +1461,7 @@ export default function Posts(props) {
                             <button title="Download" onClick={handleDownload}><CloudDownload className="icon-secondary" /></button>
                             {post.favorites && post.favorites.includes(loggedUser.id) ? <button title="Favorite" onClick={handleFavorite}><Favorite className="icon-secondary margin-left-very-small" /></button> : <button onClick={handleFavorite}><FavoriteBorder className="icon-secondary margin-left-very-small" /></button>}
                             <button title="Cite" onClick={() => setOpenCite(true)}><FormatQuote className="icon-secondary" /></button>
+                            <button title="Share" onClick={() => setOpenShare(true)}><Share className="icon-secondary" /></button>
                         </div>
                     </>
                 }

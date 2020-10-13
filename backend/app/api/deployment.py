@@ -26,9 +26,8 @@ class Deployment(MethodView):
 
         try:
             output = {"output": str(subprocess.check_output(
-                "~/deploy.sh > ~/deploy_log.txt &", shell=True))}
+                "nohup ~/deploy.sh > ~/deploy_log.txt 2>&1 &", shell=True))}
         except Exception as e:
-            print("error")
             abort(422, errors={
                 "json": {"Internal Error": [f"{str(e)} [" + self.__class__.__name__ + "]"]}})
         return output, 200
