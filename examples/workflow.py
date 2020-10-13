@@ -62,33 +62,34 @@ print("user created")
 # TIP: TsSplit should come before TrSplit to ensure the same original data is used as input for both.
 from tatu.okast import OkaSt
 
+#
+wflow = (
+        File("iris.arff")
+        * Binarize
+        * Split
+        * PCA(n=3)
+        * Cache(PCA(n=3))  # , storage=OkaSt(okatoken, alias="Iris"))
+        * PCA(n=3)
+        * Log(">>>>>>>>>>>>>>>>> {X.shape} {inner.X.shape}")
+        * Report("{id}")
+        * Cache(SVM2(C=0.25), storage=MySQL(db="oka:kururu@localhost/oka"))
+        * Metric2
+        * Report("tr {r}\t\tts {inner.r}")
+)
 
-#
-# wflow = (
-#         File("iris.arff")
-#         * Binarize
-#         * Split
-#         * PCA(n=3)
-#         * Cache(PCA(n=3))#, storage=OkaSt(okatoken, alias="Iris"))
-#             *PCA(n=3)
-#         * Log(">>>>>>>>>>>>>>>>> {X.shape} {inner.X.shape}")
-#         * Report("{id}")
-#         * Cache(SVM2(C=0.25), storage=MySQL(db="oka:kururu@localhost/oka"))
-#         * Metric2
-#         * Report("tr {r}\t\tts {inner.r}")
-# )
-#
-# data = wflow.data
-#
-# print("Data ID", data.id)
-# print("Shape", data.X.shape[1], len(data.Xt))
-# # print(test.arff("nome", "desc"))
+data = wflow.data
+
+print("Data ID", data.id)
+print("Shape", data.X.shape[1], len(data.Xt))
+
+
+# print(test.arff("nome", "desc"))
 #
 #
 # data >>= PCA()
 # print(data.id)
 # TODO  queue = None qnd descomenta acima
-# MySQL(db="oka:kururu@localhost/oka").sync(SQLite())
+# MySQL(db="oka:xxxxx@localhost/oka").sync(SQLite())
 # SQLite().fetch_at(0)
 
 
