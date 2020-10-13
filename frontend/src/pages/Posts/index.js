@@ -1430,13 +1430,13 @@ export default function Posts(props) {
                                                         post.history.map((transformation) =>
                                                             transformation.name &&
                                                             <div key={transformation.id} className="flex-row">
+                                                                <button onClick={(e) => handleCreatePost(e, transformation.label)} className="flex-column flex-crossaxis-center padding-right-very-small">
+                                                                    <img height="40px" src={`${downloadsUrl}${transformation.avatar}`} title="Show Dataset" alt="Show Dataset" />
+                                                                </button>
                                                                 <div className="flex-column flex-axis-center padding-right-very-small">
                                                                     <span className="color-tertiary">{transformation.name}</span>
                                                                     <span className="color-tertiary">→</span>
                                                                 </div>
-                                                                <button onClick={(e) => handleCreatePost(e, transformation.label)} className="flex-column flex-crossaxis-center padding-right-very-small">
-                                                                    <img height="40px" src={`${downloadsUrl}${transformation.avatar}`} title="Show Dataset" alt="Show Dataset" />
-                                                                </button>
                                                             </div>
                                                         )
                                                     }

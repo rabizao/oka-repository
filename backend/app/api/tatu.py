@@ -5,6 +5,8 @@ from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_smorest import abort
 
+from aiuna import Root
+from cruipto.uuid import UUID
 from tatu.storage import DuplicateEntryException
 from aiuna.compression import unpack, pack
 from . import bp
@@ -64,9 +66,10 @@ class TatuData(MethodView):
 
         # Remove delimiters
         name = []
-        for i in list(storage.visual_history(data)):
-            if i["name"] not in ["B", "Rev", "E", "AutoIns", "In", "DelIn", "DelStream"]:
-                name.append(i["name"][0:3])
+        for uid, step in data.history.items():
+            step = json.loads(step.replace("'", '"'))  # TODO remove this after storage/history stop jsonifying steps
+            if step["desc"]["name"] not in ["B", "Rev", "E", "AutoIns", "In", "DelIn", "DelStream"]:
+                name.append(step["desc"]["name"][0:3])
 
         if alias:
             name = f"{alias}[{data.id[:4]}] : {''.join(name)}"
@@ -76,8 +79,12 @@ class TatuData(MethodView):
             name=name or "No name",
             description="Title and description automatically generated."
         )
-        for dic in storage.visual_history(data.id, current_app.static_folder):
-            if dic["name"] not in ["B", "Rev", "E", "AutoIns", "In", "DelIn", "DelStream"]:
+        duuid = Root.uuid
+        for uid, step in data.history.items():
+            step = json.loads(step.replace("'", '"'))  # TODO remove this after storage/history stop jsonifying steps
+            if step["desc"]["name"] not in ["B", "Rev", "E", "AutoIns", "In", "DelIn", "DelStream"]:
+                dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(step), "stored": True}  # TODO: stored is useless
                 Transformation(**dic, post=post)
+                duuid *= UUID(step["id"])
         db.session.add(post)
         db.session.commit()

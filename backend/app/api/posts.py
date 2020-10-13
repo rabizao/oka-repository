@@ -1,3 +1,5 @@
+from aiuna import Root
+from cruipto.uuid import UUID
 from . import bp
 from flask import current_app
 from flask.views import MethodView
@@ -45,8 +47,7 @@ class Posts(MethodView):
         files = []
 
         for file in argsFiles['files']:
-            full_path = current_app.config['TMP_FOLDER'] + \
-                str(u.uuid4()) + file.filename[-10:]
+            full_path = current_app.config['TMP_FOLDER'] + str(u.uuid4()) + file.filename[-10:]
             file.save(full_path)
             files.append({"path": full_path, "original_name": file.filename})
             original_names.append(file.filename)
@@ -279,8 +280,7 @@ class PostsOnDemand(MethodView):
 
         # TODO: refactor duplicate code
 
-        name = "←".join([i["name"] for i in reversed(
-            list(storage.visual_history(data)))]) or "No Name"
+        name = "←".join([step["desc"]["name"] for step in reversed(data.history) or "No Name"])
 
         # noinspection PyArgumentList
         post = Post(author=logged_user,
@@ -288,8 +288,12 @@ class PostsOnDemand(MethodView):
                     name=name,
                     description="Title and description automatically generated."
                     )
-        for dic in storage.visual_history(uuid, current_app.static_folder):
-            Transformation(**dic, post=post)
+        duuid = Root.uuid
+        for step in data.history:
+            dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(step), "stored": True}  # TODO: stored is useless
+            db.session.add(Transformation(**dic, post=post))
+            duuid *= UUID(step["id"])
+
         db.session.add(post)
         db.session.commit()
 
@@ -303,5 +307,5 @@ class PostsOnDemand(MethodView):
         post = logged_user.posts.filter_by(data_uuid=uuid).first()
         if not post:
             abort(422, errors={
-                  "json": {"OnDemand": ["Dataset does not exist!"]}})
+                "json": {"OnDemand": ["Dataset does not exist!"]}})
         return post

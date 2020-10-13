@@ -12,7 +12,9 @@ from app import mail, celery, db
 from app.models import User, Task, Transformation, Post
 from app.schemas import TaskBaseSchema
 
+from aiuna import Root
 from aiuna.file import File
+from cruipto.uuid import UUID
 from tatu.storage import DuplicateEntryException
 from . import bp
 
@@ -123,9 +125,16 @@ def celery_process_data(self, files, username):
                         number_of_instances=len(data.X), number_of_features=len(data.Y))
             # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
             # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
-            for dic in storage.visual_history(data.id, current_app.static_folder):
+            duuid = Root.uuid
+            for step in data.history:
+                dic = {"label": duuid.id, "name": step.name, "help": str(step), "stored": True}  # TODO: stored is useless
                 db.session.add(Transformation(**dic, post=post))
-            db.session.add(post)
+                duuid *= step.uuid
+            # for uid, step in data.history.items():
+            #     dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(step), "stored": True}  # TODO: stored is useless
+            #     db.session.add(Transformation(**dic, post=post))
+            #     duuid *= UUID(step["id"])
+            # db.session.add(post)
             db.session.commit()
             obj = {'original_name': file['original_name'],
                    'message': 'Dataset successfully uploaded', 'code': 'success', 'id': post.id}
