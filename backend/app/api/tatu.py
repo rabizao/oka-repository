@@ -52,7 +52,6 @@ class TatuData(MethodView):
         storage = current_app.config['TATU_SERVER']
         data = unpack(args['file'].read())
         try:
-            print(f"storing...{type(data)} {data} <<<<<<<<<<<")
             storage.store(data)
         except DuplicateEntryException:
             print('Duplicate! Ignored.')
