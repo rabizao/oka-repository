@@ -70,11 +70,11 @@ wflow = (
         * Binarize
         * Split
         * PCA(n=3)
-        # * Cache(PCA(n=3)) #, storage=OkaSt(okatoken, alias="Iris"))
+        * Cache(PCA(n=3))#, storage=OkaSt(okatoken, alias="Iris"))
             # *PCA(n=3)
         * Log(">>>>>>>>>>>>>>>>> {X.shape} {inner.X.shape}")
         * Report("{id}")
-        * Cache(SVM2(C=0.25))  #, storage=MySQL(db="oka:kururu@localhost/oka"))
+        * Cache(SVM2(C=0.25), storage=MySQL(db="oka:kururu@localhost/oka"))
         # * Metric2
         * Report("tr {r}\t\tts {inner.r}")
 )
