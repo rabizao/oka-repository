@@ -12,7 +12,7 @@ from app import mail, celery, db
 from app.models import User, Task, Transformation, Post
 from app.schemas import TaskBaseSchema
 
-from aiuna import Root
+from aiuna.content.root import Root
 from aiuna.file import File
 from cruipto.uuid import UUID
 from tatu.storage import DuplicateEntryException

@@ -1,4 +1,4 @@
-from aiuna import Root
+from aiuna.content.root import Root
 from cruipto.uuid import UUID
 from . import bp
 from flask import current_app

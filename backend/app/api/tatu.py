@@ -5,7 +5,7 @@ from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_smorest import abort
 
-from aiuna import Root
+from aiuna.content.root import Root
 from cruipto.uuid import UUID
 from tatu.storage import DuplicateEntryException
 from aiuna.compression import unpack, pack
