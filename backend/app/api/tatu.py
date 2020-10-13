@@ -1,6 +1,6 @@
 import json
 
-from flask import current_app, send_from_directory
+from flask import current_app, send_from_directory, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_smorest import abort
@@ -28,6 +28,9 @@ class TatuData(MethodView):
         print("get tatu", args)
         storage = current_app.config['TATU_SERVER']
         uuid = args["uuid"]
+        if uuid == "storage":
+            return jsonify({'uuid': storage.id}), 201
+
         # REMINDER: returns PickableData
         packed = pack(storage.fetch_picklable(uuid))
         filename = f"{uuid}.packed"
