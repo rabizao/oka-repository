@@ -137,6 +137,7 @@ class PostsCollaboratorsById(MethodView):
             collaborator.deny_access(post)
         else:
             collaborator.grant_access(post)
+        db.session.commit()
 
 
 @bp.route('/posts/<int:id>/favorite')

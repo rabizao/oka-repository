@@ -14,7 +14,6 @@ from app.schemas import TaskBaseSchema
 
 from aiuna.content.root import Root
 from aiuna.file import File
-from cruipto.uuid import UUID
 from tatu.storage import DuplicateEntryException
 from . import bp
 
