@@ -1062,6 +1062,7 @@ export default function Posts(props) {
     const [description, setDescription] = useState('');
     const [nameEdit, setNameEdit] = useState('');
     const [descriptionEdit, setDescriptionEdit] = useState('');
+    const postUrl = frontendUrl + `/posts/${post.id}/description`;
 
     const loggedUser = useContext(LoginContext);
     const history = useHistory();
@@ -1177,7 +1178,6 @@ export default function Posts(props) {
 
     const citation = () => {
         const year = new Date(post.publish_timestamp).getFullYear();
-        const postUrl = frontendUrl + `/posts/${post.id}/description`
         return (
             <>
                 <h4 className="margin-top-small bold">Plain</h4>
@@ -1312,19 +1312,27 @@ export default function Posts(props) {
         }
     }
 
-    async function handleSubmitCollaborator(e) {
+    async function handleSubmitCollaborator(e, username) {
         e.preventDefault();
+        var newPost = { ...post };
 
         const data = {
-            username: collaboratorUsername
+            username: username
         }
 
         try {
             await api.post(`posts/${id}/collaborators`, data);
-            NotificationManager.success(`Successfully edited ${collaboratorUsername} access.`, "Collaborator", 8000)
+            if (post.allowed.includes(username)) {
+                newPost.allowed = newPost.allowed.filter(item => item !== username)
+            } else {
+                newPost.allowed.push(username)
+            }
+            NotificationManager.success(`Successfully edited ${username} access.`, "Collaborator", 8000)
+            setCollaboratorUsername('');
         } catch (error) {
             notifyError(error);
         }
+        setPost(newPost);
     }
 
     return (
@@ -1374,18 +1382,42 @@ export default function Posts(props) {
                 onClose={() => setOpenShare(false)}
             >
                 <div className="modal padding-big">
-                    <h3 className="margin-bottom-small">Share dataset with collaborators</h3>
-                    <form className="form flex-column" onSubmit={e => handleSubmitCollaborator(e)}>
-                        <label>
-                            Username
-                            <input
-                                placeholder="Username"
-                                value={collaboratorUsername}
-                                onChange={e => setCollaboratorUsername(e.target.value)}
-                            />
-                        </label>
-                        <button className="button-primary" type="submit">Invite</button>
-                    </form>
+                    <h3 className="margin-bottom-small">Dataset access</h3>
+                    {
+                        post.allowed && post.allowed.length > 0 &&
+                        <h4 className="margin-top-small bold">Already shared with</h4>
+                    }
+                    {
+                        post.allowed && post.allowed.map((collaborator) =>
+                            <button
+                                key={collaborator}
+                                onClick={(e) => handleSubmitCollaborator(e, collaborator)}
+                                className={"button-negative margin-very-small"}
+                            >
+                                {collaborator}
+                            </button>
+                        )
+                    }
+                    <h4 className="margin-top-small bold">Include a new collaborator</h4>
+                    {
+                        post.public ?
+                            <>
+                                <h5>You can share this dataset using the following link</h5>
+                                <h5 className="padding-small background-secondary-color-light">{postUrl}</h5>
+                            </> :
+                            <form className="form flex-column" onSubmit={e => handleSubmitCollaborator(e, collaboratorUsername)}>
+                                <label>
+                                    Username
+                                    <input
+                                        placeholder="Username"
+                                        value={collaboratorUsername}
+                                        onChange={e => setCollaboratorUsername(e.target.value)}
+                                    />
+                                </label>
+                                <button className="button-primary" type="submit">Invite</button>
+                            </form>
+                    }
+
                 </div>
             </Modal>
             <Modal
@@ -1445,7 +1477,7 @@ export default function Posts(props) {
                                 onClick={(e) => copyToClipboard(e, post.data_uuid)}
                                 className="box-square-medium padding-very-small ellipsis-n font-uuid"
                                 style={{ backgroundColor: `rgb(${post.data_uuid_colors[0][0]}, ${post.data_uuid_colors[0][1]}, ${post.data_uuid_colors[0][2]})`, border: `var(--border)` }}>
-                                <span>&nbsp; </span>
+                                <span>&nbsp;</span>
                                 {
                                     post.data_uuid_colors.slice(1).map((color, index) =>
                                         <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{post.data_uuid[index]}</span>

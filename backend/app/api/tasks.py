@@ -14,7 +14,6 @@ from app.schemas import TaskBaseSchema
 
 from aiuna.content.root import Root
 from aiuna.file import File
-from cruipto.uuid import UUID
 from tatu.storage import DuplicateEntryException
 from . import bp
 
@@ -127,14 +126,18 @@ def celery_process_data(self, files, username):
             # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
             duuid = Root.uuid
             for step in data.history:
-                dic = {"label": duuid.id, "name": step.name, "help": str(step), "stored": True}  # TODO: stored is useless
+                # TODO: stored is useless
+                dic = {"label": duuid.id, "name": step.name,
+                       "help": str(step), "stored": True}
                 db.session.add(Transformation(**dic, post=post))
                 duuid *= step.uuid
             # for uid, step in data.history.items():
-            #     dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(step), "stored": True}  # TODO: stored is useless
+            #     # TODO: stored is useless
+            #     dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(step), "stored": True}
+
             #     db.session.add(Transformation(**dic, post=post))
             #     duuid *= UUID(step["id"])
-            # db.session.add(post)
+            db.session.add(post)
             db.session.commit()
             obj = {'original_name': file['original_name'],
                    'message': 'Dataset successfully uploaded', 'code': 'success', 'id': post.id}
