@@ -168,11 +168,6 @@ class UserLoginSchema(UserBaseSchema):
         return data
 
 
-class PostCollaboratorSchema(UserBaseSchema):
-    class Meta:
-        fields = ["username"]
-
-
 class LoginResponseSchema(SQLAlchemySchema):
     access_token = fields.String(dump_only=True)
     refresh_token = fields.String(dump_only=True)

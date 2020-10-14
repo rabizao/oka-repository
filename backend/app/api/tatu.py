@@ -62,15 +62,16 @@ class TatuData(MethodView):
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
         if logged_user.posts.filter_by(data_uuid=data.id).first():
-            abort(422, errors={"json": {"Upload": ["Dataset already exists!"]}})
+            abort(422, errors={
+                  "json": {"Upload": ["Dataset already exists!"]}})
 
         # Remove delimiters
         name = []
         for uid, step in data.history.items():
-            step = json.loads(step.replace("'", '"'))  # TODO remove this after storage/history stop jsonifying steps
+            # TODO remove this after storage/history stop jsonifying steps
+            step = json.loads(step.replace("'", '"'))
             if step["desc"]["name"] not in ["B", "Rev", "E", "AutoIns", "In", "DelIn", "DelStream"]:
                 name.append(step["desc"]["name"][0:3])
-
         if alias:
             name = f"{alias}[{data.id[:4]}] : {''.join(name)}"
         # TODO: isn't cururu storing historystr?
@@ -81,9 +82,12 @@ class TatuData(MethodView):
         )
         duuid = Root.uuid
         for uid, step in data.history.items():
-            step = json.loads(step.replace("'", '"'))  # TODO remove this after storage/history stop jsonifying steps
+            # TODO remove this after storage/history stop jsonifying steps
+            step = json.loads(step.replace("'", '"'))
             if step["desc"]["name"] not in ["B", "Rev", "E", "AutoIns", "In", "DelIn", "DelStream"]:
-                dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(step), "stored": True}  # TODO: stored is useless
+                # TODO: stored is useless
+                dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(
+                    step), "stored": True}
                 Transformation(**dic, post=post)
                 duuid *= UUID(step["id"])
         db.session.add(post)

@@ -11,7 +11,7 @@ from app import db
 from app.models import User, Post, Comment, Task, Transformation
 from app.api.tasks import celery_process_data
 from app.schemas import (PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema,
-                         CommentQuerySchema, TransformQuerySchema, PostCollaboratorSchema)
+                         CommentQuerySchema, TransformQuerySchema, UserBaseSchema)
 import uuid as u
 
 
@@ -48,7 +48,8 @@ class Posts(MethodView):
         files = []
 
         for file in argsFiles['files']:
-            full_path = current_app.config['TMP_FOLDER'] + str(u.uuid4()) + file.filename[-10:]
+            full_path = current_app.config['TMP_FOLDER'] + \
+                str(u.uuid4()) + file.filename[-10:]
             file.save(full_path)
             files.append({"path": full_path, "original_name": file.filename})
             original_names.append(file.filename)
@@ -109,7 +110,7 @@ class PostsById(MethodView):
 @bp.route('/posts/<int:id>/collaborators')
 class PostsCollaboratorsById(MethodView):
     @jwt_required
-    @bp.arguments(PostCollaboratorSchema)
+    @bp.arguments(UserBaseSchema(only=["username"]))
     @bp.response(code=201)
     def post(self, args, id):
         """
@@ -315,7 +316,8 @@ class PostsOnDemand(MethodView):
 
         # TODO: refactor duplicate code
 
-        name = "←".join([step["desc"]["name"] for step in reversed(data.history) or "No Name"])
+        name = "←".join([step["desc"]["name"]
+                         for step in reversed(data.history) or "No Name"])
 
         # noinspection PyArgumentList
         post = Post(author=logged_user,
@@ -325,7 +327,8 @@ class PostsOnDemand(MethodView):
                     )
         duuid = Root.uuid
         for step in data.history:
-            dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(step), "stored": True}  # TODO: stored is useless
+            dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(
+                step), "stored": True}  # TODO: stored is useless
             db.session.add(Transformation(**dic, post=post))
             duuid *= UUID(step["id"])
 
