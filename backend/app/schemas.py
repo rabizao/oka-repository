@@ -260,8 +260,8 @@ class TatuUploadSchema(SQLAlchemySchema):
     json = Upload()
 
 
-class TatuDownloadSchema(SQLAlchemySchema):
-    uuid = fields.String()
+class SyncSchema(SQLAlchemySchema):
+    dryrun = fields.Boolean(missing=False)
 
 
 class DownloadQuerySchema(SQLAlchemySchema):
