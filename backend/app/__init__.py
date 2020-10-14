@@ -11,6 +11,7 @@ from flask_jwt_extended import JWTManager
 from config import Config
 from celery import Celery
 from tatu.pickle_ import Pickle
+from tatu.sql.mysql import MySQL
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -23,7 +24,8 @@ def create_app(config_class=Config):
     app = Flask(__name__, static_url_path="/media", static_folder='media')
 
     app.config.from_object(config_class)
-    app.config['TATU_SERVER'] = Pickle(blocking=True, db=app.static_folder)
+    # Assumes same password for oka and tatu DBMS server.
+    app.config['TATU_SERVER'] = MySQL(threaded=False, db=os.environ.get('DATABASE_URL').split("://")[1].replace("oka", "tatu"))
 
     db.init_app(app)
     migrate.init_app(app, db)

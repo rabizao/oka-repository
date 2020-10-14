@@ -62,7 +62,7 @@ print("user created")
 # TIP: TsSplit should come before TrSplit to ensure the same original data is used as input for both.
 from tatu.okast import OkaSt
 
-oka = OkaSt(okatoken, alias="Iris")
+oka = OkaSt(okatoken, alias="Iris", url=url)
 sq = SQLite()
 my = MySQL(db="oka:xxxxxx@localhost/oka")
 #
@@ -72,6 +72,7 @@ wflow = (
         * Split
         * PCA(n=3)
         * Cache(PCA(n=3), storage=sq)
+        * Cache(PCA(n=3), storage=oka)
         * PCA(n=3)
         * Log(">>>>>>>>>>>>>>>>> {X.shape} {inner.X.shape}")
         * Report("{id}")
@@ -91,7 +92,8 @@ print("Shape", data.X.shape[1], len(data.Xt))
 # data >>= PCA()
 # print(data.id)
 # TODO  queue = None qnd descomenta acima
-my.sync(lambda: sq)
+my.update_remote(SQLite())
+SQLite().update_remote(MySQL(db="oka:kururu@localhost/oka"))
 
 
 def test_okast_id():
