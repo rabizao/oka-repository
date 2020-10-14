@@ -31,7 +31,7 @@ export default function ContentBox(props) {
         }
 
         fetchData();
-    }, [props.fetchUrl])
+    }, [props.fetchUrl, props.renderTime])
 
     async function handleFavoriteButton(e, post, index) {
         e.preventDefault();
