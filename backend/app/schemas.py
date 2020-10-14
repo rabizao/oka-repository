@@ -68,12 +68,11 @@ class UserQuerySchema(SQLAlchemySchema):
     username = fields.String()
 
 
-class TransformQuerySchema(SQLAlchemySchema):
+class RunSchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
-    # TODO: trocar p/ transformer UUID no futuro
-    transformer = fields.String(required=True)
+    step = fields.Dict(required=True)
 
 
 class PostQuerySchema(SQLAlchemySchema):
@@ -224,7 +223,8 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     id = auto_field(dump_only=True)
     author = Nested(UserBaseSchema, dump_only=True)
     comments = Nested(CommentBaseSchema, many=True, dump_only=True)
-    allowed = fields.Pluck(UserBaseSchema, "username", many=True, dump_only=True)
+    allowed = fields.Pluck(UserBaseSchema, "username",
+                           many=True, dump_only=True)
     favorites = fields.Pluck(UserBaseSchema, "id", many=True, dump_only=True)
     data_uuid_colors = fields.Function(
         lambda obj: colors(obj.data_uuid), dump_only=True)

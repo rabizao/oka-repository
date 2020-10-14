@@ -4,7 +4,7 @@ import { Link, useHistory } from 'react-router-dom';
 import './styles.css';
 
 import { NotificationManager } from 'react-notifications';
-import { CloudDownload, Favorite, FavoriteBorder, ChevronLeft, ChevronRight, FormatQuote, Share } from '@material-ui/icons';
+import { CloudDownload, Favorite, FavoriteBorder, ChevronLeft, ChevronRight, FormatQuote, Share, PlayArrow } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 import Modal from '@material-ui/core/Modal';
 import { saveAs } from 'file-saver';
@@ -18,6 +18,31 @@ import api, { downloadsUrl } from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 import { frontendUrl } from '../../services/api';
 import { notifyError } from '../../utils';
+
+
+const runData = [
+    {
+        "name": "Category 1",
+        "uuid": "uuid category 1",
+        "algorithms": [
+            {
+                "name": "Algorithm 1",
+                "uuid": "uuid algorithm 1",
+                "parameters": [
+                    {
+                        "name": "a",
+                        "values": [10, 20, 30, 50]
+                    },
+                    {
+                        "name": "b",
+                        "values": ["valor1", "valor2", "valor3",]
+                    }
+                ]
+            }
+        ]
+    }
+]
+
 
 const data = [
     {
@@ -1057,9 +1082,15 @@ export default function Posts(props) {
     const [openShare, setOpenShare] = useState(false);
     const [collaboratorUsername, setCollaboratorUsername] = useState('');
     const [openPublish, setOpenPublish] = useState(false);
+    const [openRun, setOpenRun] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
+    const [showAlgorithms, setShowAlgorithms] = useState(false);
+    const [showParameters, setShowParameters] = useState(false);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
+    const [runCategory, setRunCategory] = useState('');
+    const [runAlgorithm, setRunAlgorithm] = useState('');
+    const [runParameter, setRunParameter] = useState({});
     const [nameEdit, setNameEdit] = useState('');
     const [descriptionEdit, setDescriptionEdit] = useState('');
     const postUrl = frontendUrl + `/posts/${post.id}/description`;
@@ -1335,6 +1366,63 @@ export default function Posts(props) {
         setPost(newPost);
     }
 
+    function handleSelectCategory(e) {
+        if (e.target.value !== "select") {
+            setShowAlgorithms(true);
+        } else {
+            setShowAlgorithms(false);
+        }
+        setRunCategory(e.target.value);
+    }
+
+    function handleSelectAlgorithm(e) {
+        if (e.target.value !== "select") {
+            setShowParameters(true);
+        } else {
+            setShowParameters(false);
+        }
+        setRunAlgorithm(e.target.value);
+    }
+
+    function handleSelectParameter(e, parameterName) {
+        var newRunParameter = { ...runParameter };
+        newRunParameter[parameterName] = e.target.value;
+        setRunParameter(newRunParameter);
+    }
+
+    async function handleRun() {
+        const data = {
+            step: {
+                category: runCategory,
+                algorithm: runAlgorithm,
+                parameters: runParameter
+            }
+        }
+
+        try {
+            const resp = await api.post(`posts/${id}/run`, data);
+            var status = setInterval(async function () {
+                try {
+                    const response = await api.get(`tasks/${resp.data}/status`);
+                    if (response.data.status === "done") {
+                        NotificationManager.success(`Your simulation have just finished.`, "Run", 8000)
+                        clearInterval(status);
+                    }
+                } catch (error) {
+                    notifyError(error);
+                    clearInterval(status);
+                }
+            }, 1000);
+            NotificationManager.success(`Your simulation have just started.`, "Run", 8000)
+            setOpenRun(false);
+            setRunCategory('');
+            setRunAlgorithm('');
+            setRunParameter({});
+        } catch (error) {
+            notifyError(error);
+        }
+    }
+
     return (
         <>
             <Modal
@@ -1417,6 +1505,69 @@ export default function Posts(props) {
                                 <button className="button-primary" type="submit">Invite</button>
                             </form>
                     }
+                </div>
+            </Modal>
+            <Modal
+                open={openRun}
+                onClose={() => setOpenRun(false)}
+            >
+                <div className="modal padding-big">
+                    <h3 className="margin-bottom-small">Run</h3>
+                    <h4 className="margin-top-small bold">Select a category</h4>
+                    <div className="padding-left-small">
+                        <select onChange={(e) => handleSelectCategory(e)} value={runCategory}>
+                            <option value={"select"}>Select</option>
+                            {
+                                runData.map((category) =>
+                                    <option key={category["uuid"]} value={category["uuid"]}>{category["name"]}</option>
+                                )
+                            }
+                        </select>
+                    </div>
+                    {
+                        showAlgorithms &&
+                        <>
+                            <h4 className="margin-top-small bold">Select the algorithm</h4>
+                            <div className="padding-left-small">
+                                <select onChange={(e) => handleSelectAlgorithm(e)} value={runAlgorithm}>
+                                    <option value={"select"}>Select</option>
+                                    {
+                                        runData.map((category) =>
+                                            category["algorithms"].map((algorithm) =>
+                                                <option key={algorithm["uuid"]} value={algorithm["uuid"]}>{algorithm["name"]}</option>
+                                            )
+                                        )
+                                    }
+                                </select>
+                            </div>
+                        </>
+                    }
+                    {
+                        showAlgorithms && showParameters &&
+                        <>
+                            <h4 className="margin-top-small bold">Select the parameters</h4>
+                            <div className="padding-left-small">
+                                {
+                                    runData.map((category) =>
+                                        category["algorithms"].map((algorithm) =>
+                                            algorithm["parameters"].map((parameter) =>
+                                                <select key={parameter["name"]} onChange={(e) => handleSelectParameter(e, parameter["name"])} value={runParameter[parameter["name"]] || ''}>
+                                                    <option value={"select"}>Select</option>
+                                                    {
+                                                        parameter["values"].map((value) =>
+                                                            <option key={value} value={value}>{value}</option>
+                                                        )
+                                                    }
+                                                </select>
+                                            )
+                                        )
+                                    )
+                                }
+                            </div>
+                        </>
+                    }
+
+                    <button onClick={handleRun} className="button-primary margin-top-small">Run</button>
 
                 </div>
             </Modal>
@@ -1490,10 +1641,11 @@ export default function Posts(props) {
                         <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
                         <h6 className="color-tertiary">{post.downloads} downloads | {post.favorites.length} favorited</h6>
                         <div className="margin-top-very-small" >
-                            <button title="Download" onClick={handleDownload}><CloudDownload className="icon-secondary" /></button>
-                            {post.favorites && post.favorites.includes(loggedUser.id) ? <button title="Favorite" onClick={handleFavorite}><Favorite className="icon-secondary margin-left-very-small" /></button> : <button onClick={handleFavorite}><FavoriteBorder className="icon-secondary margin-left-very-small" /></button>}
-                            <button title="Cite" onClick={() => setOpenCite(true)}><FormatQuote className="icon-secondary" /></button>
-                            <button title="Share" onClick={() => setOpenShare(true)}><Share className="icon-secondary" /></button>
+                            <button className="icon-normal" title="Download" onClick={handleDownload}><CloudDownload className="icon-secondary" /></button>
+                            {post.favorites && post.favorites.includes(loggedUser.id) ? <button className="icon-normal margin-left-very-small" title="Unfavorite" onClick={handleFavorite}><Favorite className="icon-secondary" /></button> : <button title="Favorite" className="icon-normal margin-left-very-small" onClick={handleFavorite}><FavoriteBorder className="icon-secondary" /></button>}
+                            <button className="icon-normal margin-left-very-small" title="Cite" onClick={() => setOpenCite(true)}><FormatQuote className="icon-secondary" /></button>
+                            <button className="icon-normal margin-left-very-small" title="Share" onClick={() => setOpenShare(true)}><Share className="icon-secondary" /></button>
+                            <button className="icon-normal margin-left-very-small" title="Run" onClick={() => setOpenRun(true)}><PlayArrow className="icon-secondary" /></button>
                         </div>
                     </>
                 }
