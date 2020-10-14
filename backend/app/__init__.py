@@ -25,7 +25,8 @@ def create_app(config_class=Config):
 
     app.config.from_object(config_class)
     # Assumes same password for oka and tatu DBMS server.
-    app.config['TATU_SERVER'] = MySQL(threaded=False, db=os.environ.get('DATABASE_URL').split("://")[1].replace("oka", "tatu"))
+    from tatu.sql.sqlite import SQLite
+    app.config['TATU_SERVER'] = SQLite(threaded=False)
 
     db.init_app(app)
     migrate.init_app(app, db)
