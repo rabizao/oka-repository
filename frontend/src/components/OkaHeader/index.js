@@ -64,10 +64,13 @@ export default function OkaHeader(props) {
                             componentClasses="icon-tertiary"
                             content=
                             {
-                                <div className="flex-wrap flex-space-between max-width-huge padding-big">
-                                    <Link to="/" className="icon-medium" title="Go to Analytics Lab">
-                                        <AccountBalance />
-                                    </Link>
+                                <div className="max-width-very-huge">
+                                    <h1 className="padding-sides-small padding-top-medium">Apps</h1>
+                                    <div className="flex-wrap flex-space-between max-width-huge padding-big">
+                                        <Link to="/" className="icon-medium" title="Go to OKA home">
+                                            <AccountBalance />
+                                        </Link>
+                                    </div>
                                 </div>
                             }
                         />
@@ -83,12 +86,12 @@ export default function OkaHeader(props) {
                                     <div className="flex-column padding-vertical-small">
                                         {
                                             notificationsContext.notifications.length > 0 ?
-                                                notificationsContext.notifications.slice(0).reverse().map((notification) =>                                                    
+                                                notificationsContext.notifications.slice(0).reverse().map((notification) =>
                                                     notification.name === "task_finished" &&
-                                                        <Link key={notification.id} className="padding-medium box background-hover width100" to={`/posts/${notification.payload_json.id}/description`}>
-                                                            <span className="ellipsis-3">{notification.payload_json.original_name}: </span>
-                                                            <span className={`ellipsis-3 ${notification.payload_json.code === "error" && "color-error"}`}> {notification.payload_json.message}</span>
-                                                        </Link>
+                                                    <Link key={notification.id} className="padding-medium box background-hover width100" to={`/posts/${notification.payload_json.id}/description`}>
+                                                        <span className="ellipsis-3">{notification.payload_json.original_name}: </span>
+                                                        <span className={`ellipsis-3 ${notification.payload_json.code === "error" && "color-error"}`}> {notification.payload_json.message}</span>
+                                                    </Link>
                                                 ) :
                                                 <div className="padding-sides-small padding-vertical-small width100">Nothing to show yet</div>
                                         }
