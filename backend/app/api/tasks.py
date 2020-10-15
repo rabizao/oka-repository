@@ -32,6 +32,34 @@ def send_async_email(message):
 
 
 @celery.task(bind=True)
+def celery_run_simulation(self, post_id, step, username):
+    '''
+    Background task to perform simulations based on step
+    '''
+    post = Post.query.get(post_id)
+    logged_user = User.get_by_username(username)
+
+    # TODO: Perform calculations and update the status using something like
+    # self.update_state(state='PROGRESS', meta={
+    #     'current': actual_index / len(for_loop) * 100,
+    #     'total': 100,
+    #     'status': f'Processing calculation {str(actual_index)} out of {str(len(for_loop))}'
+    # })
+
+    print(post.id, step, logged_user.username)
+
+    task = Task.query.get(self.request.id)
+    if task:
+        task.complete = True
+        db.session.commit()
+
+    result = {'current': 100, 'total': 100,
+              'status': 'done', 'result': 'UUID?'}
+
+    return result
+
+
+@celery.task(bind=True)
 def celery_download_data(self, uuids):
     '''
     Background task to run async download process

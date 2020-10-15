@@ -9,9 +9,9 @@ from datetime import datetime
 
 from app import db
 from app.models import User, Post, Comment, Task, Transformation
-from app.api.tasks import celery_process_data
+from app.api.tasks import celery_process_data, celery_run_simulation
 from app.schemas import (PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema,
-                         CommentQuerySchema, TransformQuerySchema, UserBaseSchema)
+                         CommentQuerySchema, RunSchema, UserBaseSchema)
 import uuid as u
 
 
@@ -128,6 +128,10 @@ class PostsCollaboratorsById(MethodView):
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
+
+        if post.author == collaborator:
+            abort(422, errors={
+                "json": {"username": ["You can not invite yourself. [" + self.__class__.__name__ + "]"]}})
 
         if not post.author == logged_user:
             abort(422, errors={
@@ -271,17 +275,29 @@ class PostsTwinsById(MethodView):
         return data
 
 
-@bp.route('/posts/<int:id>/transform')
+@bp.route('/posts/<int:id>/run')
 class PostsTransformById(MethodView):
     @jwt_required
-    @bp.arguments(TransformQuerySchema, location="query")
-    def get(self, args, id):
+    @bp.arguments(RunSchema)
+    @bp.response(code=201)
+    def post(self, args, id):
         """
         Return the twins of a post with id {id}
         """
         post = Post.query.get(id)
         if not post:
-            abort(422, errors={"json": {"id": ["Does not existppp."]}})
+            abort(422, errors={"json": {"id": ["Does not exist."]}})
+
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
+
+        job = celery_run_simulation.apply_async(
+            [post.id, args["step"], username])
+        task = Task(id=job.id, name="Run",
+                    description="Processing your simulation", user=logged_user)
+        db.session.add(task)
+        db.session.commit()
+        return job.id
 
         # storage = current_app.config['TATU_SERVER']
         # data = storage.fetch(post.data_uuid)
