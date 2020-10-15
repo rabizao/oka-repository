@@ -23,7 +23,7 @@ def create_app(config_class=Config):
     app = Flask(__name__, static_url_path="/media", static_folder='media')
 
     app.config.from_object(config_class)
-    # Assumes same password for oka and tatu DBMS server.    
+    # Assumes same password for oka and tatu DBMS server.
     app.config['TATU_SERVER'] = SQLite(threaded=False)
     db.init_app(app)
     migrate.init_app(app, db)
