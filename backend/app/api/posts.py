@@ -1,3 +1,5 @@
+from aiuna.content.root import Root
+from cruipto.uuid import UUID
 from . import bp
 from flask import current_app
 from flask.views import MethodView
@@ -7,9 +9,9 @@ from datetime import datetime
 
 from app import db
 from app.models import User, Post, Comment, Task, Transformation
-from app.api.tasks import celery_process_data
+from app.api.tasks import celery_process_data, celery_run_simulation
 from app.schemas import (PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema,
-                         CommentQuerySchema, TransformQuerySchema)
+                         CommentQuerySchema, RunSchema, UserBaseSchema)
 import uuid as u
 
 
@@ -24,11 +26,12 @@ class Posts(MethodView):
         """
         Show all posts
         """
-        filter_by = {"active": True}
-        filter = []
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
+
         data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
                                                           pagination_parameters.page_size,
-                                                          filter_by=filter_by, filter=filter)
+                                                          query=logged_user.accessible_posts())
         return data
 
     @jwt_required
@@ -101,6 +104,44 @@ class PostsById(MethodView):
                     "json": {"id": ["You can only edit your own datasets."]}})
 
         post.update(args)
+        db.session.commit()
+
+
+@bp.route('/posts/<int:id>/collaborators')
+class PostsCollaboratorsById(MethodView):
+    @jwt_required
+    @bp.arguments(UserBaseSchema(only=["username"]))
+    @bp.response(code=201)
+    def post(self, args, id):
+        """
+        Grant/Deny access to a collaborator to the post with id {id}
+        """
+        post = Post.query.get(id)
+        if not post or not post.active:
+            abort(422, errors={
+                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+
+        collaborator = User.get_by_username(args["username"])
+        if not collaborator:
+            abort(422, errors={
+                "json": {"username": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
+
+        if post.author == collaborator:
+            abort(422, errors={
+                "json": {"username": ["You can not invite yourself. [" + self.__class__.__name__ + "]"]}})
+
+        if not post.author == logged_user:
+            abort(422, errors={
+                "json": {"username":
+                         ["Only the author can invite collaborators to the post. [" + self.__class__.__name__ + "]"]}})
+
+        if collaborator.has_access(post):
+            collaborator.deny_access(post)
+        else:
+            collaborator.grant_access(post)
         db.session.commit()
 
 
@@ -227,24 +268,36 @@ class PostsTwinsById(MethodView):
             abort(422, errors={
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
-        filter_by = {"active": True, "data_uuid": post.data_uuid, "id": not id}
+        filter_by = {"data_uuid": post.data_uuid, "id": not id}
         data, pagination_parameters.item_count = Post.get(
             args, pagination_parameters.page, pagination_parameters.page_size, filter_by=filter_by
         )
         return data
 
 
-@bp.route('/posts/<int:id>/transform')
+@bp.route('/posts/<int:id>/run')
 class PostsTransformById(MethodView):
     @jwt_required
-    @bp.arguments(TransformQuerySchema, location="query")
-    def get(self, args, id):
+    @bp.arguments(RunSchema)
+    @bp.response(code=201)
+    def post(self, args, id):
         """
         Return the twins of a post with id {id}
         """
         post = Post.query.get(id)
         if not post:
-            abort(422, errors={"json": {"id": ["Does not existppp."]}})
+            abort(422, errors={"json": {"id": ["Does not exist."]}})
+
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
+
+        job = celery_run_simulation.apply_async(
+            [post.id, args["step"], username])
+        task = Task(id=job.id, name="Run",
+                    description="Processing your simulation", user=logged_user)
+        db.session.add(task)
+        db.session.commit()
+        return job.id
 
         # storage = current_app.config['TATU_SERVER']
         # data = storage.fetch(post.data_uuid)
@@ -279,8 +332,8 @@ class PostsOnDemand(MethodView):
 
         # TODO: refactor duplicate code
 
-        name = "←".join([i["name"] for i in reversed(
-            list(storage.visual_history(data)))]) or "No Name"
+        name = "←".join([step["desc"]["name"]
+                         for step in reversed(data.history) or "No Name"])
 
         # noinspection PyArgumentList
         post = Post(author=logged_user,
@@ -288,8 +341,13 @@ class PostsOnDemand(MethodView):
                     name=name,
                     description="Title and description automatically generated."
                     )
-        for dic in storage.visual_history(uuid, current_app.static_folder):
-            Transformation(**dic, post=post)
+        duuid = Root.uuid
+        for step in data.history:
+            dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(
+                step), "stored": True}  # TODO: stored is useless
+            db.session.add(Transformation(**dic, post=post))
+            duuid *= UUID(step["id"])
+
         db.session.add(post)
         db.session.commit()
 
@@ -303,5 +361,5 @@ class PostsOnDemand(MethodView):
         post = logged_user.posts.filter_by(data_uuid=uuid).first()
         if not post:
             abort(422, errors={
-                  "json": {"OnDemand": ["Dataset does not exist!"]}})
+                "json": {"OnDemand": ["Dataset does not exist!"]}})
         return post

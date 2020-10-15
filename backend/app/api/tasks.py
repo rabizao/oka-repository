@@ -12,6 +12,7 @@ from app import mail, celery, db
 from app.models import User, Task, Transformation, Post
 from app.schemas import TaskBaseSchema
 
+from aiuna.content.root import Root
 from aiuna.file import File
 from tatu.storage import DuplicateEntryException
 from . import bp
@@ -28,6 +29,34 @@ def send_async_email(message):
 
     with current_app.app_context():
         mail.send(msg)
+
+
+@celery.task(bind=True)
+def celery_run_simulation(self, post_id, step, username):
+    '''
+    Background task to perform simulations based on step
+    '''
+    post = Post.query.get(post_id)
+    logged_user = User.get_by_username(username)
+
+    # TODO: Perform calculations and update the status using something like
+    # self.update_state(state='PROGRESS', meta={
+    #     'current': actual_index / len(for_loop) * 100,
+    #     'total': 100,
+    #     'status': f'Processing calculation {str(actual_index)} out of {str(len(for_loop))}'
+    # })
+
+    print(post.id, step, logged_user.username)
+
+    task = Task.query.get(self.request.id)
+    if task:
+        task.complete = True
+        db.session.commit()
+
+    result = {'current': 100, 'total': 100,
+              'status': 'done', 'result': 'UUID?'}
+
+    return result
 
 
 @celery.task(bind=True)
@@ -123,8 +152,19 @@ def celery_process_data(self, files, username):
                         number_of_instances=len(data.X), number_of_features=len(data.Y))
             # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
             # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
-            for dic in storage.visual_history(data.id, current_app.static_folder):
+            duuid = Root.uuid
+            for step in data.history:
+                # TODO: stored is useless
+                dic = {"label": duuid.id, "name": step.name,
+                       "help": str(step), "stored": True}
                 db.session.add(Transformation(**dic, post=post))
+                duuid *= step.uuid
+            # for uid, step in data.history.items():
+            #     # TODO: stored is useless
+            #     dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(step), "stored": True}
+
+            #     db.session.add(Transformation(**dic, post=post))
+            #     duuid *= UUID(step["id"])
             db.session.add(post)
             db.session.commit()
             obj = {'original_name': file['original_name'],

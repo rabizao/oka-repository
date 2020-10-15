@@ -1,3 +1,4 @@
+# from flask import current_app
 from flask_smorest.fields import Upload
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
@@ -67,12 +68,11 @@ class UserQuerySchema(SQLAlchemySchema):
     username = fields.String()
 
 
-class TransformQuerySchema(SQLAlchemySchema):
+class RunSchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
-    # TODO: trocar p/ transformer UUID no futuro
-    transformer = fields.String(required=True)
+    step = fields.Dict(required=True)
 
 
 class PostQuerySchema(SQLAlchemySchema):
@@ -222,11 +222,15 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
 
     id = auto_field(dump_only=True)
     author = Nested(UserBaseSchema, dump_only=True)
-    history = Nested(TransformationBaseSchema, many=True, dump_only=True)
     comments = Nested(CommentBaseSchema, many=True, dump_only=True)
+    allowed = fields.Pluck(UserBaseSchema, "username",
+                           many=True, dump_only=True)
     favorites = fields.Pluck(UserBaseSchema, "id", many=True, dump_only=True)
     data_uuid_colors = fields.Function(
         lambda obj: colors(obj.data_uuid), dump_only=True)
+    # history = fields.Function(lambda obj: current_app.config['TATU_SERVER'].fetch(obj.data_uuid).history,
+    # dump_only=True)
+    history = Nested(TransformationBaseSchema, many=True, dump_only=True)
 
 
 class PostEditSchema(SQLAlchemySchema):
@@ -256,8 +260,8 @@ class TatuUploadSchema(SQLAlchemySchema):
     json = Upload()
 
 
-class TatuDownloadSchema(SQLAlchemySchema):
-    uuid = fields.String()
+class SyncSchema(SQLAlchemySchema):
+    dryrun = fields.Boolean(missing=False)
 
 
 class DownloadQuerySchema(SQLAlchemySchema):

@@ -67,26 +67,40 @@ from util.create import user, token
 cfg = json.load(open("config.json"))
 my = MySQL(db=cfg["lmy"]["db"])
 
+# oka = OkaSt(okatoken, alias="Iris", url=url)
+sq = SQLite()
+# my = MySQL(db="oka:kururu@localhost/oka")
+#
 wflow = (
         File("iris.arff")
         * Binarize
         * Split
         * PCA(n=3)
-        * Cache(PCA(n=3), my)  # , storage=OkaSt(okatoken, alias="Iris"))
-        * Cache(PCA(n=2), my)  # , storage=OkaSt(okatoken, alias="Iris"))
-        # *PCA(n=3)
+        * Cache(PCA(n=3), storage=sq)
+        # * Cache(PCA(n=3), storage=oka)
+        * PCA(n=3)
         * Log(">>>>>>>>>>>>>>>>> {X.shape} {inner.X.shape}")
         * Report("{id}")
-        # * Cache(SVM2(C=0.25), storage=OkaSt(okatoken, alias="Iris")) #SQLite() )#MySQL(db="oka:xxxxxxxxx@localhost/oka"))
-        # * Metric2
-        * Report("tr {r}\t\tts {inner.r}")
+        # * Cache(SVM2(C=0.25), storage=my)
+    # * Metric2
+    # * Report("tr {r}\t\tts {inner.r}")
 )
 
 data = wflow.data
 
 print("Data ID", data.id)
-print("Shape", data.X.shape[1], len(data.Xt))
-# print(test.arff("nome", "desc"))
+
+
+# print("Shape", data.X.shape[1], len(data.Xt))
+
+
+#
+# data >>= PCA()
+# print(data.id)
+# TODO  queue = None qnd descomenta acima
+# sq.update_remote(my)
+# my.update_remote(OkaSt(okatoken, alias="Iris", url=url))
+# SQLite().update_remote(MySQL(db="oka:kururu@localhost/oka"))
 
 
 data >>= PCA()
@@ -94,3 +108,14 @@ print(" _________ d id:", data.id)
 
 p = data.parentuuid
 print(" _________    children:", my.fetch_children(p), p.id)
+
+def test_okast_id():
+    from util.create import user, token
+    url = "http://localhost:5000"
+    user = user("davips", "pass123", base_url=url)
+    okatoken = token(**user, base_url=url)
+    print("user created")
+    o = OkaSt(token=okatoken, url=url)
+    print(f"idddddd {o.id}")
+
+# test_okast_id()

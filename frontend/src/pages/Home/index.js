@@ -10,11 +10,13 @@ import ContentBox from '../../components/ContentBox';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import api from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
+import { notifyError } from '../../utils';
 
 export default function Home() {
     const [acceptedFiles, setAcceptedFiles] = useState([]);
     const [deniedFiles, setDeniedFiles] = useState([]);
     const [progress, setProgress] = useState(0);
+    const [renderFeed, setRenderFeed] = useState(0);
     const [showProgress, setShowProgress] = useState(false);
     const [blockSubmit, setBlockSubmit] = useState(false);
     const fileInputRef = useRef();
@@ -111,6 +113,7 @@ export default function Home() {
                                     () => {
                                         history.push(`/posts/${postId}/description`);
                                     });
+                                setRenderFeed(renderFeed + 1);
                             } else {
                                 NotificationManager.error(notification[i]["message"], `${notification[i]['original_name']}`, 10000 + index,
                                     () => {
@@ -122,24 +125,12 @@ export default function Home() {
                         clearInterval(status);
                     }
                 } catch (error) {
-                    if (error.response) {
-                        for (var prop2 in error.response.data.errors.json) {
-                            NotificationManager.error(error.response.data.errors.json[prop2], `${prop2}`, 4000)
-                        }
-                    } else {
-                        NotificationManager.error("network error", "error", 4000)
-                    }
+                    notifyError(error);
                     clearInterval(status);
                 }
             }, 1000);
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
     }
 
@@ -215,7 +206,7 @@ export default function Home() {
                         </div>
                     }
                 </div>
-                <ContentBox title="Feed" fetchUrl={`/users/${loggedUser.username}/feed`} className="margin-top-verysmall margin-bottom-huge" />
+                <ContentBox title="Feed" fetchUrl={`/users/${loggedUser.username}/feed`} className="margin-top-verysmall margin-bottom-huge" renderTime={renderFeed}/>
             </div>
         </>
     )

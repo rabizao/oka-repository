@@ -25,9 +25,8 @@ class Contacts(MethodView):
         if logged_user.role != 10:
             abort(422, errors={"json": {"role": ["Not allowed."]}})
 
-        filter_by = {"active": True}
         data, pagination_parameters.item_count = Contact.get(args, pagination_parameters.page,
-                                                             pagination_parameters.page_size, filter_by=filter_by)
+                                                             pagination_parameters.page_size)
         return data
 
     @bp.arguments(ContactBaseSchema)

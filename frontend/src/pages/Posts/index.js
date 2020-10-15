@@ -4,7 +4,7 @@ import { Link, useHistory } from 'react-router-dom';
 import './styles.css';
 
 import { NotificationManager } from 'react-notifications';
-import { CloudDownload, Favorite, FavoriteBorder, ChevronLeft, ChevronRight, FormatQuote } from '@material-ui/icons';
+import { CloudDownload, Favorite, FavoriteBorder, ChevronLeft, ChevronRight, FormatQuote, Share, PlayArrow } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 import Modal from '@material-ui/core/Modal';
 import { saveAs } from 'file-saver';
@@ -17,6 +17,32 @@ import OkaPostsBox from '../../components/OkaPostsBox';
 import api, { downloadsUrl } from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 import { frontendUrl } from '../../services/api';
+import { notifyError } from '../../utils';
+
+
+const runData = [
+    {
+        "name": "Category 1",
+        "uuid": "uuid category 1",
+        "algorithms": [
+            {
+                "name": "Algorithm 1",
+                "uuid": "uuid algorithm 1",
+                "parameters": [
+                    {
+                        "name": "a",
+                        "values": [10, 20, 30, 50]
+                    },
+                    {
+                        "name": "b",
+                        "values": ["valor1", "valor2", "valor3",]
+                    }
+                ]
+            }
+        ]
+    }
+]
+
 
 const data = [
     {
@@ -1053,12 +1079,21 @@ export default function Posts(props) {
     const [post, setPost] = useState({});
     const [openEdit, setOpenEdit] = useState(false);
     const [openCite, setOpenCite] = useState(false);
+    const [openShare, setOpenShare] = useState(false);
+    const [collaboratorUsername, setCollaboratorUsername] = useState('');
     const [openPublish, setOpenPublish] = useState(false);
+    const [openRun, setOpenRun] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
+    const [showAlgorithms, setShowAlgorithms] = useState(false);
+    const [showParameters, setShowParameters] = useState(false);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
+    const [runCategory, setRunCategory] = useState('');
+    const [runAlgorithm, setRunAlgorithm] = useState('');
+    const [runParameter, setRunParameter] = useState({});
     const [nameEdit, setNameEdit] = useState('');
     const [descriptionEdit, setDescriptionEdit] = useState('');
+    const postUrl = frontendUrl + `/posts/${post.id}/description`;
 
     const loggedUser = useContext(LoginContext);
     const history = useHistory();
@@ -1174,7 +1209,6 @@ export default function Posts(props) {
 
     const citation = () => {
         const year = new Date(post.publish_timestamp).getFullYear();
-        const postUrl = frontendUrl + `/posts/${post.id}/description`
         return (
             <>
                 <h4 className="margin-top-small bold">Plain</h4>
@@ -1201,13 +1235,7 @@ export default function Posts(props) {
                 setDescription(response.data.description ? response.data.description : '');
                 setLoadingHero(false);
             } catch (error) {
-                if (error.response) {
-                    for (var prop in error.response.data.errors.json) {
-                        NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000);
-                    }
-                } else {
-                    NotificationManager.error("Network error", "Error", 4000);
-                }
+                notifyError(error);
             }
         }
         fetchPost();
@@ -1224,24 +1252,12 @@ export default function Posts(props) {
                         clearInterval(status);
                     }
                 } catch (error) {
-                    if (error.response) {
-                        for (var prop in error.response.data.errors.json) {
-                            NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                        }
-                    } else {
-                        NotificationManager.error("network error", "error", 4000)
-                    }
+                    notifyError(error);
                     clearInterval(status);
                 }
             }, 1000);
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("network error", "error", 4000)
-            }
+            notifyError(error);
         }
     }
 
@@ -1256,13 +1272,7 @@ export default function Posts(props) {
                 newPost.favorites.push(loggedUser.id)
             }
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
         setPost(newPost);
     }
@@ -1285,13 +1295,7 @@ export default function Posts(props) {
             setName(nameEdit);
             setDescription(descriptionEdit);
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
     }
 
@@ -1301,13 +1305,7 @@ export default function Posts(props) {
             NotificationManager.success("Post was successfully published. Now it is available to everyone.", "Publish", 8000)
             setOpenPublish(false);
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
     }
 
@@ -1337,17 +1335,91 @@ export default function Posts(props) {
                     const response = await api.post(`posts/${uuid}`);
                     history.push(`/posts/${response.data.id}/description`);
                 } catch (error) {
-                    if (error.response) {
-                        for (var prop in error.response.data.errors.json) {
-                            NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                        }
-                    } else {
-                        NotificationManager.error("Network error", "Error", 4000)
-                    }
+                    notifyError(error);
                 }
             } else {
                 NotificationManager.error("Network error", "Error", 4000)
             }
+        }
+    }
+
+    async function handleSubmitCollaborator(e, username) {
+        e.preventDefault();
+        var newPost = { ...post };
+
+        const data = {
+            username: username
+        }
+
+        try {
+            await api.post(`posts/${id}/collaborators`, data);
+            if (post.allowed.includes(username)) {
+                newPost.allowed = newPost.allowed.filter(item => item !== username)
+            } else {
+                newPost.allowed.push(username)
+            }
+            NotificationManager.success(`Successfully edited ${username} access.`, "Collaborator", 8000)
+            setCollaboratorUsername('');
+        } catch (error) {
+            notifyError(error);
+        }
+        setPost(newPost);
+    }
+
+    function handleSelectCategory(e) {
+        if (e.target.value !== "select") {
+            setShowAlgorithms(true);
+        } else {
+            setShowAlgorithms(false);
+        }
+        setRunCategory(e.target.value);
+    }
+
+    function handleSelectAlgorithm(e) {
+        if (e.target.value !== "select") {
+            setShowParameters(true);
+        } else {
+            setShowParameters(false);
+        }
+        setRunAlgorithm(e.target.value);
+    }
+
+    function handleSelectParameter(e, parameterName) {
+        var newRunParameter = { ...runParameter };
+        newRunParameter[parameterName] = e.target.value;
+        setRunParameter(newRunParameter);
+    }
+
+    async function handleRun() {
+        const data = {
+            step: {
+                category: runCategory,
+                algorithm: runAlgorithm,
+                parameters: runParameter
+            }
+        }
+
+        try {
+            const resp = await api.post(`posts/${id}/run`, data);
+            var status = setInterval(async function () {
+                try {
+                    const response = await api.get(`tasks/${resp.data}/status`);
+                    if (response.data.status === "done") {
+                        NotificationManager.success(`Your simulation have just finished.`, "Run", 8000)
+                        clearInterval(status);
+                    }
+                } catch (error) {
+                    notifyError(error);
+                    clearInterval(status);
+                }
+            }, 1000);
+            NotificationManager.success(`Your simulation have just started.`, "Run", 8000)
+            setOpenRun(false);
+            setRunCategory('');
+            setRunAlgorithm('');
+            setRunParameter({});
+        } catch (error) {
+            notifyError(error);
         }
     }
 
@@ -1394,6 +1466,112 @@ export default function Posts(props) {
                 </div>
             </Modal>
             <Modal
+                open={openShare}
+                onClose={() => setOpenShare(false)}
+            >
+                <div className="modal padding-big">
+                    <h3 className="margin-bottom-small">Dataset access</h3>
+                    {
+                        post.allowed && post.allowed.length > 0 &&
+                        <h4 className="margin-top-small bold">Already shared with</h4>
+                    }
+                    {
+                        post.allowed && post.allowed.map((collaborator) =>
+                            <button
+                                key={collaborator}
+                                onClick={(e) => handleSubmitCollaborator(e, collaborator)}
+                                className={"button-negative margin-very-small"}
+                            >
+                                {collaborator}
+                            </button>
+                        )
+                    }
+                    <h4 className="margin-top-small bold">Include a new collaborator</h4>
+                    {
+                        post.public ?
+                            <>
+                                <h5>You can share this dataset using the following link</h5>
+                                <h5 className="padding-small background-secondary-color-light">{postUrl}</h5>
+                            </> :
+                            <form className="form flex-column" onSubmit={e => handleSubmitCollaborator(e, collaboratorUsername)}>
+                                <label>
+                                    Username
+                                    <input
+                                        placeholder="Username"
+                                        value={collaboratorUsername}
+                                        onChange={e => setCollaboratorUsername(e.target.value)}
+                                    />
+                                </label>
+                                <button className="button-primary" type="submit">Invite</button>
+                            </form>
+                    }
+                </div>
+            </Modal>
+            <Modal
+                open={openRun}
+                onClose={() => setOpenRun(false)}
+            >
+                <div className="modal padding-big">
+                    <h3 className="margin-bottom-small">Run</h3>
+                    <h4 className="margin-top-small bold">Select a category</h4>
+                    <div className="padding-left-small">
+                        <select onChange={(e) => handleSelectCategory(e)} value={runCategory}>
+                            <option value={"select"}>Select</option>
+                            {
+                                runData.map((category) =>
+                                    <option key={category["uuid"]} value={category["uuid"]}>{category["name"]}</option>
+                                )
+                            }
+                        </select>
+                    </div>
+                    {
+                        showAlgorithms &&
+                        <>
+                            <h4 className="margin-top-small bold">Select the algorithm</h4>
+                            <div className="padding-left-small">
+                                <select onChange={(e) => handleSelectAlgorithm(e)} value={runAlgorithm}>
+                                    <option value={"select"}>Select</option>
+                                    {
+                                        runData.map((category) =>
+                                            category["algorithms"].map((algorithm) =>
+                                                <option key={algorithm["uuid"]} value={algorithm["uuid"]}>{algorithm["name"]}</option>
+                                            )
+                                        )
+                                    }
+                                </select>
+                            </div>
+                        </>
+                    }
+                    {
+                        showAlgorithms && showParameters &&
+                        <>
+                            <h4 className="margin-top-small bold">Select the parameters</h4>
+                            <div className="padding-left-small">
+                                {
+                                    runData.map((category) =>
+                                        category["algorithms"].map((algorithm) =>
+                                            algorithm["parameters"].map((parameter) =>
+                                                <select key={parameter["name"]} onChange={(e) => handleSelectParameter(e, parameter["name"])} value={runParameter[parameter["name"]] || ''}>
+                                                    <option value={"select"}>Select</option>
+                                                    {
+                                                        parameter["values"].map((value) =>
+                                                            <option key={value} value={value}>{value}</option>
+                                                        )
+                                                    }
+                                                </select>
+                                            )
+                                        )
+                                    )
+                                }
+                            </div>
+                        </>
+                    }
+
+                    <button onClick={handleRun} className="button-primary margin-top-small">Run</button>
+
+                </div>
+            </Modal>
+            <Modal
                 open={openPublish}
                 onClose={() => setOpenPublish(false)}
             >
@@ -1430,13 +1608,13 @@ export default function Posts(props) {
                                                         post.history.map((transformation) =>
                                                             transformation.name &&
                                                             <div key={transformation.id} className="flex-row">
+                                                                <button onClick={(e) => handleCreatePost(e, transformation.label)} className="flex-column flex-crossaxis-center padding-right-very-small">
+                                                                    <img height="40px" src={`${downloadsUrl}${transformation.avatar}`} title="Show Dataset" alt="Show Dataset" />
+                                                                </button>
                                                                 <div className="flex-column flex-axis-center padding-right-very-small">
                                                                     <span className="color-tertiary">{transformation.name}</span>
                                                                     <span className="color-tertiary">→</span>
                                                                 </div>
-                                                                <button onClick={(e) => handleCreatePost(e, transformation.label)} className="flex-column flex-crossaxis-center padding-right-very-small">
-                                                                    <img height="40px" src={`${downloadsUrl}${transformation.avatar}`} title="Show Dataset" alt="Show Dataset" />
-                                                                </button>
                                                             </div>
                                                         )
                                                     }
@@ -1463,9 +1641,11 @@ export default function Posts(props) {
                         <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
                         <h6 className="color-tertiary">{post.downloads} downloads | {post.favorites.length} favorited</h6>
                         <div className="margin-top-very-small" >
-                            <button title="Download" onClick={handleDownload}><CloudDownload className="icon-secondary" /></button>
-                            {post.favorites && post.favorites.includes(loggedUser.id) ? <button title="Favorite" onClick={handleFavorite}><Favorite className="icon-secondary margin-left-very-small" /></button> : <button onClick={handleFavorite}><FavoriteBorder className="icon-secondary margin-left-very-small" /></button>}
-                            <button title="Cite" onClick={() => setOpenCite(true)}><FormatQuote className="icon-secondary" /></button>
+                            <button className="icon-normal" title="Download" onClick={handleDownload}><CloudDownload className="icon-secondary" /></button>
+                            {post.favorites && post.favorites.includes(loggedUser.id) ? <button className="icon-normal margin-left-very-small" title="Unfavorite" onClick={handleFavorite}><Favorite className="icon-secondary" /></button> : <button title="Favorite" className="icon-normal margin-left-very-small" onClick={handleFavorite}><FavoriteBorder className="icon-secondary" /></button>}
+                            <button className="icon-normal margin-left-very-small" title="Cite" onClick={() => setOpenCite(true)}><FormatQuote className="icon-secondary" /></button>
+                            <button className="icon-normal margin-left-very-small" title="Share" onClick={() => setOpenShare(true)}><Share className="icon-secondary" /></button>
+                            <button className="icon-normal margin-left-very-small" title="Run" onClick={() => setOpenRun(true)}><PlayArrow className="icon-secondary" /></button>
                         </div>
                     </>
                 }

@@ -5,8 +5,7 @@ import './styles.css';
 import OkaHeader from '../../components/OkaHeader';
 import Modal from '@material-ui/core/Modal';
 import api from '../../services/api';
-
-import { NotificationManager } from 'react-notifications';
+import { notifyError } from '../../utils';
 
 export default function OkaClient() {
     const [openApiToken, setOpenApiToken] = useState(false);
@@ -25,13 +24,7 @@ export default function OkaClient() {
             const response = await api.post('auth/create-api-token')
             setApiToken(response.data.api_token)
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
     }
 

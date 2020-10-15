@@ -4,11 +4,11 @@ import { Link, useHistory, useLocation } from 'react-router-dom';
 import Avatar from 'react-avatar';
 import { CircularProgress } from '@material-ui/core';
 import { ArrowLeft, ArrowRight } from '@material-ui/icons';
-import { NotificationManager } from 'react-notifications';
 import queryString from 'query-string';
 
 import { LoginContext } from '../../contexts/LoginContext';
 import api from '../../services/api';
+import { notifyError } from '../../utils';
 
 export default function OkaProfileBox({ fetch_url }) {
     const history = useHistory();
@@ -32,13 +32,7 @@ export default function OkaProfileBox({ fetch_url }) {
                 setUsers(response.data);
                 setLoading(false);
             } catch (error) {
-                if (error.response) {
-                    for (var prop in error.response.data.errors.json) {
-                        NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                    }
-                } else {
-                    NotificationManager.error("Network error", "Error", 4000)
-                }
+                notifyError(error);
             }
         }
         fetchData();
@@ -54,13 +48,7 @@ export default function OkaProfileBox({ fetch_url }) {
                 newUsers[index].followers.push(loggedUser.id)
             }
         } catch (error) {
-            if (error.response) {
-                for (var prop in error.response.data.errors.json) {
-                    NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
         setUsers(newUsers);
     }
