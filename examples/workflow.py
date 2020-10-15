@@ -52,59 +52,59 @@ from util.create import user, token
 #     return response_login.json()['api_token']
 #
 #
-# url = "http://data.analytics.icmc.usp.br"
-url = "http://localhost:5000"
+url = "http://data.analytics.icmc.usp.br"
+# url = "http://localhost:5000"
 user = user("davips", "pass123", base_url=url)
 okatoken = token(**user, base_url=url)
 print("user created", okatoken)
-
-# TODO: multiple caches are not working regarding whether to post
-# TIP: TsSplit should come before TrSplit to ensure the same original data is used as input for both.
+#
+# # TODO: multiple caches are not working regarding whether to post
+# # TIP: TsSplit should come before TrSplit to ensure the same original data is used as input for both.
 # from tatu.okast import OkaSt
-
+#
 # oka = OkaSt(okatoken, alias="Iris", url=url)
-sq = SQLite()
-# my = MySQL(db="oka:kururu@localhost/oka")
+# sq = SQLite()
+# # my = MySQL(db="oka:kururu@localhost/oka")
+# #
+# wflow = (
+#         File("iris.arff")
+#         * Binarize
+#         * Split
+#         * PCA(n=3)
+#         * Cache(PCA(n=3), storage=sq)
+#         # * Cache(PCA(n=3), storage=oka)
+#         * PCA(n=3)
+#         * Log(">>>>>>>>>>>>>>>>> {X.shape} {inner.X.shape}")
+#         * Report("{id}")
+#     # * Cache(SVM2(C=0.25), storage=my)
+#     # * Metric2
+#     # * Report("tr {r}\t\tts {inner.r}")
+# )
 #
-wflow = (
-        File("iris.arff")
-        * Binarize
-        * Split
-        * PCA(n=3)
-        * Cache(PCA(n=3), storage=sq)
-        # * Cache(PCA(n=3), storage=oka)
-        * PCA(n=3)
-        * Log(">>>>>>>>>>>>>>>>> {X.shape} {inner.X.shape}")
-        * Report("{id}")
-    # * Cache(SVM2(C=0.25), storage=my)
-    # * Metric2
-    # * Report("tr {r}\t\tts {inner.r}")
-)
-
-data = wflow.data
-
-print("Data ID", data.id)
-
-
-# print("Shape", data.X.shape[1], len(data.Xt))
-
-
+# data = wflow.data
 #
-# data >>= PCA()
-# print(data.id)
-# TODO  queue = None qnd descomenta acima
-# sq.update_remote(my)
-# my.update_remote(OkaSt(okatoken, alias="Iris", url=url))
-# SQLite().update_remote(MySQL(db="oka:kururu@localhost/oka"))
-
-
-def test_okast_id():
-    from util.create import user, token
-    url = "http://localhost:5000"
-    user = user("davips", "pass123", base_url=url)
-    okatoken = token(**user, base_url=url)
-    print("user created")
-    o = OkaSt(token=okatoken, url=url)
-    print(f"idddddd {o.id}")
-
-# test_okast_id()
+# print("Data ID", data.id)
+#
+#
+# # print("Shape", data.X.shape[1], len(data.Xt))
+#
+#
+# #
+# # data >>= PCA()
+# # print(data.id)
+# # TODO  queue = None qnd descomenta acima
+# # sq.update_remote(my)
+# # my.update_remote(OkaSt(okatoken, alias="Iris", url=url))
+# # SQLite().update_remote(MySQL(db="oka:kururu@localhost/oka"))
+#
+#
+# def test_okast_id():
+#     from util.create import user, token
+#     url = "http://localhost:5000"
+#     user = user("davips", "pass123", base_url=url)
+#     okatoken = token(**user, base_url=url)
+#     print("user created")
+#     o = OkaSt(token=okatoken, url=url)
+#     print(f"idddddd {o.id}")
+#
+# # test_okast_id()
