@@ -33,6 +33,7 @@ migrations/
 
 # Resources
 backend/app.db
+backend/tatu-sqlite.db
 frontend/package-lock.json
 backend/app/static/
 backend/app/media/
