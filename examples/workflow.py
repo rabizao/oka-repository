@@ -106,7 +106,7 @@ print("Data ID", data.id)
 data >>= PCA()
 print(" _________ d id:", data.id)
 
-p = data.parentuuid
+p = data.parent_uuid
 print(" _________    children:", my.fetch_children(p), p.id)
 
 def test_okast_id():
