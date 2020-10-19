@@ -56,7 +56,7 @@ class NotificationQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
-    since = fields.Number(missing=0.0)
+    since = fields.Float(missing=0.0)
 
 
 class UserQuerySchema(SQLAlchemySchema):
