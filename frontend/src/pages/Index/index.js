@@ -110,12 +110,12 @@ export default function Index() {
                     <img className="max-height-50" src={uspLogoImg} alt="USP Logo" />
                 </div>
 
-                <div className="flex-row flex-space-between background-primary-color padding-big sticky">
+                <div className="flex-row flex-axis-center flex-space-between background-primary-color padding-medium sticky">
                     <StaticMenu />
                     <div className="padding-left-medium">
                         {loggedUser.logged ?
                             <div className="icon-normal">
-                                <OkaMyAccount/>
+                                <OkaMyAccount />
                             </div> :
                             <Link className="color-tertiary" to="/login">Login</Link>
                         }
@@ -142,62 +142,64 @@ export default function Index() {
                         </Link>
                     </div> */}
                 </div>
+                <div className="padding-sides-small text-center">
+                    <Section id="e2eds" className="margin-vertical-big padding-top-navbar">
+                        <div className="flex-column flex-axis-center padding-top-big">
+                            <h1 className="underline-active">End-to-End Data Science</h1>
+                            <h4 className="padding-top-medium">With Oka you can handle the entire data science pipeline</h4>
+                            <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
+                        </div>
+                    </Section>
 
-                <Section id="e2eds" className="margin-vertical-big padding-top-navbar">
-                    <div className="flex-column flex-axis-center padding-top-big">
-                        <h1 className="underline-active">End-to-End Data Science</h1>
-                        <h4 className="padding-top-medium">With Oka you can handle the entire data science pipeline</h4>
-                        <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
-                    </div>
-                </Section>
+                    <Section id="get" className="margin-vertical-big padding-top-navbar">
+                        <div className="flex-column flex-axis-center padding-top-big">
+                            <h1 className="underline-active">Oka Repository</h1>
+                            <h4 className="padding-top-medium">Get new data or store all your data safely</h4>
+                            <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
+                        </div>
+                    </Section>
 
-                <Section id="get" className="margin-vertical-big padding-top-navbar">
-                    <div className="flex-column flex-axis-center padding-top-big">
-                        <h1 className="underline-active">Oka Repository</h1>
-                        <h4 className="padding-top-medium">Get new data or store all your data safely</h4>
-                        <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
-                    </div>
-                </Section>
+                    <Section id="explore" className="margin-vertical-big padding-top-navbar">
+                        <div className="flex-column flex-axis-center padding-top-big">
+                            <h1 className="underline-active">Tupa View</h1>
+                            <h4 className="padding-top-medium">Visualize and explore your data online</h4>
+                            <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
+                        </div>
+                    </Section>
 
-                <Section id="explore" className="margin-vertical-big padding-top-navbar">
-                    <div className="flex-column flex-axis-center padding-top-big">
-                        <h1 className="underline-active">Tupa View</h1>
-                        <h4 className="padding-top-medium">Visualize and explore your data online</h4>
-                        <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
-                    </div>
-                </Section>
+                    <Section id="learn" className="margin-vertical-big padding-top-navbar">
+                        <div className="flex-column flex-axis-center padding-top-big">
+                            <h1 className="underline-active">Extract Metafeatures</h1>
+                            <h4 className="padding-top-medium">Use our automatated tool to get the best pipeline to make predictions or classifications in your data</h4>
+                            <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
+                        </div>
+                    </Section>
 
-                <Section id="learn" className="margin-vertical-big padding-top-navbar">
-                    <div className="flex-column flex-axis-center padding-top-big">
-                        <h1 className="underline-active">Extract Metafeatures</h1>
-                        <h4 className="padding-top-medium">Use our automatated tool to get the best pipeline to make predictions or classifications in your data</h4>
-                        <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
-                    </div>
-                </Section>
+                    <Section id="explain" className="margin-vertical-big padding-top-navbar">
+                        <div className="flex-column flex-axis-center padding-top-big">
+                            <h1 className="underline-active">Explain</h1>
+                            <h4 className="padding-top-medium">Use our interpretation tool to understand what is behind your model</h4>
+                            <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
+                        </div>
+                    </Section>
 
-                <Section id="explain" className="margin-vertical-big padding-top-navbar">
-                    <div className="flex-column flex-axis-center padding-top-big">
-                        <h1 className="underline-active">Explain</h1>
-                        <h4 className="padding-top-medium">Use our interpretation tool to understand what is behind your model</h4>
-                        <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
+                    <Section id="reproduce" className="margin-vertical-big padding-top-navbar padding-bottom-big">
+                        <div className="flex-column flex-axis-center padding-top-big">
+                            <h1 className="underline-active">Reproduce</h1>
+                            <h4 className="padding-top-medium">You can always reproduce your experiments and get the entire pipeline of public experiments</h4>
+                            <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
+                        </div>
+                    </Section>
                     </div>
-                </Section>
 
-                <Section id="reproduce" className="margin-vertical-big padding-top-navbar padding-bottom-big">
-                    <div className="flex-column flex-axis-center padding-top-big">
-                        <h1 className="underline-active">Reproduce</h1>
-                        <h4 className="padding-top-medium">You can always reproduce your experiments and get the entire pipeline of public experiments</h4>
-                        <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
-                    </div>
-                </Section>
-
-                <Section id="whoweare" className="background-primary-color margin-top-big padding-bottom-big padding-top-navbar">
-                    <div className="flex-column flex-axis-center padding-top-big">
-                        <h1 className="underline-active color-tertiary">Who we are</h1>
-                        <h4 className="padding-top-medium color-tertiary">We are a small (but productive!) team of scientists</h4>
-                        <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
-                    </div>
-                </Section>
+                    <Section id="whoweare" className="background-primary-color margin-top-big padding-bottom-big padding-top-navbar padding-sides-small text-center">
+                        <div className="flex-column flex-axis-center padding-top-big">
+                            <h1 className="underline-active color-tertiary">Who we are</h1>
+                            <h4 className="padding-top-medium color-tertiary">We are a small (but productive!) team of scientists</h4>
+                            <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
+                        </div>
+                    </Section>
+                
                 <footer className="padding-big flex-wrap flex-crossaxis-center background-primary-color">
                     <h6 className="color-tertiary">CeMEAI - ICMC - University of São Paulo | Av. Trabalhador São Carlense, 200 - São Carlos/SP - Brazil</h6>
                 </footer>

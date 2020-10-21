@@ -18,5 +18,5 @@ class Downloads(MethodView):
 
         notifications = logged_user.notifications.filter(
             Notification.timestamp > args["since"]).order_by(
-                Notification.timestamp.asc())[-10:]
+                Notification.timestamp.asc())
         return notifications

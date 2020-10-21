@@ -1,21 +1,69 @@
-import os
 import json
+import os
+import time
+from os import sys
 from zipfile import ZipFile
 
-from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from flask_mail import Message
-from flask_smorest import abort
-
-from app import mail, celery, db
-from app.models import User, Task, Transformation, Post
-from app.schemas import TaskBaseSchema
 
 from aiuna.content.root import Root
 from aiuna.file import File
-from tatu.storage import DuplicateEntryException
+from app import celery, create_app, db, mail
+from app.models import Post, Task, Transformation, User
+from app.schemas import TaskStatusBaseSchema
+
 from . import bp
+
+app = create_app()
+app.app_context().push()
+
+
+class BaseTask(celery.Task):
+
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        app.logger.error('Unhandled exception', exc_info=sys.exc_info())
+        task = Task.query.get(task_id)
+        if task:
+            task.complete = True
+            task.user.add_notification(f'task_progress|{task.id}',
+                                       {'task_id': task.id,
+                                        'task_name': task.name,
+                                        'description': task.description,
+                                        'progress': 100,
+                                        'state': 'FAILURE',
+                                        'status': '{0!r}'.format(exc)
+                                        }, overwrite=True)
+            db.session.commit()
+
+
+def _set_job_progress(job, progress, failure=False, result={}):
+    report = json.dumps(result)
+    done = True if progress >= 100 else False
+    status = 'done' if done else 'processing'
+    state = 'SUCCESS' if done else 'PROGRESS'
+
+    meta = {
+        'progress': progress,
+        'status': status,
+    }
+    job.update_state(state=state, meta=meta)
+    task = Task.query.get(job.request.id)
+    if task:
+        task.user.add_notification(f'task_progress|{task.id}',
+                                   {'task_id': task.id,
+                                    'task_name': task.name,
+                                    'description': task.description,
+                                    'progress': progress,
+                                    'state': state,
+                                    'status': status,
+                                    'result': report
+                                    }, overwrite=True)
+        if done:
+            task.complete = True
+        db.session.commit()
+    return {'progress': progress, 'status': status, 'state': state, 'result': report}
 
 
 @celery.task
@@ -23,16 +71,16 @@ def send_async_email(message):
     '''
     Background task to send an email
     '''
-    msg = Message('[Oka - Contato]', sender=current_app.config['ADMINS'][0],
-                  recipients=[*current_app.config['ADMINS']])
+    msg = Message('[Oka - Contato]', sender=app.config['ADMINS'][0],
+                  recipients=[*app.config['ADMINS']])
     msg.html = message
 
-    with current_app.app_context():
+    with app.app_context():
         mail.send(msg)
 
 
-@celery.task(bind=True)
-def celery_run_simulation(self, post_id, step, username):
+@celery.task(bind=True, base=BaseTask)
+def run_step(self, post_id, step, username):
     '''
     Background task to perform simulations based on step
     '''
@@ -40,181 +88,122 @@ def celery_run_simulation(self, post_id, step, username):
     logged_user = User.get_by_username(username)
 
     # TODO: Perform calculations and update the status using something like
-    # self.update_state(state='PROGRESS', meta={
-    #     'current': actual_index / len(for_loop) * 100,
-    #     'total': 100,
-    #     'status': f'Processing calculation {str(actual_index)} out of {str(len(for_loop))}'
-    # })
-
+    size = 10
+    for i in range(size):
+        _set_job_progress(self, i / size * 100)
+        time.sleep(5)
     print(post.id, step, logged_user.username)
-
-    task = Task.query.get(self.request.id)
-    if task:
-        task.complete = True
-        db.session.commit()
-
-    result = {'current': 100, 'total': 100,
-              'status': 'done', 'result': 'UUID?'}
-
-    return result
+    result = 'UUID?'
+    return _set_job_progress(self, 100, result=result)
 
 
-@celery.task(bind=True)
-def celery_download_data(self, uuids):
+@celery.task(bind=True, base=BaseTask)
+def download_data(self, uuids):
     '''
     Background task to run async download process
     '''
-
-    storage = current_app.config['TATU_SERVER']
-
+    # TODO: Check if user has access to files
+    storage = app.config['TATU_SERVER']
     filename_server_zip = '_'.join(uuids)
-    path_server_zip = current_app.static_folder + '/' + filename_server_zip + '.zip'
+    path_server_zip = app.static_folder + '/' + filename_server_zip + '.zip'
     if not os.path.isfile(path_server_zip):
-        try:
-            with ZipFile(path_server_zip, 'w') as zipped_file:
-                for uuid in uuids:
-                    actual_index = uuids.index(uuid)
-                    self.update_state(state='PROGRESS', meta={
-                        'current': actual_index / len(uuids) * 100,
-                        'total': 100,
-                        'status': f'Processing file {str(actual_index)} of {str(len(uuids))}'
-                    })
-                    data = storage.fetch(uuid)
-                    if data is None:
-                        raise Exception(
-                            'Download failed: ' + uuid + ' not found!')
-                    zipped_file.writestr(
-                        uuid + '.arff', data.arff('No name', 'No description'))
-        except Exception as e:
-            os.remove(path_server_zip)
-            self.update_state(state='FAILURE', meta={
-                'current': 100,
-                'total': 100,
-                'status': f'Zip failed with status {e.args[0]}'
-            })
-            abort(422, errors={'json': {'zipping&arffing': [str(e)]}})
-
-    task = Task.query.get(self.request.id)
-    if task:
-        task.complete = True
-        db.session.commit()
-
-    result = {'current': 100, 'total': 100,
-              'status': 'done', 'result': filename_server_zip + '.zip'}
-
-    return result
+        with ZipFile(path_server_zip, 'w') as zipped_file:
+            for uuid in uuids:
+                actual_index = uuids.index(uuid)
+                _set_job_progress(self, actual_index / len(uuids) * 100)
+                data = storage.fetch(uuid)
+                if data is None:
+                    raise Exception('Download failed: ' + uuid + ' not found!')
+                zipped_file.writestr(
+                    uuid + '.arff', data.arff('No name', 'No description'))
+    result = filename_server_zip + '.zip'
+    return _set_job_progress(self, 100, result=result)
 
 
-@celery.task(bind=True)
-def celery_process_data(self, files, username):
+@celery.task(bind=True, base=BaseTask)
+def process_data(self, files, username):
     '''
     Background task to run async post process
     '''
-
     logged_user = User.get_by_username(username)
-    report = []
+    storage = app.config['TATU_SERVER']
+    result = []
 
     for file in files:
         actual_index = files.index(file)
-        self.update_state(state='PROGRESS', meta={
-            'current': actual_index / len(files) * 100,
-            'total': 100,
-            'status': f'Processing file {str(actual_index)} of {str(len(files))}'
-        })
+        _set_job_progress(self, actual_index / len(files) * 100)
 
         # TODO: remove redundancy
         name = file['path'].split('/')[-1]
         path = '/'.join(file['path'].split('/')[:-1]) + '/'
         f = File(name, path)
-        name, description = f.dataset, f.description
-        data = f.data
+        name, description, data = f.dataset, f.description, f.data
 
         existing_post = logged_user.posts.filter_by(data_uuid=data.id).first()
-
         if existing_post:
-            print('Dataset already exists!')
             obj = {'original_name': file['original_name'],
                    'message': 'Error! Dataset already uploaded', 'code': 'error', 'id': existing_post.id}
-            report.append(obj)
-            notification = logged_user.add_notification(
-                name='task_finished', data=obj)
-            db.session.add(notification)
+            result.append(obj)
+            logged_user.add_notification(
+                name='data_uploaded', data=obj, overwrite=False)
             continue
 
-        storage = current_app.config['TATU_SERVER']
-        try:
-            storage.store(data)
-        except DuplicateEntryException:
-            print('Duplicate! Ignored.', data.id)
-        finally:
-            # noinspection PyArgumentList
-            post = Post(author=logged_user, data_uuid=data.id, name=name, description=description,
-                        number_of_instances=len(data.X), number_of_features=len(data.Y))
-            # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
-            # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
-            duuid = Root.uuid
-            for step in data.history:
-                # TODO: stored is useless
-                dic = {"label": duuid.id, "name": step.name,
-                       "help": str(step), "stored": True}
-                db.session.add(Transformation(**dic, post=post))
-                duuid *= step.uuid
-            # for uid, step in data.history.items():
-            #     # TODO: stored is useless
-            #     dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(step), "stored": True}
+        storage.store(data)
+        post = Post(author=logged_user, data_uuid=data.id, name=name, description=description,
+                    number_of_instances=len(data.X), number_of_features=len(data.Y))
+        # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
+        # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
+        duuid = Root.uuid
+        for step in data.history:
+            # TODO: stored is useless
+            dic = {"label": duuid.id, "name": step.name,
+                   "help": str(step), "stored": True}
+            db.session.add(Transformation(**dic, post=post))
+            duuid *= step.uuid
+        # for uid, step in data.history.items():
+        #     # TODO: stored is useless
+        #     dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(step), "stored": True}
 
-            #     db.session.add(Transformation(**dic, post=post))
-            #     duuid *= UUID(step["id"])
-            db.session.add(post)
-            db.session.commit()
-            obj = {'original_name': file['original_name'],
-                   'message': 'Dataset successfully uploaded', 'code': 'success', 'id': post.id}
-            report.append(obj)
-            notification = logged_user.add_notification(
-                name='task_finished', data=obj)
-            db.session.add(notification)
+        #     db.session.add(Transformation(**dic, post=post))
+        #     duuid *= UUID(step["id"])
+        db.session.add(post)
+        db.session.commit()
+        obj = {'original_name': file['original_name'],
+               'message': 'Dataset successfully uploaded', 'code': 'success', 'id': post.id}
+        result.append(obj)
+        logged_user.add_notification(
+            name='data_uploaded', data=obj, overwrite=False)
 
-    task = Task.query.get(self.request.id)
-    task.complete = True
-    db.session.commit()
-
-    result = {'current': 100, 'total': 100,
-              'status': 'done', 'result': json.dumps(report)}
-
-    return result
+    return _set_job_progress(self, 100, result=result)
 
 
-@bp.route('tasks/<string:job_id>/status')
+@bp.route('tasks/<string:task_id>/status')
 class TasksStatusById(MethodView):
     @jwt_required
-    @bp.response(TaskBaseSchema)
-    def get(self, job_id):
+    @bp.response(TaskStatusBaseSchema)
+    def get(self, task_id):
         # TODO: Access limitations
-        task = celery.AsyncResult(job_id)
-
-        if task.state == 'PENDING':
+        job = celery.AsyncResult(task_id)
+        if job.state == 'PENDING':
             # job did not start yet
             response = {
-                'state': task.state,
-                'current': 0,
-                'total': 1,
-                'status': 'Pending...'
+                'state': job.state,
+                'progress': 0,
+                'status': 'pending'
             }
-        elif task.state != 'FAILURE':
+        elif job.state != 'FAILURE':
             response = {
-                'state': task.state,
-                'current': task.info.get('current', 0),
-                'total': task.info.get('total', 1),
-                'status': task.info.get('status', '')
+                'state': job.state,
+                'progress': job.info.get('progress', 0),
+                'status': job.info.get('status', '')
             }
-            if 'result' in task.info:
-                response['result'] = task.info['result']
+            if 'result' in job.info:
+                response['result'] = job.info['result']
         else:
             # something went wrong in the background job
             response = {
-                'state': task.state,
-                'current': 1,
-                'total': 1,
-                'status': str(task.info),  # this is the exception raised
+                'state': job.state,
+                'progress': 100,
+                'status': str(job.info),  # this is the exception raised
             }
         return response

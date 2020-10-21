@@ -8,9 +8,10 @@ const LoginProvider = ({ children }) => {
     const username = getUserUsername();
     const id = getUserId();
     const name = getUserName();
+    const [renderFeed, setRenderFeed] = useState(0);
 
     return (
-        <LoginContext.Provider value={{ logged, setLogged, id, username, name }}>
+        <LoginContext.Provider value={{ logged, setLogged, id, username, name, renderFeed, setRenderFeed }}>
             {children}
         </LoginContext.Provider>
     )

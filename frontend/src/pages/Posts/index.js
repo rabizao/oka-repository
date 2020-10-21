@@ -7,7 +7,6 @@ import { NotificationManager } from 'react-notifications';
 import { CloudDownload, Favorite, FavoriteBorder, ChevronLeft, ChevronRight, FormatQuote, Share, PlayArrow } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 import Modal from '@material-ui/core/Modal';
-import { saveAs } from 'file-saver';
 import { ResponsiveScatterPlot } from '@nivo/scatterplot'
 
 import OkaHeader from '../../components/OkaHeader';
@@ -16,6 +15,8 @@ import OkaPostComments from '../../components/OkaPostComments';
 import OkaPostsBox from '../../components/OkaPostsBox';
 import api, { downloadsUrl } from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
+import { RunningTasksBarContext } from '../../contexts/RunningTasksBarContext';
+import { NotificationsContext } from '../../contexts/NotificationsContext';
 import { frontendUrl } from '../../services/api';
 import { notifyError } from '../../utils';
 
@@ -1096,6 +1097,8 @@ export default function Posts(props) {
     const postUrl = frontendUrl + `/posts/${post.id}/description`;
 
     const loggedUser = useContext(LoginContext);
+    const runningTasksBar = useContext(RunningTasksBarContext);
+    const notificationsContext = useContext(NotificationsContext);
     const history = useHistory();
 
     const textBox = (text) => {
@@ -1244,18 +1247,13 @@ export default function Posts(props) {
     async function handleDownload() {
         try {
             const resp = await api.get(`downloads/data?uuids=${post.data_uuid}`);
-            var status = setInterval(async function () {
-                try {
-                    const response = await api.get(`tasks/${resp.data}/status`);
-                    if (response.data.status === "done") {
-                        saveAs(downloadsUrl + response.data.result, post.name + ".zip");
-                        clearInterval(status);
-                    }
-                } catch (error) {
-                    notifyError(error);
-                    clearInterval(status);
-                }
-            }, 1000);
+            var newTasks = { ...runningTasksBar.tasks };
+            newTasks[resp.data.id] = {
+                description: "Starting..."
+            };
+            runningTasksBar.setTasks(newTasks);
+            runningTasksBar.setActive(true);
+            notificationsContext.setDelay(1000);
         } catch (error) {
             notifyError(error);
         }
@@ -1401,19 +1399,14 @@ export default function Posts(props) {
 
         try {
             const resp = await api.post(`posts/${id}/run`, data);
-            var status = setInterval(async function () {
-                try {
-                    const response = await api.get(`tasks/${resp.data}/status`);
-                    if (response.data.status === "done") {
-                        NotificationManager.success(`Your simulation have just finished.`, "Run", 8000)
-                        clearInterval(status);
-                    }
-                } catch (error) {
-                    notifyError(error);
-                    clearInterval(status);
-                }
-            }, 1000);
-            NotificationManager.success(`Your simulation have just started.`, "Run", 8000)
+            var newTasks = { ...runningTasksBar.tasks };
+            newTasks[resp.data.id] = {
+                description: "Starting..."
+            };
+            runningTasksBar.setTasks(newTasks);
+            runningTasksBar.setActive(true);
+            notificationsContext.setDelay(1000);
+            NotificationManager.success(`Your simulation has just started.`, "Run", 8000)
             setOpenRun(false);
             setRunCategory('');
             setRunAlgorithm('');

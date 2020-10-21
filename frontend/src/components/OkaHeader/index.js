@@ -21,6 +21,19 @@ export default function OkaHeader(props) {
             `/search/datasets?name=${search}&logic=and`}`);
     }
 
+    function renderNotification(notification) {
+        switch (notification.name) {
+            case 'data_uploaded':
+                return (
+                <Link key={notification.id} className="padding-medium box background-hover width100" to={`/posts/${notification.payload_json.id}/description`}>
+                    <span className="ellipsis-3">{notification.payload_json.original_name}: </span>
+                    <span className={`ellipsis-3 ${notification.payload_json.code === "error" && "color-error"}`}> {notification.payload_json.message}</span>
+                </Link>)
+            default:
+                break;
+        }
+    }
+
     return (
         <div className="flex-row flex-axis-center flex-space-between background-primary-color padding-medium">
             <Link to="/home"><h1 className="color-secondary">Oka</h1></Link>
@@ -87,11 +100,7 @@ export default function OkaHeader(props) {
                                         {
                                             notificationsContext.notifications.length > 0 ?
                                                 notificationsContext.notifications.slice(0).reverse().map((notification) =>
-                                                    notification.name === "task_finished" &&
-                                                    <Link key={notification.id} className="padding-medium box background-hover width100" to={`/posts/${notification.payload_json.id}/description`}>
-                                                        <span className="ellipsis-3">{notification.payload_json.original_name}: </span>
-                                                        <span className={`ellipsis-3 ${notification.payload_json.code === "error" && "color-error"}`}> {notification.payload_json.message}</span>
-                                                    </Link>
+                                                    renderNotification(notification)
                                                 ) :
                                                 <div className="padding-sides-small padding-vertical-small width100">Nothing to show yet</div>
                                         }

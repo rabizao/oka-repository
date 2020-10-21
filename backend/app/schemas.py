@@ -6,7 +6,7 @@ from marshmallow_sqlalchemy.fields import Nested
 from werkzeug.security import generate_password_hash
 
 from app import db
-from app.models import User, Post, Comment, Transformation, Contact, Notification
+from app.models import User, Post, Comment, Transformation, Contact, Notification, Task
 from cruipto.avatar23 import colors
 
 
@@ -278,10 +278,16 @@ class ContactBaseSchema(SQLAlchemyAutoSchema):
     id = auto_field(dump_only=True)
 
 
-class TaskBaseSchema(SQLAlchemySchema):
+class TaskBaseSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Task
+
+    id = auto_field(dump_only=True)
+
+
+class TaskStatusBaseSchema(SQLAlchemySchema):
 
     state = fields.String()
-    current = fields.Integer()
-    total = fields.Integer()
+    progress = fields.Integer()
     status = fields.String()
     result = fields.String()

@@ -325,6 +325,10 @@ button, input[type="submit"], input[type="reset"] {
     overflow-x: auto;
 }
 
+.overflow-y-auto {
+    overflow-y: auto;
+}
+
 .ul-padding-sides {
     list-style-type: none;
 }
@@ -466,16 +470,15 @@ button, input[type="submit"], input[type="reset"] {
     color: var(--secondary-color);
 }
 
-.row-nowrap {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    justify-content: space-between;
-}
-
 .flex-wrap {
     display: flex;
     flex-wrap: wrap;
+}
+
+.flex-row-nowrap {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
 }
 
 .padding-big {
@@ -553,7 +556,6 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .search-form-secondary input, .search-form-secondary button {
-    max-width: 150px;
     height: 50px;
     padding: 10px;
     border: 0;
@@ -622,7 +624,7 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .width-huge {
-    width: 400px;
+    width: 380px;
 }
 
 .modal {
@@ -684,16 +686,26 @@ button, input[type="submit"], input[type="reset"] {
     max-height: 50px;
 }
 
+.max-height-70vh {    
+    max-height: 70vh;
+}
+
 .icon-big svg {
     font-size: 100px;
+    display: flex;
+    align-items: center;
 }
 
 .icon-normal svg {
     font-size: 30px;
+    display: flex;
+    align-items: center;
 }
 
 .icon-medium svg {
     font-size: 50px;
+    display: flex;
+    align-items: center;
 }
 
 .box-square-medium {

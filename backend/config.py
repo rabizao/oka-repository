@@ -19,7 +19,6 @@ class Config(object):
     ADMINS = ['okarepository@gmail.com']
     POSTS_PER_PAGE = 25
     TMP_FOLDER = '/tmp/oka/'
-    JSON_AS_ASCII = False  # Needed to support UUID short utf8 strings.
 
     API_TITLE = 'oka API'
     API_VERSION = ''
