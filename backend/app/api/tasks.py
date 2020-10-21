@@ -1,6 +1,6 @@
 import json
-import os
 import time
+import uuid as u
 from os import sys
 from zipfile import ZipFile
 
@@ -104,18 +104,17 @@ def download_data(self, uuids):
     '''
     # TODO: Check if user has access to files
     storage = app.config['TATU_SERVER']
-    filename_server_zip = '_'.join(uuids)
+    filename_server_zip = str(u.uuid4())
     path_server_zip = app.static_folder + '/' + filename_server_zip + '.zip'
-    if not os.path.isfile(path_server_zip):
-        with ZipFile(path_server_zip, 'w') as zipped_file:
-            for uuid in uuids:
-                actual_index = uuids.index(uuid)
-                _set_job_progress(self, actual_index / len(uuids) * 100)
-                data = storage.fetch(uuid)
-                if data is None:
-                    raise Exception('Download failed: ' + uuid + ' not found!')
-                zipped_file.writestr(
-                    uuid + '.arff', data.arff('No name', 'No description'))
+    with ZipFile(path_server_zip, 'w') as zipped_file:
+        for uuid in uuids:
+            actual_index = uuids.index(uuid)
+            _set_job_progress(self, actual_index / len(uuids) * 100)
+            data = storage.fetch(uuid)
+            if data is None:
+                raise Exception('Download failed: ' + uuid + ' not found!')
+            zipped_file.writestr(
+                uuid + '.arff', data.arff('No name', 'No description'))
     result = filename_server_zip + '.zip'
     return _set_job_progress(self, 100, result=result)
 
