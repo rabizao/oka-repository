@@ -57,8 +57,7 @@ class Posts(MethodView):
             original_names.append(file.filename)
 
         task = logged_user.launch_task('process_data',
-                                       "Processing your uploaded files: " +
-                                       ", ".join(original_names),
+                                       f"Processing your uploaded files: {', '.join(original_names)}",
                                        [files, username])
         db.session.commit()
         return task
