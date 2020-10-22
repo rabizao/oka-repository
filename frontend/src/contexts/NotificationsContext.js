@@ -36,6 +36,11 @@ const NotificationsProvider = ({ children }) => {
                                 progress: payload.progress,
                                 description: payload.description
                             }
+                            var timestampNow = (new Date()).getTime() / 1000;     
+                            // Do not show progress older than 20 days because it certainly crashed
+                            if (Number(notification.timestamp) < timestampNow - 3600 * 24 * 20) {
+                                delete newTasks[payload.task_id]
+                            }                            
                         } else {
                             if (!first) {
                                 if (payload.state === 'FAILURE') {

@@ -7,6 +7,7 @@ from zipfile import ZipFile
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from flask_mail import Message
+from celery.signals import worker_init
 
 from aiuna.content.root import Root
 from aiuna.file import File
@@ -36,6 +37,14 @@ class BaseTask(celery.Task):
                                         'status': '{0!r}'.format(exc)
                                         }, overwrite=True)
             db.session.commit()
+
+
+@worker_init.connect
+def configure(sender=None, conf=None, **kwargs):
+    conn = celery.connection(transport_options={'visibility_timeout': 0})
+    qos = conn.channel().qos
+    qos.restore_visible()
+    app.logger.info('Unacknowledged messages restored')
 
 
 def _set_job_progress(job, progress, failure=False, result={}):
