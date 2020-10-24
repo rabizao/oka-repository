@@ -1,13 +1,5 @@
-.oka-header-search-form, .oka-header-search-form button, .oka-header-right-buttons ul {
+.oka-header-right-buttons ul {
     display: flex;
     flex-direction: row;
     align-items: center;
-}
-
-.oka-header-search-form input, .oka-header-search-form button {
-    height: 50px;
-    padding: 10px;
-    border: 0;
-    background-color: var(--secondary-color-light);
-    color: var(--tertiary-color);
 }

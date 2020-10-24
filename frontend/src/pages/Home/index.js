@@ -1,5 +1,4 @@
 import React, { useState, useContext, useRef } from 'react';
-import { useHistory } from 'react-router-dom';
 import { CloudUpload, Clear } from '@material-ui/icons';
 import { NotificationManager } from 'react-notifications';
 
@@ -11,17 +10,19 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import api from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 import { notifyError } from '../../utils';
+import { NotificationsContext } from '../../contexts/NotificationsContext';
+import { RunningTasksBarContext } from '../../contexts/RunningTasksBarContext';
 
 export default function Home() {
     const [acceptedFiles, setAcceptedFiles] = useState([]);
     const [deniedFiles, setDeniedFiles] = useState([]);
     const [progress, setProgress] = useState(0);
-    const [renderFeed, setRenderFeed] = useState(0);
     const [showProgress, setShowProgress] = useState(false);
     const [blockSubmit, setBlockSubmit] = useState(false);
     const fileInputRef = useRef();
     const dropRegion = useRef();
-    const history = useHistory();
+    const runningTasksBar = useContext(RunningTasksBarContext);
+    const notificationsContext = useContext(NotificationsContext);
 
     const loggedUser = useContext(LoginContext);
 
@@ -94,41 +95,19 @@ export default function Home() {
 
         try {
             const resp = await api.post('posts', formData, config);
+            var newTasks = { ...runningTasksBar.tasks };
+            newTasks[resp.data.id] = {
+                description: "Starting..."
+            };
+            runningTasksBar.setTasks(newTasks);
+            runningTasksBar.setActive(true);
+            notificationsContext.setDelay(1000);
             setAcceptedFiles([]);
             setDeniedFiles([]);
             setShowProgress(false);
             setProgress(0);
             setBlockSubmit(false);
-            NotificationManager.success("Upload successful. You can navigate while we process your datasets", "Finished", 10000)
-            var status = setInterval(async function () {
-                try {
-                    const response = await api.get(`tasks/${resp.data}/status`);
-                    if (response.data.status === "done") {
-                        const notification = JSON.parse(response.data.result);
-                        var index = 0;
-                        for (var i = 0; i < notification.length; i++) {
-                            const postId = notification[i]["id"];
-                            if (notification[i]["code"] === "success") {
-                                NotificationManager.success(notification[i]["message"], `${notification[i]['original_name']}`, 10000 + index,
-                                    () => {
-                                        history.push(`/posts/${postId}/description`);
-                                    });
-                                setRenderFeed(renderFeed + 1);
-                            } else {
-                                NotificationManager.error(notification[i]["message"], `${notification[i]['original_name']}`, 10000 + index,
-                                    () => {
-                                        history.push(`/posts/${postId}/description`);
-                                    });
-                            }
-                            index += 2000;
-                        }
-                        clearInterval(status);
-                    }
-                } catch (error) {
-                    notifyError(error);
-                    clearInterval(status);
-                }
-            }, 1000);
+            NotificationManager.success("Upload successful. You can navigate while we process your datasets", "Finished", 10000)            
         } catch (error) {
             notifyError(error);
         }
@@ -206,7 +185,7 @@ export default function Home() {
                         </div>
                     }
                 </div>
-                <ContentBox title="Feed" fetchUrl={`/users/${loggedUser.username}/feed`} className="margin-top-verysmall margin-bottom-huge" renderTime={renderFeed}/>
+                <ContentBox title="Feed" fetchUrl={`/users/${loggedUser.username}/feed`} className="margin-top-verysmall margin-bottom-huge" />
             </div>
         </>
     )

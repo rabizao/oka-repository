@@ -2,9 +2,9 @@ import React from 'react';
 import Popover from '@material-ui/core/Popover';
 import PopupState, { bindTrigger, bindPopover } from 'material-ui-popup-state';
 
-export default function PopOver({ component: Icon, componentClasses, content, center }) {
+export default function PopOver({ component: Icon, componentClasses, content, center, onClick, id }) {
     return (
-        <PopupState variant="popover" popupId="demo-popup-popover">
+        <PopupState variant="popover" popupId={id}>
             {(popupState) => (
                 <div>
                     <Icon className={componentClasses} {...bindTrigger(popupState)} />
@@ -19,6 +19,7 @@ export default function PopOver({ component: Icon, componentClasses, content, ce
                                 vertical: 'top',
                                 horizontal: 'center',
                             }}
+                            onClick={onClick}                            
                         >
                             {content}
                         </Popover>
@@ -33,6 +34,7 @@ export default function PopOver({ component: Icon, componentClasses, content, ce
                                 vertical: 'top',
                                 horizontal: 'right',
                             }}
+                            onClick={onClick}
                         >
                             {content}
                         </Popover>

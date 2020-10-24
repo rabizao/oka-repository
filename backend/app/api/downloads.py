@@ -1,8 +1,7 @@
 from app import db
 from . import bp
-from app.schemas import DownloadQuerySchema
-from .tasks import celery_download_data
-from app.models import User, Task
+from app.schemas import DownloadQuerySchema, TaskBaseSchema
+from app.models import User
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
@@ -15,6 +14,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 class Downloads(MethodView):
     @jwt_required
     @bp.arguments(DownloadQuerySchema, location="query")
+    @bp.response(TaskBaseSchema)
     def get(self, args):  # args significa todas as variáveis da classe-schema
         """Download a zipped file containing all the requested datasets"""
 
@@ -22,10 +22,8 @@ class Downloads(MethodView):
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
 
-        job = celery_download_data.apply_async([uuids])
-        task = Task(id=job.id, name="Data processing",
-                    description="Processing your download: " + ", ".join(uuids), user=logged_user)
-        db.session.add(task)
+        task = logged_user.launch_task('download_data', 'Processing your download',
+                                       [uuids])
         db.session.commit()
 
-        return job.id
+        return task

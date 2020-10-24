@@ -1,18 +1,20 @@
-from aiuna.content.root import Root
-from cruipto.uuid import UUID
-from . import bp
-from flask import current_app
-from flask.views import MethodView
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_smorest import abort
+import uuid as u
 from datetime import datetime
 
+from flask import current_app
+from flask.views import MethodView
+from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask_smorest import abort
+
+from aiuna.content.root import Root
 from app import db
-from app.models import User, Post, Comment, Task, Transformation
-from app.api.tasks import celery_process_data, celery_run_simulation
-from app.schemas import (PostQuerySchema, PostBaseSchema, PostFilesSchema, PostEditSchema, CommentBaseSchema,
-                         CommentQuerySchema, RunSchema, UserBaseSchema)
-import uuid as u
+from app.models import Comment, Post, Transformation, User
+from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
+                         PostEditSchema, PostFilesSchema, PostQuerySchema,
+                         RunSchema, TaskBaseSchema, UserBaseSchema)
+from cruipto.uuid import UUID
+
+from . import bp
 
 
 # noinspection PyArgumentList
@@ -36,7 +38,7 @@ class Posts(MethodView):
 
     @jwt_required
     @bp.arguments(PostFilesSchema, location="files")
-    @bp.response(code=201)
+    @bp.response(TaskBaseSchema)
     def post(self, argsFiles):
         """
         Create a new post to the logged user
@@ -54,13 +56,11 @@ class Posts(MethodView):
             files.append({"path": full_path, "original_name": file.filename})
             original_names.append(file.filename)
 
-        job = celery_process_data.apply_async(
-            [files, username])
-        task = Task(id=job.id, name="Data processing",
-                    description="Processing your uploaded files: " + ", ".join(original_names), user=logged_user)
-        db.session.add(task)
+        task = logged_user.launch_task('process_data',
+                                       f"Processing your uploaded files: {', '.join(original_names)}",
+                                       [files, username])
         db.session.commit()
-        return job.id
+        return task
 
 
 @bp.route('/posts/<int:id>')
@@ -279,7 +279,7 @@ class PostsTwinsById(MethodView):
 class PostsTransformById(MethodView):
     @jwt_required
     @bp.arguments(RunSchema)
-    @bp.response(code=201)
+    @bp.response(TaskBaseSchema)
     def post(self, args, id):
         """
         Return the twins of a post with id {id}
@@ -291,22 +291,10 @@ class PostsTransformById(MethodView):
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
 
-        job = celery_run_simulation.apply_async(
-            [post.id, args["step"], username])
-        task = Task(id=job.id, name="Run",
-                    description="Processing your simulation", user=logged_user)
-        db.session.add(task)
+        task = logged_user.launch_task('run_step', 'Processing your simulation',
+                                       [post.id, args["step"], username])
         db.session.commit()
-        return job.id
-
-        # storage = current_app.config['TATU_SERVER']
-        # data = storage.fetch(post.data_uuid)
-
-        # transformer = args["step"]
-        # if transformer == "split":
-        #     return Split.process(data)
-        # else:
-        #     abort(422, errors={"json": {"step": ["Does not exist."]}})
+        return task
 
 
 @bp.route("/posts/<string:uuid>")

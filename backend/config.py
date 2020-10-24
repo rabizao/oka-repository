@@ -19,7 +19,6 @@ class Config(object):
     ADMINS = ['okarepository@gmail.com']
     POSTS_PER_PAGE = 25
     TMP_FOLDER = '/tmp/oka/'
-    JSON_AS_ASCII = False  # Needed to support UUID short utf8 strings.
 
     API_TITLE = 'oka API'
     API_VERSION = ''
@@ -33,6 +32,7 @@ class Config(object):
 
     CELERY_BROKER_URL = 'redis://localhost:6379/0'
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+    CELERY_ACKS_LATE = True
     FRONTEND_HOST = os.environ.get('FRONTEND_HOST') or "http://localhost:3000"
 
     ACCESS_EXPIRES = timedelta(days=15)

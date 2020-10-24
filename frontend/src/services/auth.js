@@ -1,4 +1,4 @@
-var jwtDecode = require('jwt-decode');
+import jwt_decode from "jwt-decode";
 
 export const isAuthenticated = () => {
     const token = localStorage.getItem('token');
@@ -25,12 +25,12 @@ export const logout = () => {
 }
 
 export const is_expired = token => {
-    var decoded_token = jwtDecode(token);
+    var decoded_token = jwt_decode(token);
     var now = Date.now();
     return now >= decoded_token.exp * 1000;
 }
 
 export const user_info = token => {
-    var decoded_token = jwtDecode(token);
+    var decoded_token = jwt_decode(token);
     return decoded_token;
 }

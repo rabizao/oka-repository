@@ -1,15 +1,10 @@
-from sqlalchemy import or_, and_, asc
-from datetime import datetime
-from werkzeug.security import check_password_hash
-from app import db
-# from tatu.persistence import DuplicateEntryException
-# from aiuna.data import Data
-# from flask import current_app
 import json
-from time import time
+from datetime import datetime
 
-# import redis
-# import rq
+from sqlalchemy import and_, asc, or_
+from werkzeug.security import check_password_hash
+
+from app import celery, db
 
 
 followers = db.Table('followers',
@@ -44,7 +39,7 @@ class PaginateMixin(object):
         """
         Return a collection of items already paginated of the selected class
         """
-        logic = data['logic'] if 'logic' in data else 'or'
+        logic = and_ if 'logic' in data and data['logic'] == 'and' else or_
         query = query or cls.query
         data.pop('logic', None)
         search_conds = []
@@ -58,12 +53,10 @@ class PaginateMixin(object):
                                              key).like(f"%{item}%") for item in values]
             else:
                 search_conds += [getattr(cls, key).like(f"%{values}%")]
-        if logic == "or":
-            resources = query.filter_by(**filter_by).filter(
-                or_(*search_conds)).filter(*filter).order_by(order_by).paginate(page, page_size, False)
-        else:
-            resources = query.filter_by(**filter_by).filter(
-                and_(*search_conds)).filter(*filter).order_by(order_by).paginate(page, page_size, False)
+
+        resources = query.filter_by(**filter_by).filter(
+            logic(*search_conds)).filter(*filter).order_by(order_by).paginate(page, page_size, False)
+
         return resources.items, resources.total
 
 
@@ -78,6 +71,7 @@ class User(PaginateMixin, db.Model):
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     last_message_read_time = db.Column(db.DateTime)
+    last_notification_read_time = db.Column(db.DateTime)
     active = db.Column(db.Boolean, default=True)
     role = db.Column(db.Integer, default=0)
 
@@ -149,10 +143,18 @@ class User(PaginateMixin, db.Model):
             setattr(self, key, value)
         return self
 
-    # def new_messages(self):
-    #     last_read_time = self.last_message_read_time or datetime(1900, 1, 1)
-    #     return Message.query.filter_by(recipient=self).filter(
-    #         Message.timestamp > last_read_time).count()
+    def new_messages(self):
+        last_read_time = self.last_message_read_time or datetime(1900, 1, 1)
+        return Message.query.filter_by(recipient=self).filter(
+            Message.timestamp > last_read_time).count()
+
+    def new_notifications(self):
+        countable = ["data_uploaded"]
+        last_read_time = self.last_notification_read_time or datetime(
+            1900, 1, 1)
+        return Notification.query.filter(
+            or_(*[Notification.name.like(n) for n in countable])).filter(
+            Notification.timestamp > last_read_time).count()
 
     def add_notification(self, name, data, overwrite=False):
         if overwrite:
@@ -215,20 +217,12 @@ class User(PaginateMixin, db.Model):
         return can_see.union(own)
         # return self.accessible.filter(access.c.post_id == post.id).all() and self.posts
 
-    # def launch_task(self, name, description, *args, **kwargs):
-    #     rq_job = current_app.task_queue.enqueue('current_app.tasks.' + name, self.id,
-    #                                             *args, **kwargs)
-    #     task = Task(id=rq_job.get_id(), name=name, description=description,
-    #                 user=self)
-    #     db.session.add(task)
-    #     return task
-
-    # def get_tasks_in_progress(self):
-    #     return Task.query.filter_by(user=self, complete=False).all()
-
-    # def get_task_in_progress(self, name):
-    #     return Task.query.filter_by(name=name, user=self,
-    #                                 complete=False).first()
+    def launch_task(self, name, description, *args, **kwargs):
+        job = celery.send_task('app.api.tasks.' + name, *args, **kwargs)
+        task = Task(id=job.id, name=name, description=description,
+                    user=self)
+        db.session.add(task)
+        return task
 
     @staticmethod
     def list_by_name(search_term):
@@ -271,7 +265,6 @@ class Post(PaginateMixin, db.Model):
 
     name = db.Column(db.String(120), default="No name")
     description = db.Column(db.Text, default="No description")
-    # avatar = db.Column(db.String(1000))
 
     downloads = db.Column(db.Integer(), default=0)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
@@ -328,54 +321,10 @@ class Post(PaginateMixin, db.Model):
     # def show_tags(self):
     #     return self.tags.all()
 
-    # def store(self):
-    #     db.session.add(self)
-    #     db.session.commit()
-
-    # def delete(self):  # TODO delete dataset
-    #     db.session.delete(self)
-    #     db.session.commit()
-    #     return
-
-    # def is_public(self):
-    #     return self.public
-
-    # def is_private(self):
-    #     return not self.public
-
-    # def set_public(self):
-    #     self.public = True
-    #     db.session.commit()
-
-    # def set_private(self):
-    #     self.public = False
-    #     db.session.commit()
-
     def update(self, args):
         for key, value in args.items():
             setattr(self, key, value)
         return self
-
-    # @staticmethod
-    # def new(data, author, name):
-    #     storage = current_app.config['TATU_SERVER']
-    #  try:
-    #         PickleServer().store(data)
-    #         try:
-    #             post = Post(data_uuid=data.uuid, author=author, name=name)
-    #             post.store()
-    #             return 'Dataset stored!'
-    #         except DuplicateEntryException:
-    #             return 'Duplicated dataset! Ignored.'
-    #     except DuplicateEntryException:
-    #         return 'Duplicated dataset! Ignored.'
-
-    # def get_comments(self):
-    #     return self.comments.order_by(Comment.timestamp.desc())
-
-    # def get_data_object(self):
-    #     storage = current_app.config['TATU_SERVER']
-    #     return PickleServer().fetch(Data.phantom_by_uuid(self.data_uuid))
 
     @staticmethod
     def get_by_uuid(uuid, active=False):
@@ -383,9 +332,6 @@ class Post(PaginateMixin, db.Model):
             return Post.query.filter_by(data_uuid=uuid, active=True).all()
         else:
             return Post.query.filter_by(data_uuid=uuid).all()
-
-    def __repr__(self):
-        return '<Post {}>'.format(self.id)
 
 
 class Comment(db.Model):
@@ -428,15 +374,12 @@ class Message(db.Model):
     body = db.Column(db.String(140))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
-    def __repr__(self):
-        return '<Message {}>'.format(self.body)
-
 
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    timestamp = db.Column(db.String(20), index=True, default=time)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     payload_json = db.Column(db.Text)
 
     def get_data(self):
@@ -449,17 +392,6 @@ class Task(db.Model):
     description = db.Column(db.String(128))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     complete = db.Column(db.Boolean, default=False)
-
-    # def get_rq_job(self):
-    #     try:
-    #         rq_job = rq.job.Job.fetch(self.id, connection=current_app.redis)
-    #     except (redis.exceptions.RedisError, rq.exceptions.NoSuchJobError):
-    #         return None
-    #     return rq_job
-
-    # def get_progress(self):
-    #     job = self.get_rq_job()
-    #     return job.meta.get('progress', 0) if job is not None else 100
 
 
 class Token(db.Model):
@@ -483,6 +415,3 @@ class Contact(PaginateMixin, db.Model):
     email = db.Column(db.String(140))
     message = db.Column(db.Text())
     active = db.Column(db.Boolean, default=True)
-
-    def __repr__(self):
-        return '<Contact {}>'.format(self.id)
