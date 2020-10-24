@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-from time import time
 
 from sqlalchemy import and_, asc, or_
 from werkzeug.security import check_password_hash
@@ -72,6 +71,7 @@ class User(PaginateMixin, db.Model):
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     last_message_read_time = db.Column(db.DateTime)
+    last_notification_read_time = db.Column(db.DateTime)
     active = db.Column(db.Boolean, default=True)
     role = db.Column(db.Integer, default=0)
 
@@ -143,10 +143,18 @@ class User(PaginateMixin, db.Model):
             setattr(self, key, value)
         return self
 
-    # def new_messages(self):
-    #     last_read_time = self.last_message_read_time or datetime(1900, 1, 1)
-    #     return Message.query.filter_by(recipient=self).filter(
-    #         Message.timestamp > last_read_time).count()
+    def new_messages(self):
+        last_read_time = self.last_message_read_time or datetime(1900, 1, 1)
+        return Message.query.filter_by(recipient=self).filter(
+            Message.timestamp > last_read_time).count()
+
+    def new_notifications(self):
+        countable = ["data_uploaded"]
+        last_read_time = self.last_notification_read_time or datetime(
+            1900, 1, 1)
+        return Notification.query.filter(
+            or_(*[Notification.name.like(n) for n in countable])).filter(
+            Notification.timestamp > last_read_time).count()
 
     def add_notification(self, name, data, overwrite=False):
         if overwrite:
@@ -371,7 +379,7 @@ class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    timestamp = db.Column(db.String(20), index=True, default=time)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     payload_json = db.Column(db.Text)
 
     def get_data(self):

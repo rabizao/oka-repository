@@ -4,6 +4,7 @@ from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
 from marshmallow_sqlalchemy.fields import Nested
 from werkzeug.security import generate_password_hash
+from datetime import datetime
 
 from app import db
 from app.models import User, Post, Comment, Transformation, Contact, Notification, Task
@@ -56,7 +57,7 @@ class NotificationQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
-    since = fields.Float(missing=0.0)
+    since = fields.DateTime(missing=datetime(1900, 1, 1))
 
 
 class UserQuerySchema(SQLAlchemySchema):

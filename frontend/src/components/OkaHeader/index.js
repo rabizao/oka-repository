@@ -1,12 +1,15 @@
 import React, { useState, useContext } from 'react';
 import { useHistory, Link } from 'react-router-dom';
 import { Search, Apps, Notifications, AccountBalance } from '@material-ui/icons';
+import Badge from '@material-ui/core/Badge';
 
 import './styles.css';
 
 import { NotificationsContext } from '../../contexts/NotificationsContext';
 import PopOver from '../PopOver';
 import OkaMyAccount from '../OkaMyAccount';
+import { notifyError } from '../../utils';
+import api from '../../services/api';
 
 export default function OkaHeader(props) {
 
@@ -25,12 +28,21 @@ export default function OkaHeader(props) {
         switch (notification.name) {
             case 'data_uploaded':
                 return (
-                <Link key={notification.id} className="padding-medium box background-hover width100" to={`/posts/${notification.payload_json.id}/description`}>
-                    <span className="ellipsis-3">{notification.payload_json.original_name}: </span>
-                    <span className={`ellipsis-3 ${notification.payload_json.code === "error" && "color-error"}`}> {notification.payload_json.message}</span>
-                </Link>)
+                    <Link key={notification.id} className="padding-medium box background-hover width100" to={`/posts/${notification.payload_json.id}/description`}>
+                        <span className="ellipsis-3">{notification.payload_json.original_name}: </span>
+                        <span className={`ellipsis-3 ${notification.payload_json.code === "error" && "color-error"}`}> {notification.payload_json.message}</span>
+                    </Link>)
             default:
                 break;
+        }
+    }
+
+    async function handleNotificationsClick() {
+        try {
+            await api.put('notifications/read');
+            notificationsContext.setNotificationsBadgeCount(0);
+        } catch (error) {
+            notifyError(error);
         }
     }
 
@@ -54,6 +66,7 @@ export default function OkaHeader(props) {
                         center={true}
                         component={Search}
                         componentClasses="icon-tertiary"
+                        id="search"
                         content=
                         {
                             <form className="search-form-secondary" onSubmit={handleSearch}>
@@ -75,6 +88,7 @@ export default function OkaHeader(props) {
                         <PopOver
                             component={Apps}
                             componentClasses="icon-tertiary"
+                            id="apps"
                             content=
                             {
                                 <div className="max-width-very-huge">
@@ -89,8 +103,11 @@ export default function OkaHeader(props) {
                         />
                     </li>
                     <li className="flex-row cursor-pointer icon-normal">
+                        <Badge badgeContent={notificationsContext.notificationsBadgeCount} color="error">
                         <PopOver
                             component={Notifications}
+                            onClick={handleNotificationsClick}
+                            id="notifications"
                             componentClasses="icon-tertiary"
                             content=
                             {
@@ -108,6 +125,8 @@ export default function OkaHeader(props) {
                                 </div>
                             }
                         />
+                        </Badge>
+                        
                     </li>
                     <li className="flex-row cursor-pointer icon-normal">
                         <OkaMyAccount />

@@ -13,8 +13,9 @@ export const NotificationsContext = createContext();
 
 const NotificationsProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
-    const [since, setSince] = useState(0);
+    const [since, setSince] = useState((new Date(Date.UTC(1970))).toISOString());
     const [delay, setDelay] = useState(10000);
+    const [notificationsBadgeCount, setNotificationsBadgeCount] = useState(0);
     const loggedUser = useContext(LoginContext);
     const runningTasksBar = useContext(RunningTasksBarContext);
 
@@ -69,7 +70,9 @@ const NotificationsProvider = ({ children }) => {
                             }
                         }
                         newNotifications.push(notification);
-                    } 
+                    } else if (notificationName === "unread_notification_count") {
+                        setNotificationsBadgeCount(payload)
+                    }
                 }
                 setSince(data[data.length - 1].timestamp)
                 setNotifications(newNotifications);
@@ -93,7 +96,7 @@ const NotificationsProvider = ({ children }) => {
     useInterval(repeat, delay, loggedUser.logged);
 
     return (
-        <NotificationsContext.Provider value={{ notifications, delay, setDelay }}>
+        <NotificationsContext.Provider value={{ notifications, delay, setDelay, notificationsBadgeCount, setNotificationsBadgeCount }}>
             {children}
         </NotificationsContext.Provider>
     )

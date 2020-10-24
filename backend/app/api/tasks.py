@@ -71,6 +71,7 @@ def _set_job_progress(job, progress, failure=False, result={}):
                                     }, overwrite=True)
         if done:
             task.complete = True
+
         db.session.commit()
     return {'progress': progress, 'status': status, 'state': state, 'result': report}
 
@@ -154,6 +155,8 @@ def process_data(self, files, username):
             result.append(obj)
             logged_user.add_notification(
                 name='data_uploaded', data=obj, overwrite=False)
+            logged_user.add_notification(
+                name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True)
             continue
 
         storage.store(data)
@@ -181,6 +184,8 @@ def process_data(self, files, username):
         result.append(obj)
         logged_user.add_notification(
             name='data_uploaded', data=obj, overwrite=False)
+        logged_user.add_notification(
+            name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True)
 
     return _set_job_progress(self, 100, result=result)
 
