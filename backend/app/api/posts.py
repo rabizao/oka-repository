@@ -1,5 +1,6 @@
 import uuid as u
 from datetime import datetime
+import json
 
 from flask import current_app
 from flask.views import MethodView
@@ -11,7 +12,7 @@ from app import db
 from app.models import Comment, Post, Transformation, User
 from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
                          PostEditSchema, PostFilesSchema, PostQuerySchema,
-                         RunSchema, TaskBaseSchema, UserBaseSchema)
+                         RunSchema, TaskBaseSchema, UserBaseSchema, StatsQuerySchema)
 from cruipto.uuid import UUID
 
 from . import bp
@@ -81,7 +82,9 @@ class PostsById(MethodView):
         if not logged_user.has_access(post):
             abort(422, errors={
                 "json": {"id": ["You dont have access to this post. [" + self.__class__.__name__ + "]"]}})
-
+        storage = current_app.config['TATU_SERVER']
+        data = storage.fetch(post.data_uuid, lazy=False)
+        post.attrs = data.Xd
         return post
 
     @jwt_required
@@ -235,8 +238,8 @@ class PostsCommentsById(MethodView):
 @bp.route('/posts/<int:id>/stats')
 class PostsStatsById(MethodView):
     @jwt_required
-    @bp.response(code=200)
-    def get(self, id):
+    @bp.arguments(StatsQuerySchema, location="query")
+    def get(self, args, id):
         """
         Return the stats of a dataset of a post with id {id}
         """
@@ -245,12 +248,26 @@ class PostsStatsById(MethodView):
             abort(422, errors={
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
-        # uuid = post.data_uuid
+        storage = current_app.config['TATU_SERVER']
+        data = storage.fetch(post.data_uuid)
 
-        # TODO: retornar um json contendo os dados que serao plotados no frontend. Pensar diferentes graficos para
-        # serem feitos la. Possibilidades: Todas as features x target, features x features, etc. Tirar ideias do
-        # pandas-profilling. Outra informacao importante sao algumas linhas das tabelas (tipo pd.head() e pd.tail())
-        # Pearsons correlation, Missing values, etc.
+        datas = []
+        for m in data.Yt[0]:
+            inner = []
+            for k in range(len(data.X)):
+                if m == data.Y[k]:
+                    inner.append(
+                        {
+                            "x": data.X[k, args['x']],
+                            "y": data.X[k, args['y']],
+                        })
+            datas.append(
+                {
+                    "id": m,
+                    "data": inner
+                })
+
+        return json.dumps(datas)
 
 
 @bp.route('/posts/<int:id>/twins')

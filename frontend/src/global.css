@@ -690,6 +690,10 @@ button, input[type="submit"], input[type="reset"] {
     max-height: 70vh;
 }
 
+.height-chart {
+    height: 500px;
+}
+
 .icon-big svg {
     font-size: 100px;
     display: flex;
@@ -742,6 +746,7 @@ button, input[type="submit"], input[type="reset"] {
   max-height: calc(100% - 30px);
   overflow-x: hidden;
   overflow-y: auto;
+  margin-top: 80px;
 }
 
 .notification {

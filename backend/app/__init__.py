@@ -10,6 +10,7 @@ from flask_smorest import Api
 from flask_jwt_extended import JWTManager
 from config import Config
 from celery import Celery
+from tatu.sql.mysql import MySQL
 from tatu.sql.sqlite import SQLite
 
 db = SQLAlchemy()
@@ -23,8 +24,11 @@ def create_app(config_class=Config):
     app = Flask(__name__, static_url_path="/media", static_folder='media')
 
     app.config.from_object(config_class)
-    # Assumes same password for oka and tatu DBMS server.
-    app.config['TATU_SERVER'] = SQLite(threaded=False)
+    if app.config['MYSQL_TATU_URL']:
+        app.config['TATU_SERVER'] = MySQL(db=app.config['MYSQL_TATU_URL'], threaded=False)
+    else:
+        app.config['TATU_SERVER'] = SQLite(threaded=False)
+    app.config['TATU_SERVER'].open()
     db.init_app(app)
     migrate.init_app(app, db)
     CORS(app, expose_headers=["X-Pagination"])

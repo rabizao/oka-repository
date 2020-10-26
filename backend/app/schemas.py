@@ -1,4 +1,4 @@
-# from flask import current_app
+from flask import current_app
 from flask_smorest.fields import Upload
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
@@ -9,6 +9,26 @@ from datetime import datetime
 from app import db
 from app.models import User, Post, Comment, Transformation, Contact, Notification, Task
 from cruipto.avatar23 import colors
+from aiuna.content.root import Root
+
+
+def get_attrs(uuid):
+    storage = current_app.config['TATU_SERVER']
+    print(storage.connection.open, "laaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+    data = storage.fetch(uuid, lazy=False)
+    return dict(enumerate(data.asdict))
+
+
+def past(uuid):
+    storage = current_app.config['TATU_SERVER']
+    data = storage.fetch(uuid)
+    duuid = Root.uuid
+    history = []
+    for step in data.history:
+        history.append({"label": duuid.id, "name": step.name,
+                        "help": str(step)})
+        duuid *= step.uuid
+    return history
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -229,7 +249,11 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     favorites = fields.Pluck(UserBaseSchema, "id", many=True, dump_only=True)
     data_uuid_colors = fields.Function(
         lambda obj: colors(obj.data_uuid), dump_only=True)
-    # history = fields.Function(lambda obj: current_app.config['TATU_SERVER'].fetch(obj.data_uuid).history,
+    attrs = fields.Dict(dump_only=True)
+    # attrs = fields.Function(
+    #     lambda obj: get_attrs(obj.data_uuid), dump_only=True)
+    # history = fields.Function(
+    # lambda obj: past(obj.data_uuid), dump_only=True)
     # dump_only=True)
     history = Nested(TransformationBaseSchema, many=True, dump_only=True)
 
@@ -270,6 +294,15 @@ class DownloadQuerySchema(SQLAlchemySchema):
         unknown = EXCLUDE
 
     uuids = fields.List(fields.String(), required=True)
+
+
+class StatsQuerySchema(SQLAlchemySchema):
+    class Meta:
+        unknown = EXCLUDE
+
+    x = fields.Integer(missing=0)
+    y = fields.Integer(missing=0)
+    plt = fields.String(required=True)
 
 
 class ContactBaseSchema(SQLAlchemyAutoSchema):

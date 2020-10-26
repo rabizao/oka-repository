@@ -146,7 +146,8 @@ def process_data(self, files, username):
         name = file['path'].split('/')[-1]
         path = '/'.join(file['path'].split('/')[:-1]) + '/'
         f = File(name, path)
-        name, description, data = f.dataset, f.description, f.data
+        name, description = f.dataset, f.description
+        data = f.data
 
         existing_post = logged_user.posts.filter_by(data_uuid=data.id).first()
         if existing_post:
@@ -159,7 +160,7 @@ def process_data(self, files, username):
                 name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True)
             continue
 
-        storage.store(data)
+        storage.store(data, lazy=False)
         post = Post(author=logged_user, data_uuid=data.id, name=name, description=description,
                     number_of_instances=len(data.X), number_of_features=len(data.Y))
         # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
