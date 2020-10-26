@@ -14,9 +14,8 @@ from aiuna.content.root import Root
 
 def get_attrs(uuid):
     storage = current_app.config['TATU_SERVER']
-    print(storage.connection.open, "laaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
     data = storage.fetch(uuid, lazy=False)
-    return dict(enumerate(data.asdict))
+    return dict(enumerate(data.Xd))
 
 
 def past(uuid):
