@@ -82,7 +82,7 @@ class PostsById(MethodView):
         if not logged_user.has_access(post):
             abort(422, errors={
                 "json": {"id": ["You dont have access to this post. [" + self.__class__.__name__ + "]"]}})
-        storage = current_app.config['TATU_SERVER']
+        storage = current_app.config['TATU_SERVER_CELERY']
         data = storage.fetch(post.data_uuid, lazy=False)
         post.attrs = data.Xd
         return post
@@ -249,7 +249,7 @@ class PostsStatsById(MethodView):
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         storage = current_app.config['TATU_SERVER']
-        data = storage.fetch(post.data_uuid)
+        data = storage.fetch(post.data_uuid, lazy=False)
 
         datas = []
         for m in data.Yt[0]:

@@ -113,7 +113,7 @@ def download_data(self, uuids):
     Background task to run async download process
     '''
     # TODO: Check if user has access to files
-    storage = app.config['TATU_SERVER']
+    storage = app.config['TATU_SERVER_CELERY']
     filename_server_zip = str(u.uuid4())
     path_server_zip = app.static_folder + '/' + filename_server_zip + '.zip'
     with ZipFile(path_server_zip, 'w') as zipped_file:
@@ -135,7 +135,7 @@ def process_data(self, files, username):
     Background task to run async post process
     '''
     logged_user = User.get_by_username(username)
-    storage = app.config['TATU_SERVER']
+    storage = app.config['TATU_SERVER_CELERY']
     result = []
 
     for file in files:

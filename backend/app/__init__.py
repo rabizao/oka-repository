@@ -25,10 +25,13 @@ def create_app(config_class=Config):
 
     app.config.from_object(config_class)
     if app.config['MYSQL_TATU_URL']:
-        app.config['TATU_SERVER'] = MySQL(db=app.config['MYSQL_TATU_URL'], threaded=False)
+        app.config['TATU_SERVER_CELERY'] = MySQL(db=app.config['MYSQL_TATU_URL'], threaded=False)
+        app.config['TATU_SERVER_CELERY'].open()
+        app.config['TATU_SERVER'] = MySQL(db=app.config['MYSQL_TATU_URL'], threaded=True)
     else:
-        app.config['TATU_SERVER'] = SQLite(threaded=False)
-    app.config['TATU_SERVER'].open()
+        app.config['TATU_SERVER_CELERY'] = SQLite(threaded=False)
+        app.config['TATU_SERVER_CELERY'].open()
+        app.config['TATU_SERVER'] = SQLite(threaded=True)
     db.init_app(app)
     migrate.init_app(app, db)
     CORS(app, expose_headers=["X-Pagination"])
