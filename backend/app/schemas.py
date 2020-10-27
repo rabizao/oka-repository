@@ -10,18 +10,18 @@ from app import db
 from app.models import User, Post, Comment, Transformation, Contact, Notification, Task
 from cruipto.avatar23 import colors
 from aiuna.content.root import Root
+from tatu.sql.mysql import MySQL
 
 
 def get_attrs(uuid):
-    storage = current_app.config['TATU_SERVER']
-    print(storage.connection.open, "laaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-    data = storage.fetch(uuid, lazy=False)
-    return dict(enumerate(data.asdict))
+    tatu = MySQL(db=current_app.config['TATU_URL'], threaded=False)
+    data = tatu.fetch(uuid, lazy=False)
+    return data.Xd
 
 
 def past(uuid):
-    storage = current_app.config['TATU_SERVER']
-    data = storage.fetch(uuid)
+    tatu = MySQL(db=current_app.config['TATU_URL'], threaded=False)
+    data = tatu.fetch(uuid)
     duuid = Root.uuid
     history = []
     for step in data.history:
@@ -249,9 +249,9 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     favorites = fields.Pluck(UserBaseSchema, "id", many=True, dump_only=True)
     data_uuid_colors = fields.Function(
         lambda obj: colors(obj.data_uuid), dump_only=True)
-    attrs = fields.Dict(dump_only=True)
-    # attrs = fields.Function(
-    #     lambda obj: get_attrs(obj.data_uuid), dump_only=True)
+    # attrs = fields.Dict(dump_only=True)
+    attrs = fields.Function(
+        lambda obj: get_attrs(obj.data_uuid), dump_only=True)
     # history = fields.Function(
     # lambda obj: past(obj.data_uuid), dump_only=True)
     # dump_only=True)

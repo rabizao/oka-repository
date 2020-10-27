@@ -7,15 +7,14 @@ from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_smorest import abort
 
-from aiuna.content.root import Root
 from app import db
-from app.models import Comment, Post, Transformation, User
+from app.models import Comment, Post, User
 from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
                          PostEditSchema, PostFilesSchema, PostQuerySchema,
                          RunSchema, TaskBaseSchema, UserBaseSchema, StatsQuerySchema)
-from cruipto.uuid import UUID
 
 from . import bp
+from tatu.sql.mysql import MySQL
 
 
 # noinspection PyArgumentList
@@ -82,9 +81,6 @@ class PostsById(MethodView):
         if not logged_user.has_access(post):
             abort(422, errors={
                 "json": {"id": ["You dont have access to this post. [" + self.__class__.__name__ + "]"]}})
-        storage = current_app.config['TATU_SERVER_CELERY']
-        data = storage.fetch(post.data_uuid, lazy=False)
-        post.attrs = data.Xd
         return post
 
     @jwt_required
@@ -248,8 +244,8 @@ class PostsStatsById(MethodView):
             abort(422, errors={
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
-        storage = current_app.config['TATU_SERVER']
-        data = storage.fetch(post.data_uuid, lazy=False)
+        tatu = MySQL(db=current_app.config['TATU_URL'], threaded=False)
+        data = tatu.fetch(post.data_uuid, lazy=False)
 
         datas = []
         for m in data.Yt[0]:
@@ -314,57 +310,58 @@ class PostsTransformById(MethodView):
         return task
 
 
-@bp.route("/posts/<string:uuid>")
-class PostsOnDemand(MethodView):
-    @jwt_required
-    @bp.response(PostBaseSchema)
-    def post(self, uuid):
-        """
-        Create a new Post on demand.
-        """
-        storage = current_app.config['TATU_SERVER']
-        data = storage.fetch(uuid)
-        if data is None:
-            abort(
-                422, errors={"json": {"OnDemand": [f"Data {uuid} was not cached nor uploaded, so it does not exist!"]}}
-            )
+# @bp.route("/posts/<string:uuid>")
+# class PostsOnDemand(MethodView):
+#     @jwt_required
+#     @bp.response(PostBaseSchema)
+#     def post(self, uuid):
+#         """
+#         Create a new Post on demand.
+#         """
+#         tatu = MySQL(db=current_app.config['TATU_URL'], threaded=False)
+#         data = tatu.fetch(uuid)
+#         if data is None:
+#             abort(
+#                 422, errors={"json": {"OnDemand": [f"Data {uuid} was not cached nor uploaded,
+# so it does not exist!"]}}
+#             )
 
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
-        if logged_user.posts.filter_by(data_uuid=uuid).first():
-            abort(422, errors={
-                "json": {"OnDemand": ["Dataset already exists!"]}})
+#         username = get_jwt_identity()
+#         logged_user = User.get_by_username(username)
+#         if logged_user.posts.filter_by(data_uuid=uuid).first():
+#             abort(422, errors={
+#                 "json": {"OnDemand": ["Dataset already exists!"]}})
 
-        # TODO: refactor duplicate code
+#         # TODO: refactor duplicate code
 
-        name = "←".join([step["desc"]["name"]
-                         for step in reversed(data.history) or "No Name"])
+#         name = "←".join([step["desc"]["name"]
+#                          for step in reversed(data.history) or "No Name"])
 
-        # noinspection PyArgumentList
-        post = Post(author=logged_user,
-                    data_uuid=uuid,
-                    name=name,
-                    description="Title and description automatically generated."
-                    )
-        duuid = Root.uuid
-        for step in data.history:
-            dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(
-                step), "stored": True}  # TODO: stored is useless
-            db.session.add(Transformation(**dic, post=post))
-            duuid *= UUID(step["id"])
+#         # noinspection PyArgumentList
+#         post = Post(author=logged_user,
+#                     data_uuid=uuid,
+#                     name=name,
+#                     description="Title and description automatically generated."
+#                     )
+#         duuid = Root.uuid
+#         for step in data.history:
+#             dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(
+#                 step), "stored": True}  # TODO: stored is useless
+#             db.session.add(Transformation(**dic, post=post))
+#             duuid *= UUID(step["id"])
 
-        db.session.add(post)
-        db.session.commit()
+#         db.session.add(post)
+#         db.session.commit()
 
-        return post
+#         return post
 
-    @jwt_required
-    @bp.response(PostBaseSchema)
-    def get(self, uuid):
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
-        post = logged_user.posts.filter_by(data_uuid=uuid).first()
-        if not post:
-            abort(422, errors={
-                "json": {"OnDemand": ["Dataset does not exist!"]}})
-        return post
+#     @jwt_required
+#     @bp.response(PostBaseSchema)
+#     def get(self, uuid):
+#         username = get_jwt_identity()
+#         logged_user = User.get_by_username(username)
+#         post = logged_user.posts.filter_by(data_uuid=uuid).first()
+#         if not post:
+#             abort(422, errors={
+#                 "json": {"OnDemand": ["Dataset does not exist!"]}})
+#         return post

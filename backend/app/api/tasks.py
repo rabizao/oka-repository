@@ -14,7 +14,7 @@ from aiuna.file import File
 from app import celery, create_app, db, mail
 from app.models import Post, Task, Transformation, User
 from app.schemas import TaskStatusBaseSchema
-
+from tatu.sql.mysql import MySQL
 from . import bp
 
 app = create_app()
@@ -113,14 +113,14 @@ def download_data(self, uuids):
     Background task to run async download process
     '''
     # TODO: Check if user has access to files
-    storage = app.config['TATU_SERVER_CELERY']
+    tatu = MySQL(db=app.config['TATU_URL'], threaded=False)
     filename_server_zip = str(u.uuid4())
     path_server_zip = app.static_folder + '/' + filename_server_zip + '.zip'
     with ZipFile(path_server_zip, 'w') as zipped_file:
         for uuid in uuids:
             actual_index = uuids.index(uuid)
             _set_job_progress(self, actual_index / len(uuids) * 100)
-            data = storage.fetch(uuid)
+            data = tatu.fetch(uuid)
             if data is None:
                 raise Exception('Download failed: ' + uuid + ' not found!')
             zipped_file.writestr(
@@ -135,8 +135,8 @@ def process_data(self, files, username):
     Background task to run async post process
     '''
     logged_user = User.get_by_username(username)
-    storage = app.config['TATU_SERVER_CELERY']
     result = []
+    tatu = MySQL(db=app.config['TATU_URL'], threaded=False)
 
     for file in files:
         actual_index = files.index(file)
@@ -160,7 +160,7 @@ def process_data(self, files, username):
                 name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True)
             continue
 
-        storage.store(data, lazy=False)
+        tatu.store(data, lazy=False)
         post = Post(author=logged_user, data_uuid=data.id, name=name, description=description,
                     number_of_instances=len(data.X), number_of_features=len(data.Y))
         # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
