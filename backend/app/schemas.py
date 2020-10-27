@@ -26,7 +26,7 @@ def past(uuid):
     history = []
     for step in data.history:
         history.append({"label": duuid.id, "name": step.name,
-                        "help": str(step)})
+                        "help": str(step), "data_uuid_colors": colors(uuid)})
         duuid *= step.uuid
     return history
 
@@ -252,10 +252,8 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     # attrs = fields.Dict(dump_only=True)
     attrs = fields.Function(
         lambda obj: get_attrs(obj.data_uuid), dump_only=True)
-    # history = fields.Function(
-    # lambda obj: past(obj.data_uuid), dump_only=True)
-    # dump_only=True)
-    history = Nested(TransformationBaseSchema, many=True, dump_only=True)
+    history = fields.Function(lambda obj: past(obj.data_uuid), dump_only=True)
+    # history = Nested(TransformationBaseSchema, many=True, dump_only=True)
 
 
 class PostEditSchema(SQLAlchemySchema):

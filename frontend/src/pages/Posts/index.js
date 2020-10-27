@@ -129,7 +129,7 @@ export default function Posts(props) {
         stats: {
             "name": "Stats",
             "url": "/posts/" + id + "/stats",
-            "content": <ScatterPlot postId={id} attrs={post.attrs}/>
+            "content": <ScatterPlot postId={id} attrs={post.attrs} />
         },
         twins: {
             "name": "Twins",
@@ -155,7 +155,7 @@ export default function Posts(props) {
                 </h5>
             </>
         )
-    }    
+    }
 
     async function handleDownload() {
         try {
@@ -514,10 +514,19 @@ export default function Posts(props) {
                                                         post.history.map((transformation) =>
                                                             transformation.name &&
                                                             <div key={transformation.id} className="flex-row">
-                                                                <button onClick={(e) => handleCreatePost(e, transformation.label)} className="flex-column flex-crossaxis-center padding-right-very-small">
-                                                                    <img height="40px" src={`${downloadsUrl}${transformation.avatar}`} title="Show Dataset" alt="Show Dataset" />
+                                                                <button
+                                                                    title="Show Dataset" alt="Show Dataset"
+                                                                    onClick={(e) => handleCreatePost(e, transformation.label)}
+                                                                    className="box-uuid-history"
+                                                                    style={{ backgroundColor: `rgb(${transformation.data_uuid_colors[0][0]}, ${transformation.data_uuid_colors[0][1]}, ${transformation.data_uuid_colors[0][2]})`, border: `var(--border)` }}>
+                                                                    <span>&nbsp;</span>
+                                                                    {
+                                                                        transformation.data_uuid_colors.slice(1).map((color, index) =>
+                                                                            <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{transformation.label[index]}</span>
+                                                                        )
+                                                                    }
                                                                 </button>
-                                                                <div className="flex-column flex-axis-center padding-right-very-small">
+                                                                <div className="flex-column flex-axis-center padding-sides-very-small">
                                                                     <span className="color-tertiary">{transformation.name}</span>
                                                                     <span className="color-tertiary">→</span>
                                                                 </div>
@@ -532,7 +541,7 @@ export default function Posts(props) {
                             </div>
                             <button
                                 onClick={(e) => copyToClipboard(e, post.data_uuid)}
-                                className="box-square-medium padding-very-small ellipsis-n font-uuid"
+                                className="box-uuid"
                                 style={{ backgroundColor: `rgb(${post.data_uuid_colors[0][0]}, ${post.data_uuid_colors[0][1]}, ${post.data_uuid_colors[0][2]})`, border: `var(--border)` }}>
                                 <span>&nbsp;</span>
                                 {

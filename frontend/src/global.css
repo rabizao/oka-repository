@@ -162,6 +162,11 @@ button, input[type="submit"], input[type="reset"] {
     padding-right: 20px;
 }
 
+.padding-sides-very-small {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
 .padding-sides-medium {
     padding-left: 30px;
     padding-right: 30px;
@@ -717,12 +722,35 @@ button, input[type="submit"], input[type="reset"] {
     width: 90px;
 }
 
+.box-uuid {
+    height: 110px;
+    width: 90px;
+    padding: 5px;
+    font-family: "Andale Mono", Andale Mono, monospace;
+    overflow: hidden;
+    display: -webkit-box;
+    -moz-box-orient: vertical;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+    word-wrap: break-word;
+}
+
+.box-uuid-history {
+    height: 60px;
+    width: 50px;
+    padding: 5px;
+    font-family: "Andale Mono", Andale Mono, monospace;
+    font-size: 10px;
+    overflow: hidden;
+    display: -webkit-box;
+    -moz-box-orient: vertical;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+    word-wrap: break-word;
+}
+
 .font-courier {
     font-family: "Courier New", Courier, monospace;
-  }
-
-.font-uuid {
-    font-family: "Andale Mono", Andale Mono, monospace;
   }
 
 
