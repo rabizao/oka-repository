@@ -153,8 +153,6 @@ class UsersFeed(MethodView):
             abort(422, errors={"json": {"username": [
                   "Does not exist. [" + self.__class__.__name__ + "]"]}})
 
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
         data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
                                                           pagination_parameters.page_size,
                                                           query=logged_user.followed_posts(),

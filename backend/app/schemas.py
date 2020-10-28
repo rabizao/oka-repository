@@ -21,7 +21,7 @@ def get_attrs(uuid):
 
 def past(uuid):
     tatu = MySQL(db=current_app.config['TATU_URL'], threaded=False)
-    data = tatu.fetch(uuid)
+    data = tatu.fetch(uuid, lazy=False)
     duuid = Root.uuid
     history = []
     for step in data.history:

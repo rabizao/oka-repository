@@ -13,7 +13,7 @@ import OkaNavBar from '../../components/OkaNavBar';
 import OkaPostComments from '../../components/OkaPostComments';
 import OkaPostsBox from '../../components/OkaPostsBox';
 import ScatterPlot from '../../components/ScatterPlot';
-import api, { downloadsUrl } from '../../services/api';
+import api from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 import { RunningTasksBarContext } from '../../contexts/RunningTasksBarContext';
 import { NotificationsContext } from '../../contexts/NotificationsContext';
