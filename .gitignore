@@ -38,6 +38,7 @@ frontend/package-lock.json
 backend/app/static/
 backend/app/media/
 .env
+testdb
 
 # IDE
 .idea/
