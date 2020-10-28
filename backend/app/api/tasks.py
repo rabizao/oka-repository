@@ -120,7 +120,7 @@ def download_data(self, uuids):
         for uuid in uuids:
             actual_index = uuids.index(uuid)
             _set_job_progress(self, actual_index / len(uuids) * 100)
-            data = tatu.fetch(uuid)
+            data = tatu.fetch(uuid, lazy=False)
             if data is None:
                 raise Exception('Download failed: ' + uuid + ' not found!')
             zipped_file.writestr(

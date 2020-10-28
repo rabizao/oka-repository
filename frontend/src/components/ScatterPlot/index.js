@@ -4,20 +4,6 @@ import { ResponsiveScatterPlot } from '@nivo/scatterplot';
 import api from '../../services/api';
 import { notifyError } from '../../utils';
 
-const options = [
-    {
-        id: 0,
-        name: "Setosa"
-    },
-    {
-        id: 1,
-        name: "Versicolor"
-    },
-    {
-        id: 2,
-        name: "Virginia"
-    }
-]
 
 export default function ScatterPlot({ postId, attrs }) {
     const [chartData, setChartData] = useState([]);
@@ -37,7 +23,7 @@ export default function ScatterPlot({ postId, attrs }) {
     }, [postId, x, y])
 
     function handleSelection(id, axis) {
-        if (axis == 0) {
+        if (axis === 0) {
             setX(id);
             console.log(id)
         } else {
