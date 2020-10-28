@@ -307,7 +307,7 @@ class SyncResponseSchema(SQLAlchemySchema):
 
 
 class SyncContentFileSchema(SQLAlchemySchema):
-    dump = Upload(required=True)
+    bina = Upload(required=True)
 
 
 class DownloadQuerySchema(SQLAlchemySchema):

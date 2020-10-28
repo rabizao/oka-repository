@@ -1,7 +1,8 @@
-from flask import make_response
+from flask import make_response, current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 
+from tatu.sql.mysql import MySQL
 from . import bp
 # noinspection PyArgumentList
 from app.schemas import (SyncCheckBaseSchema, SyncCheckResponseSchema,
@@ -14,10 +15,11 @@ class SyncCheck(MethodView):
     @bp.arguments(SyncCheckBaseSchema, location="query")
     @bp.response(SyncCheckResponseSchema)
     def get(self, args, uuid):
-        print(args['cat'], uuid, args['fetch'])
-        response = {
-            'uuids': {'dasoijdo': True, 'sdewqr': False, 'hfddgf': False}
-        }
+        if args['fetch']:
+            if args['cat']=="data":
+                response = {
+                    'uuids': {'dasoijdo': True, 'sdewqr': False, 'hfddgf': False}
+                }
         return response
 
     @jwt_required
@@ -49,7 +51,8 @@ class Sync(MethodView):
     @jwt_required
     @bp.response(SyncResponseSchema)
     def get(self):  # ok
-        response = {"uuid": "teste"}
+        tatu = MySQL(db=current_app.config['TATU_URL'], threaded=False)
+        response = {"uuid": tatu.id}
         return response
 
 

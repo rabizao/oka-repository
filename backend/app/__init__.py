@@ -1,16 +1,16 @@
 import logging
-from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_cors import CORS
-from flask_mail import Mail
-from flask_smorest import Api
-from flask_jwt_extended import JWTManager
-from config import Config
-from celery import Celery
+from logging.handlers import SMTPHandler, RotatingFileHandler
 
+from celery import Celery
+from config import Config
+from flask import Flask
+from flask_cors import CORS
+from flask_jwt_extended import JWTManager
+from flask_mail import Mail
+from flask_migrate import Migrate
+from flask_smorest import Api
+from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 migrate = Migrate()
