@@ -1,19 +1,11 @@
-import json
-
-from flask import current_app, send_from_directory, jsonify
+from flask import current_app, jsonify
 from flask.views import MethodView
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_smorest import abort
+from flask_jwt_extended import jwt_required
 
-from aiuna.content.root import Root
-from cruipto.uuid import UUID
-from tatu.storage import DuplicateEntryException
-from aiuna.compression import unpack, pack
 from . import bp
 # noinspection PyArgumentList
-from .. import db
-from ..models import Transformation, User, Post
-from ..schemas import TatuUploadSchema, SyncSchema
+from ..schemas import SyncSchema
+from tatu.sql.mysql import MySQL
 
 
 @bp.route("/sync/<string:uuid>")
@@ -22,8 +14,8 @@ class SyncByUUID(MethodView):
     @bp.arguments(SyncSchema, location="query")
     def get(self, args, uuid):
         dryrun = args["dryrun"]
-        storage = current_app.config['TATU_SERVER']
+        tatu = MySQL(db=current_app.config['TATU_URL'], threaded=False)
         if dryrun:
-            return jsonify(storage.hasdata(uuid)), 200
+            return jsonify(tatu.hasdata(uuid)), 200
         else:
-            return storage.getdata(uuid), 200
+            return tatu.getdata(uuid), 200

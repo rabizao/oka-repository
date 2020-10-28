@@ -10,8 +10,7 @@ from flask_smorest import Api
 from flask_jwt_extended import JWTManager
 from config import Config
 from celery import Celery
-from tatu.sql.mysql import MySQL
-from tatu.sql.sqlite import SQLite
+
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -24,14 +23,6 @@ def create_app(config_class=Config):
     app = Flask(__name__, static_url_path="/media", static_folder='media')
 
     app.config.from_object(config_class)
-    if app.config['MYSQL_TATU_URL']:
-        app.config['TATU_SERVER_CELERY'] = MySQL(db=app.config['MYSQL_TATU_URL'], threaded=False)
-        app.config['TATU_SERVER_CELERY'].open()
-        app.config['TATU_SERVER'] = MySQL(db=app.config['MYSQL_TATU_URL'], threaded=True)
-    else:
-        app.config['TATU_SERVER_CELERY'] = SQLite(threaded=False)
-        app.config['TATU_SERVER_CELERY'].open()
-        app.config['TATU_SERVER'] = SQLite(threaded=True)
     db.init_app(app)
     migrate.init_app(app, db)
     CORS(app, expose_headers=["X-Pagination"])
