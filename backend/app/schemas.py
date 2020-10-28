@@ -283,15 +283,38 @@ class TatuUploadSchema(SQLAlchemySchema):
     json = Upload()
 
 
-class SyncSchema(SQLAlchemySchema):
-    dryrun = fields.Boolean(missing=False)
+class SyncCheckBaseSchema(SQLAlchemySchema):
+    cat = fields.String(required=True)
+    empty = fields.Boolean(missing=True)
+    names = fields.List(fields.String())
+    fetch = fields.Boolean(missing=False)
+
+
+class SyncCheckResponseSchema(SQLAlchemySchema):
+    uuids = fields.Dict(dump_only=True)
+
+
+class SyncPostSchema(SQLAlchemySchema):
+    cols = fields.Dict(required=True)
+
+
+class SyncPostQuerySchema(SQLAlchemySchema):
+    cat = fields.String(required=True)
+
+
+class SyncResponseSchema(SQLAlchemySchema):
+    uuid = fields.String(dump_only=True)
+
+
+class SyncContentFileSchema(SQLAlchemySchema):
+    bina = Upload(required=True)
 
 
 class DownloadQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
-    uuids = fields.List(fields.String(), required=True)
+    uuids = fields.List(fields.Boolean(), dump_only=True)
 
 
 class StatsQuerySchema(SQLAlchemySchema):
