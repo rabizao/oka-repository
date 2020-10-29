@@ -1,4 +1,4 @@
-from flask import make_response, current_app
+from flask import make_response, current_app, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 
@@ -17,7 +17,8 @@ class SyncCheck(MethodView):
     def get(self, args, uuid):
         tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
         if args['cat'] == "data":
-            return tatu.getdata(uuid) if args['fetch'] else {"has": tatu.hasdata(uuid)}
+            f = tatu.getdata if args['fetch'] else tatu.hasdata
+            return jsonify(f(uuid, args['empty']) if args['fetch'] else {"has": f(uuid, args['empty'])})
 
     @jwt_required
     @bp.arguments(SyncPostQuerySchema, location="query")

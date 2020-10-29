@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime
 
 from app import db
-from app.models import User, Post, Comment, Transformation, Contact, Notification, Task
+from app.models import User, Post, Comment, Transformation, Contact, Notification, Task, Message
 from cruipto.avatar23 import colors
 from aiuna.content.root import Root
 from tatu import Tatu
@@ -43,10 +43,8 @@ class UserBaseSchema(SQLAlchemyAutoSchema):
         validate.Length(min=6, max=36)], load_only=True)
     email = fields.Email(validate=[
         validate.Length(min=6, max=36)], load_only=True, required=True)
-    followed = fields.Pluck(lambda: UserBaseSchema(),
-                            "id", many=True, dump_only=True)
-    followers = fields.Pluck(lambda: UserBaseSchema(),
-                             "id", many=True, dump_only=True)
+    followed = auto_field(dump_only=True)
+    followers = auto_field(dump_only=True)
 
 
 class CommentBaseSchema(SQLAlchemyAutoSchema):
@@ -238,16 +236,31 @@ class TransformationBaseSchema(SQLAlchemyAutoSchema):
     id = auto_field(dump_only=True)
 
 
+class MessageBaseSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Message
+
+    id = auto_field(dump_only=True)
+    author = auto_field(dump_only=True)
+    recipient = auto_field(dump_only=True)
+
+
+class MessageListSchema(MessageBaseSchema):
+
+    id = auto_field(dump_only=True)
+    body = auto_field(dump_only=True)
+
+
 class PostBaseSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Post
 
     id = auto_field(dump_only=True)
     author = Nested(UserBaseSchema, dump_only=True)
-    comments = Nested(CommentBaseSchema, many=True, dump_only=True)
+    comments = auto_field(dump_only=True)
     allowed = fields.Pluck(UserBaseSchema, "username",
                            many=True, dump_only=True)
-    favorites = fields.Pluck(UserBaseSchema, "id", many=True, dump_only=True)
+    favorites = auto_field(dump_only=True)
     data_uuid_colors = fields.Function(
         lambda obj: colors(obj.data_uuid), dump_only=True)
     # attrs = fields.Dict(dump_only=True)
@@ -315,7 +328,7 @@ class DownloadQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
-    uuids = fields.List(fields.Boolean(), dump_only=True)
+    uuids = fields.List(fields.String())
 
 
 class StatsQuerySchema(SQLAlchemySchema):

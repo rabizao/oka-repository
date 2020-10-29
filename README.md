@@ -1,4 +1,6 @@
-# README!
+![test](https://github.com/rabizao/oka-repository/workflows/test/badge.svg)
+
+## OKA Repository
 
 Install API
 -------
@@ -12,27 +14,30 @@ Install API
 
 Start API:
 ---
+
     cd backend/
     source venv/bin/activate    
     python oka.py
 
 Access documentation:
 ---
-    http://localhost:5000/docs or http://localhost:5000/docs/swagger
 
+    http://localhost:5000/docs or http://localhost:5000/docs/swagger
 
 Start celery workers:
 ---
+
     cd backend/
     celery worker -A celery_worker.celery --loglevel=info
 
-
 Install frontend:
 ---
+
     sudo apt install npm
     cd frontend/
     npm install
 
 Start frontend:
 ---
+
     npm start
