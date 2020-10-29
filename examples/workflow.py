@@ -13,7 +13,6 @@ from kururu.tool.evaluation.split import Split, Split1
 from kururu.tool.learning.supervised.classification.svm import SVM2
 
 import random
-import requests
 from kururu.tool.learning.supervised.classification.svm import SVM2
 from tatu.pickle_ import Pickle
 from tatu.sql.mysql import MySQL

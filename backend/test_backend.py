@@ -3,7 +3,7 @@ import unittest
 import json
 from app import create_app, db
 from app.models import User, Token
-from config import Config
+from app.config import Config
 
 
 create_user1 = {

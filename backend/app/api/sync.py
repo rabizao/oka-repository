@@ -2,7 +2,7 @@ from flask import make_response, current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 
-from tatu.sql.mysql import MySQL
+from tatu import Tatu
 from . import bp
 # noinspection PyArgumentList
 from app.schemas import (SyncCheckBaseSchema, SyncCheckResponseSchema,
@@ -51,7 +51,7 @@ class Sync(MethodView):
     @jwt_required
     @bp.response(SyncResponseSchema)
     def get(self):  # ok
-        tatu = MySQL(db=current_app.config['TATU_URL'], threaded=False)
+        tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
         response = {"uuid": tatu.id}
         return response
 

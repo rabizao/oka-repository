@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy import and_, asc, or_
 from werkzeug.security import check_password_hash
 
-from app import celery, db
+from . import celery, db
 
 
 followers = db.Table('followers',

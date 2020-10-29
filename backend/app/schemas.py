@@ -10,17 +10,18 @@ from app import db
 from app.models import User, Post, Comment, Transformation, Contact, Notification, Task
 from cruipto.avatar23 import colors
 from aiuna.content.root import Root
-from tatu.sql.mysql import MySQL
+from tatu import Tatu
 
 
 def get_attrs(uuid):
-    tatu = MySQL(db=current_app.config['TATU_URL'], threaded=False)
+    tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
     data = tatu.fetch(uuid, lazy=False)
     return data.Xd
 
 
 def past(uuid):
-    tatu = MySQL(db=current_app.config['TATU_URL'], threaded=False)
+    tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+    print(111111111111111, current_app.config['TATU_URL'])
     data = tatu.fetch(uuid, lazy=False)
     duuid = Root.uuid
     history = []

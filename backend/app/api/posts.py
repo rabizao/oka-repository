@@ -14,7 +14,7 @@ from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
                          RunSchema, TaskBaseSchema, UserBaseSchema, StatsQuerySchema)
 
 from . import bp
-from tatu.sql.mysql import MySQL
+from tatu import Tatu
 
 
 # noinspection PyArgumentList
@@ -244,7 +244,7 @@ class PostsStatsById(MethodView):
             abort(422, errors={
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
-        tatu = MySQL(db=current_app.config['TATU_URL'], threaded=False)
+        tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
         data = tatu.fetch(post.data_uuid, lazy=False)
 
         datas = []
@@ -318,7 +318,7 @@ class PostsTransformById(MethodView):
 #         """
 #         Create a new Post on demand.
 #         """
-#         tatu = MySQL(db=current_app.config['TATU_URL'], threaded=False)
+#         tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
 #         data = tatu.fetch(uuid)
 #         if data is None:
 #             abort(
