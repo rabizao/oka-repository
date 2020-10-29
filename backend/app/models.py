@@ -367,12 +367,13 @@ class Tag(db.Model):
         return datasets
 
 
-class Message(db.Model):
+class Message(db.Model, PaginateMixin):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    body = db.Column(db.String(140))
+    body = db.Column(db.String(140), nullable=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    active = db.Column(db.Boolean, default=True)
 
 
 class Notification(db.Model):
@@ -381,6 +382,7 @@ class Notification(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     payload_json = db.Column(db.Text)
+    active = db.Column(db.Boolean, default=True)
 
     def get_data(self):
         return json.loads(str(self.payload_json))
@@ -392,6 +394,7 @@ class Task(db.Model):
     description = db.Column(db.String(128))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     complete = db.Column(db.Boolean, default=False)
+    active = db.Column(db.Boolean, default=True)
 
 
 class Token(db.Model):
