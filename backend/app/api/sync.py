@@ -15,12 +15,9 @@ class SyncCheck(MethodView):
     @bp.arguments(SyncCheckBaseSchema, location="query")
     @bp.response(SyncCheckResponseSchema)
     def get(self, args, uuid):
-        if args['fetch']:
-            if args['cat']=="data":
-                response = {
-                    'uuids': {'dasoijdo': True, 'sdewqr': False, 'hfddgf': False}
-                }
-        return response
+        tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+        if args['cat'] == "data":
+            return tatu.getdata(uuid) if args['fetch'] else {"has": tatu.hasdata(uuid)}
 
     @jwt_required
     @bp.arguments(SyncPostQuerySchema, location="query")
