@@ -16,7 +16,7 @@ class SyncCheck(MethodView):
     @bp.response(SyncCheckResponseSchema)
     def get(self, args, uuid):
         if args['fetch']:
-            if args['cat']=="data":
+            if args['cat'] == "data":
                 response = {
                     'uuids': {'dasoijdo': True, 'sdewqr': False, 'hfddgf': False}
                 }
