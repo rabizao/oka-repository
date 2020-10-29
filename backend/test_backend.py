@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import unittest
 import json
+import warnings
+
 from app import create_app, db
 from app.models import User, Token
 from app.config import Config
-
 
 create_user1 = {
     "username": "user1111",
@@ -38,6 +39,7 @@ class TestConfig(Config):
 
 class UserModelCase(unittest.TestCase):
     def setUp(self):
+        warnings.simplefilter('ignore', (DeprecationWarning, UserWarning, ImportWarning))
         self.app = create_app(TestConfig)
         self.app_context = self.app.app_context()
         self.app_context.push()
@@ -79,7 +81,7 @@ class UserModelCase(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             data = json.loads(response.get_data(as_text=True))
             c.environ_base["HTTP_AUTHORIZATION"] = "Bearer " + \
-                data["access_token"]
+                                                   data["access_token"]
 
             response = c.delete("/api/auth/revoke-all-tokens")
             user = User.query.get(user_id)
@@ -105,7 +107,7 @@ class UserModelCase(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             data = json.loads(response.get_data(as_text=True))
             c.environ_base["HTTP_AUTHORIZATION"] = "Bearer " + \
-                data["access_token"]
+                                                   data["access_token"]
 
             # 2 - Create create_user2
             response = c.post("/api/users", json=create_user2)
