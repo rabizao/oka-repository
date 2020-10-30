@@ -18,6 +18,7 @@ class SyncCheck(MethodView):
         tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
         if args['cat'] == "data":
             f = tatu.getdata if args['fetch'] else tatu.hasdata
+            # jsonify allows to return None or a dict, which is compatible with the posterior SQL usage of this result
             return jsonify(f(uuid, args['empty']) if args['fetch'] else {"has": f(uuid, args['empty'])})
 
     @jwt_required

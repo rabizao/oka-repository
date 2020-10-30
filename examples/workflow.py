@@ -32,16 +32,16 @@ cfg = json.load(open("config.json"))
 # # my = MySQL(db="oka:kururu@localhost/oka")
 # #
 # wflow = (
-#         File("iris.arff")
-#         * Binarize
-#         * Split
-#         * PCA(n=3)
-#         * Cache(PCA(n=3), storage=sq)
-#         # * Cache(PCA(n=3), storage=oka)
-#         * PCA(n=3)
-#         * Log(">>>>>>>>>>>>>>>>> {X.shape} {inner.X.shape}")
-#         * Report("{id}")
-#         # * Cache(SVM2(C=0.25), storage=my)
+#     File("iris.arff")
+#     * Binarize
+#     * Split
+#     * PCA(n=3)
+#     * Cache(PCA(n=3), storage=sq)
+#     # * Cache(PCA(n=3), storage=oka)
+#     * PCA(n=3)
+#     * Log(">>>>>>>>>>>>>>>>> {X.shape} {inner.X.shape}")
+#     * Report("{id}")
+#     # * Cache(SVM2(C=0.25), storage=my)
 #     # * Metric2
 #     # * Report("tr {r}\t\tts {inner.r}")
 # )
