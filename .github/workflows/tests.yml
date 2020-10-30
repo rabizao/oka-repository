@@ -22,12 +22,12 @@ jobs:
         pip install flake8 pytest
         if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
         pip install -e backend
-        pip install -e git+http://github.com/davips/cruipto.git@dev#egg=cruipto
-        pip install -e git+http://github.com/davips/aiuna.git@dev#egg=aiuna
-        pip install -e git+http://github.com/davips/transf.git@dev#egg=transf
-        pip install -e git+http://github.com/davips/tatu.git@dev#egg=tatu
-        pip install -e git+http://github.com/davips/akangatu.git@dev#egg=akangatu
-        pip install -e git+http://github.com/davips/kururu.git@dev#egg=kururu
+        pip install -e git+git://github.com/davips/cruipto.git@dev#egg=cruipto
+        pip install -e git+git://github.com/davips/aiuna.git@dev#egg=aiuna
+        pip install -e git+git://github.com/davips/transf.git@dev#egg=transf
+        pip install -e git+git://github.com/davips/tatu.git@dev#egg=tatu
+        pip install -e git+git://github.com/davips/akangatu.git@dev#egg=akangatu
+        pip install -e git+git://github.com/davips/kururu.git@dev#egg=kururu
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
