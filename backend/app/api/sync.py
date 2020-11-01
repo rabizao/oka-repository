@@ -20,6 +20,8 @@ class SyncCheck(MethodView):
             f = tatu.getdata if args['fetch'] else tatu.hasdata
             # jsonify allows to return None or a dict, which is compatible with the posterior SQL usage of this result
             return jsonify(f(uuid, args['empty']) if args['fetch'] else {"has": f(uuid, args['empty'])})
+        if args['cat'] == "step":
+            return jsonify(tatu.getstep(uuid) if args['fetch'] else {"has": tatu.hasstep(uuid)})
 
     @jwt_required
     @bp.arguments(SyncPostQuerySchema, location="query")
@@ -55,14 +57,19 @@ class Sync(MethodView):
         return response
 
 
-@bp.route("/sync/<string:uuid>/content")
+@bp.route("/sync/content")
 class SyncContentByUuid(MethodView):
     @jwt_required
     def get(self, uuid):  # ok
-        return make_response(b"data")
+        tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+        if not tatu.getfields(uuid):
+            return jsonify(tatu.getfields(uuid))
+        raise NotImplementedError
+        # return make_response(tatu.getfields(uuid))  #não sei como enviar um dict contendo binary, mas ninguém precisa
 
     @jwt_required
     @bp.arguments(SyncContentFileSchema, location="files")
     @bp.response(code=201)
     def post(self, argFiles, uuid):  # ok
-        print(uuid, argFiles['dump'])
+        tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+        return make_response(tatu.putcontent(uuid, argFiles['bina']))
