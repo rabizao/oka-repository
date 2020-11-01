@@ -10,7 +10,7 @@ from flask_mail import Message
 from celery.signals import worker_init
 
 from aiuna.content.root import Root
-from aiuna.file import File
+from aiuna.step.file import File
 from app import celery, create_app, db, mail
 from app.models import Post, Task, Transformation, User
 from app.schemas import TaskStatusBaseSchema

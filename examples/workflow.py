@@ -3,7 +3,7 @@ import json
 import threading
 # import aiuna
 # exit()
-from aiuna.file import File
+from aiuna.step.file import File
 from kururu.tool.communication.log import Log
 from kururu.tool.communication.report import Report
 from kururu.tool.enhancement.binarize import Binarize

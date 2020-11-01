@@ -1,11 +1,15 @@
 #!/usr/bin/env python
-import unittest
 import json
+import unittest
 import warnings
 
+import requests
 from app import create_app, db
-from app.models import User, Token
 from app.config import Config
+from app.models import User, Token
+from aiuna.step.dataset import Dataset
+
+from aiuna.content.creation import new
 
 create_user1 = {
     "username": "user1111",
@@ -126,6 +130,18 @@ class UserModelCase(unittest.TestCase):
                              json={"email": "newemail@ll.com"})
             user = User.get_by_username(username1)
             self.assertEqual(user.email, "newemail@ll.com")
+
+    def test_upload(self):
+        arff = Dataset().data.arff("rel", "desc")
+        filename = "/dev/shm/iris.arff"
+        with open(filename, 'w') as fw:
+            fw.write(arff)
+        with open(filename, 'r') as fr:
+            files = {'files': fr}
+            print("TODO terminar teste de upload")
+            # ???
+            # r = requests.post("/api/post", files=files, data={'arff': 'iris.arff'})
+            self.assertEqual(0, 0)
 
 
 if __name__ == '__main__':
