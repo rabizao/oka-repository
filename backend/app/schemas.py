@@ -246,7 +246,6 @@ class MessageBaseSchema(SQLAlchemyAutoSchema):
 
 
 class MessageListSchema(MessageBaseSchema):
-
     id = auto_field(dump_only=True)
     body = auto_field(dump_only=True)
 
@@ -281,7 +280,6 @@ class PostEditSchema(SQLAlchemySchema):
 
 
 class PostFilesSchema(SQLAlchemySchema):
-
     files = fields.List(Upload())
     sid = fields.String()
 
@@ -324,6 +322,11 @@ class SyncContentFileSchema(SQLAlchemySchema):
     bina = Upload(required=True)
 
 
+class SyncContentSchema(SQLAlchemySchema):
+    # uuid = fields.List(fields.String())
+    uuid = fields.String()
+
+
 class DownloadQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
@@ -355,7 +358,6 @@ class TaskBaseSchema(SQLAlchemyAutoSchema):
 
 
 class TaskStatusBaseSchema(SQLAlchemySchema):
-
     state = fields.String()
     progress = fields.Integer()
     status = fields.String()

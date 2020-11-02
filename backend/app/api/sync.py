@@ -6,7 +6,8 @@ from tatu import Tatu
 from . import bp
 # noinspection PyArgumentList
 from app.schemas import (SyncCheckBaseSchema, SyncCheckResponseSchema,
-                         SyncPostSchema, SyncPostQuerySchema, SyncResponseSchema, SyncContentFileSchema)
+                         SyncPostSchema, SyncPostQuerySchema, SyncResponseSchema, SyncContentFileSchema,
+                         SyncContentSchema)
 
 
 @bp.route("/sync/<string:uuid>")
@@ -57,15 +58,27 @@ class Sync(MethodView):
         return response
 
 
-@bp.route("/sync/content")
-class SyncContentByUuid(MethodView):
+@bp.route("/sync/<string:uuid>/fields")
+class SyncFieldsByUuid(MethodView):
     @jwt_required
     def get(self, uuid):  # ok
         tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
-        if not tatu.getfields(uuid):
-            return jsonify(tatu.getfields(uuid))
-        raise NotImplementedError
-        # return make_response(tatu.getfields(uuid))  #não sei como enviar um dict contendo binary, mas ninguém precisa
+        return jsonify(tatu.getfields(uuid))
+
+    # @jwt_required
+    # @bp.arguments(SyncContentFileSchema, location="files")
+    # @bp.response(code=201)
+    # def post(self, argFiles, uuid):  # ok
+    #     tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+    #     return make_response(tatu.putcontent(uuid, argFiles['bina']))
+
+
+@bp.route("/sync/<string:uuid>/content")
+class SyncContentByUuid(MethodView):
+    @jwt_required
+    def get(self, uuid):
+        tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+        return make_response(uuid, tatu.getcontent(uuid))
 
     @jwt_required
     @bp.arguments(SyncContentFileSchema, location="files")
@@ -73,3 +86,23 @@ class SyncContentByUuid(MethodView):
     def post(self, argFiles, uuid):  # ok
         tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
         return make_response(tatu.putcontent(uuid, argFiles['bina']))
+
+
+
+
+
+#
+# @bp.route("/sync/<string:uuid>/content")
+# class SyncContentByUuid(MethodView):
+#     @jwt_required
+#     @bp.arguments(SyncContentSchema, location="query")
+#     def get(self, args):  # ok
+#         tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+#         return jsonify(tatu.getfields(args["uuid"]))
+#
+#     @jwt_required
+#     @bp.arguments(SyncContentFileSchema, location="files")
+#     @bp.response(code=201)
+#     def post(self, argFiles, uuid):  # ok
+#         tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+#         return make_response(tatu.putcontent(uuid, argFiles['bina']))
