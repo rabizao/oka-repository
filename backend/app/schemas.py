@@ -27,7 +27,7 @@ def past(uuid):
     history = []
     for step in data.history:
         history.append({"label": duuid.id, "name": step.name,
-                        "help": str(step), "data_uuid_colors": colors(uuid)})
+                        "help": str(step), "data_uuid_colors": colors(duuid.id)})
         duuid *= step.uuid
     return history
 
