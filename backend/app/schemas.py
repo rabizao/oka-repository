@@ -322,6 +322,10 @@ class SyncContentFileSchema(SQLAlchemySchema):
     bina = Upload(required=True)
 
 
+class SyncFieldsSchema(SQLAlchemySchema):
+    cols = fields.Dict(required=0, NotImplemented=0)
+
+
 class SyncContentSchema(SQLAlchemySchema):
     # uuid = fields.List(fields.String())
     uuid = fields.String()
