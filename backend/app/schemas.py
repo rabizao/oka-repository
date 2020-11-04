@@ -241,7 +241,7 @@ class MessageBaseSchema(SQLAlchemyAutoSchema):
         model = Message
 
     id = auto_field(dump_only=True)
-    author = auto_field(dump_only=True)
+    author = fields.Nested(UserBaseSchema, dump_only=True)
     recipient = auto_field(dump_only=True)
 
 
@@ -249,6 +249,8 @@ class MessageListSchema(MessageBaseSchema):
 
     id = auto_field(dump_only=True)
     body = auto_field(dump_only=True)
+    author = fields.Nested(UserBaseSchema, dump_only=True)
+    recipient = fields.Nested(UserBaseSchema, dump_only=True)
 
 
 class PostBaseSchema(SQLAlchemyAutoSchema):

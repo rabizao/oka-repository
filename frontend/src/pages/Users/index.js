@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import './styles.css';
 
@@ -10,10 +10,13 @@ import Modal from '@material-ui/core/Modal';
 import OkaHeader from '../../components/OkaHeader';
 import OkaNavBar from '../../components/OkaNavBar';
 import OkaPostsBox from '../../components/OkaPostsBox';
+import OkaMessagesBox from '../../components/OkaMessagesBox';
+import OkaConversationBox from '../../components/OkaConversationBox';
 import api from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 import queryString from 'query-string';
 import { notifyError } from '../../utils';
+import { NotificationManager } from 'react-notifications';
 
 export default function Users(props) {
     const location = useLocation()
@@ -23,12 +26,28 @@ export default function Users(props) {
     const [loadingHero, setLoadingHero] = useState(true);
     const [user, setUser] = useState({});
     const [openEdit, setOpenEdit] = useState(false);
+    const [openMessage, setOpenMessage] = useState(false);
+    const [message, setMessage] = useState('');
     const [name, setName] = useState('');
     const [about_me, setAbout_me] = useState('');
     const [nameEdit, setNameEdit] = useState('');
     const [about_meEdit, setAbout_meEdit] = useState('');
+    const history = useHistory();
 
     const loggedUser = useContext(LoginContext);
+
+    const textBox = (text) => {
+        return (
+            <div className="content-box margin-very-small">
+                {loadingHero ?
+                    <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
+                    <div className="flex-row flex-space-between padding-sides-small padding-vertical-small text-box">
+                        {text}
+                    </div>
+                }
+            </div>
+        )
+    }
 
     const navItems = {
         uploads: {
@@ -38,8 +57,22 @@ export default function Users(props) {
         },
         favorites: {
             "name": "Favorites",
+            "private": true,
             "url": "/users/" + username + "/favorites",
             "content": <OkaPostsBox fetch_url={"/users/" + username + "/favorites?" + queryString.stringify(parsedQueries)} />
+        },
+        messages: {
+            "name": "Messages",
+            "private": true,
+            "url": "/users/" + username + "/messages",
+            "content": <OkaMessagesBox />
+        },
+        conversation: {
+            "name": "Convesation",
+            "private": true,
+            "hide": true,
+            "url": "/users/" + username + "/conversation",
+            "content": <OkaConversationBox />
         }
     }
 
@@ -93,21 +126,36 @@ export default function Users(props) {
         }
     }
 
+    async function handleMessageSubmit(e) {
+        e.preventDefault()
+        const data = {
+            body: message
+        }
+        try {
+            await api.post(`messages/${user.username}`, data);
+            setOpenMessage(false);
+            setMessage('');
+            NotificationManager.success("Message sent. Click here to follow the conversation", "Sent", 4000, () => {history.push(`/users/${username}/conversation/${user.username}`)})
+        } catch (error) {
+            notifyError(error);
+        }
+    }
+
     function handleOpenEdit() {
         setOpenEdit(true);
         setNameEdit(name);
         setAbout_meEdit(about_me);
     }
 
-    function handleCloseEdit() {
-        setOpenEdit(false);
-    }        
+    function handleCloseMessage() {
+        setOpenMessage(false);
+    }
 
     return (
         <>
             <Modal
                 open={openEdit}
-                onClose={handleCloseEdit}
+                onClose={()=>setOpenMessage(false)}
             >
                 <div className="modal padding-big">
                     <h3 className="margin-top-small">Update your data</h3>
@@ -131,12 +179,28 @@ export default function Users(props) {
                         <button className="button-primary" type="submit">Save</button>
                     </form>
                 </div>
-            </Modal>            
+            </Modal>
+            <Modal
+                open={openMessage}
+                onClose={handleCloseMessage}
+            >
+                <div className="modal padding-big">
+                    <h3 className="margin-top-small">{`Send a message to ${user.name}`}</h3>
+                    <form className="form flex-column margin-top-small" onSubmit={e => handleMessageSubmit(e)}>
+                        <textarea
+                            placeholder="Message"
+                            value={message}
+                            onChange={e => setMessage(e.target.value)}
+                        />
+                        <button className="button-primary" type="submit">Send</button>
+                    </form>
+                </div>
+            </Modal>
             <OkaHeader />
             <div className="flex-column flex-axis-center oka-hero-background padding-sides-small padding-top-big">
                 {loadingHero ?
                     <CircularProgress className="icon-tertiary" /> :
-                    
+
                     <div className="flex-column flex-axis-center padding-medium width-smallest">
                         <Avatar name={user.name} size="80" round={true} />
                         <h1 className="color-tertiary margin-top-medium width100 ellipsis text-center">{name}</h1>
@@ -147,14 +211,17 @@ export default function Users(props) {
                             <div className="flex-row flex-axis-center margin-top-small">
                                 <button onClick={handleOpenEdit} className="button-secondary">Edit</button>
                             </div> :
-                            <button onClick={handleFollow} className="button-secondary margin-vertical-small">{user.followers && user.followers.includes(loggedUser.id) ? "Unfollow" : "Follow"}</button>
+                            <div>
+                                <button onClick={handleFollow} className="button-secondary margin-very-small">{user.followers && user.followers.includes(loggedUser.id) ? "Unfollow" : "Follow"}</button>
+                                <button onClick={() => setOpenMessage(true)} className="button-secondary margin-very-small">Message</button>
+                            </div>
                         }
                     </div>
                 }
 
             </div>
-            <OkaNavBar navItems={navItems} />
-            {section in navItems && <>{navItems[section].content}</>}
+            <OkaNavBar shownUserId={user.id} navItems={navItems} />
+            <div className="margin-bottom-huge">{section in navItems ? navItems[section].content : textBox("Section not found.")}</div>
         </>
     )
 }

@@ -18,8 +18,9 @@ const NotificationsProvider = ({ children }) => {
     const [notificationsBadgeCount, setNotificationsBadgeCount] = useState(0);
     const loggedUser = useContext(LoginContext);
     const runningTasksBar = useContext(RunningTasksBarContext);
+    const [first, setFirst] = useState(true);
 
-    async function repeat(first = false) {
+    async function repeat() {
         var newNotifications = [...notifications];
         var newTasks = { ...runningTasksBar.tasks };
         try {
@@ -80,18 +81,20 @@ const NotificationsProvider = ({ children }) => {
                 if (Object.keys(newTasks).length === 0) {
                     setDelay(10000);
                 }
+                setFirst(false);
             }
         } catch (error) {
             // Do nothing
+            setFirst(true);
         }
     }
 
     useEffect(() => {
         if (loggedUser.logged) {
-            repeat(true);
+            repeat();
         }
         // eslint-disable-next-line
-    }, [loggedUser.logged])
+    }, [loggedUser.logged, first])
 
     useInterval(repeat, delay, loggedUser.logged);
 

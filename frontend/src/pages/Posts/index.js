@@ -566,7 +566,7 @@ export default function Posts(props) {
                 }
             </div>
             <OkaNavBar navItems={navItems} />
-            {section in navItems ? <>{navItems[section].content}</> : textBox("Section not found.")}
+            <div className="margin-bottom-huge">{section in navItems ? navItems[section].content : textBox("Section not found.")}</div>
         </>
     )
 }

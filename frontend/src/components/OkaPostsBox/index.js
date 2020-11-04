@@ -148,7 +148,7 @@ export default function OkaPostsBox({ fetch_url }) {
                                                 <CheckBoxOutlineBlank className="icon-primary" />
                                         }
                                     </button> :
-                                    <h3 className="flex-row flex-axis-center">No results found</h3>
+                                    <h4 className="flex-row flex-axis-center">No results found</h4>
                             }
                             {
                                 selection.length > 0 &&

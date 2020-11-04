@@ -10,12 +10,14 @@ import PopOver from '../PopOver';
 import OkaMyAccount from '../OkaMyAccount';
 import { notifyError } from '../../utils';
 import api from '../../services/api';
+import { LoginContext } from '../../contexts/LoginContext';
 
 export default function OkaHeader(props) {
 
     const history = useHistory();
     const [search, setSearch] = useState(props.query || "");
     const notificationsContext = useContext(NotificationsContext);
+    const loggedUser = useContext(LoginContext);
 
     function handleSearch(e) {
         e.preventDefault();
@@ -48,7 +50,7 @@ export default function OkaHeader(props) {
 
     return (
         <div className="flex-row flex-axis-center flex-space-between background-primary-color padding-medium">
-            <Link to="/home"><h1 className="color-secondary">Oka</h1></Link>
+            <Link to="/home"><h1 onClick={()=>loggedUser.setRenderFeed(loggedUser.renderFeed+1)} className="color-secondary">Oka</h1></Link>
             <div id="small-hide">
                 <form className="search-form-primary" onSubmit={handleSearch}>
                     <input
