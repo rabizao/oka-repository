@@ -27,7 +27,7 @@ def past(uuid):
     history = []
     for step in data.history:
         history.append({"label": duuid.id, "name": step.name,
-                        "help": str(step), "data_uuid_colors": colors(uuid)})
+                        "help": str(step), "data_uuid_colors": colors(duuid.id)})
         duuid *= step.uuid
     return history
 
@@ -246,7 +246,6 @@ class MessageBaseSchema(SQLAlchemyAutoSchema):
 
 
 class MessageListSchema(MessageBaseSchema):
-
     id = auto_field(dump_only=True)
     body = auto_field(dump_only=True)
     author = fields.Nested(UserBaseSchema, dump_only=True)
@@ -283,7 +282,6 @@ class PostEditSchema(SQLAlchemySchema):
 
 
 class PostFilesSchema(SQLAlchemySchema):
-
     files = fields.List(Upload())
     sid = fields.String()
 
@@ -326,6 +324,15 @@ class SyncContentFileSchema(SQLAlchemySchema):
     bina = Upload(required=True)
 
 
+class SyncFieldsSchema(SQLAlchemySchema):
+    cols = fields.Dict(required=0, NotImplemented=0)
+
+
+class SyncContentSchema(SQLAlchemySchema):
+    # uuid = fields.List(fields.String())
+    uuid = fields.String()
+
+
 class DownloadQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
@@ -357,7 +364,6 @@ class TaskBaseSchema(SQLAlchemyAutoSchema):
 
 
 class TaskStatusBaseSchema(SQLAlchemySchema):
-
     state = fields.String()
     progress = fields.Integer()
     status = fields.String()

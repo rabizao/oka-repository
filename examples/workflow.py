@@ -1,23 +1,8 @@
-import io
 import json
-import threading
+
 # import aiuna
 # exit()
-from aiuna.step.file import File
-from kururu.tool.communication.log import Log
-from kururu.tool.communication.report import Report
-from kururu.tool.enhancement.binarize import Binarize
-from kururu.tool.enhancement.pca import PCA
-from kururu.tool.evaluation.metric import Metric2
-from kururu.tool.evaluation.split import Split, Split1
-from kururu.tool.learning.supervised.classification.svm import SVM2
 
-import random
-from kururu.tool.learning.supervised.classification.svm import SVM2
-from tatu.pickle_ import Pickle
-from tatu.sql.mysql import MySQL
-from tatu.sql.sqlite import SQLite
-from util.create import user, token
 #
 #
 # # TODO: multiple caches are not working regarding whether to post
@@ -25,6 +10,8 @@ from util.create import user, token
 # from tatu.okast import OkaSt
 
 cfg = json.load(open("config.json"))
+
+
 # my = MySQL(db=cfg["lmy"]["db"])
 #
 # # oka = OkaSt(okatoken, alias="Iris", url=url)
@@ -70,12 +57,12 @@ cfg = json.load(open("config.json"))
 # print(" _________    children:", my.fetch_children(p), p.id)
 
 def test_okast_id():
-    from util.create import user, token
+    from app.create import token,user
     url = "http://localhost:5000"
-    user = user("davips", "pass123", base_url=url)
-    okatoken = token(**user, base_url=url)
+    okatoken = token(**user("davips", "pass123", base_url=url), base_url=url)
     print("user created")
     # o = OkaSt(token=okatoken, url=url)
     # print(f"idddddd {o.id}")
+
 
 test_okast_id()
