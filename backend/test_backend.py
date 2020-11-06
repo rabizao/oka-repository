@@ -1,10 +1,15 @@
 #!/usr/bin/env python
-import unittest
 import json
-from app import create_app, db
-from app.models import User, Token
-from config import Config
+import unittest
+import warnings
 
+import requests
+from app import create_app, db
+from app.config import Config
+from app.models import User, Token
+from aiuna.step.dataset import Dataset
+
+from aiuna.content.creation import new
 
 create_user1 = {
     "username": "user1111",
@@ -38,6 +43,7 @@ class TestConfig(Config):
 
 class UserModelCase(unittest.TestCase):
     def setUp(self):
+        warnings.simplefilter('ignore', (DeprecationWarning, UserWarning, ImportWarning))
         self.app = create_app(TestConfig)
         self.app_context = self.app.app_context()
         self.app_context.push()
@@ -79,7 +85,7 @@ class UserModelCase(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             data = json.loads(response.get_data(as_text=True))
             c.environ_base["HTTP_AUTHORIZATION"] = "Bearer " + \
-                data["access_token"]
+                                                   data["access_token"]
 
             response = c.delete("/api/auth/revoke-all-tokens")
             user = User.query.get(user_id)
@@ -105,7 +111,7 @@ class UserModelCase(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             data = json.loads(response.get_data(as_text=True))
             c.environ_base["HTTP_AUTHORIZATION"] = "Bearer " + \
-                data["access_token"]
+                                                   data["access_token"]
 
             # 2 - Create create_user2
             response = c.post("/api/users", json=create_user2)
@@ -124,6 +130,18 @@ class UserModelCase(unittest.TestCase):
                              json={"email": "newemail@ll.com"})
             user = User.get_by_username(username1)
             self.assertEqual(user.email, "newemail@ll.com")
+
+    def test_upload(self):
+        arff = Dataset().data.arff("rel", "desc")
+        filename = "/dev/shm/iris.arff"
+        with open(filename, 'w') as fw:
+            fw.write(arff)
+        with open(filename, 'r') as fr:
+            files = {'files': fr}
+            print("TODO terminar teste de upload")
+            # ???
+            # r = requests.post("/api/post", files=files, data={'arff': 'iris.arff'})
+            self.assertEqual(0, 0)
 
 
 if __name__ == '__main__':

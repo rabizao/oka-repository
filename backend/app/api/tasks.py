@@ -10,11 +10,12 @@ from flask_mail import Message
 from celery.signals import worker_init
 
 from aiuna.content.root import Root
-from aiuna.file import File
+from aiuna.step.file import File
 from app import celery, create_app, db, mail
 from app.models import Post, Task, Transformation, User
 from app.schemas import TaskStatusBaseSchema
-from tatu.sql.mysql import MySQL
+
+from tatu import Tatu
 from . import bp
 
 app = create_app()
@@ -113,7 +114,7 @@ def download_data(self, uuids):
     Background task to run async download process
     '''
     # TODO: Check if user has access to files
-    tatu = MySQL(db=app.config['TATU_URL'], threaded=False)
+    tatu = Tatu(url=app.config['TATU_URL'], threaded=False)
     filename_server_zip = str(u.uuid4())
     path_server_zip = app.static_folder + '/' + filename_server_zip + '.zip'
     with ZipFile(path_server_zip, 'w') as zipped_file:
@@ -136,7 +137,7 @@ def process_data(self, files, username):
     '''
     logged_user = User.get_by_username(username)
     result = []
-    tatu = MySQL(db=app.config['TATU_URL'], threaded=False)
+    tatu = Tatu(url=app.config['TATU_URL'], threaded=False)
 
     for file in files:
         actual_index = files.index(file)

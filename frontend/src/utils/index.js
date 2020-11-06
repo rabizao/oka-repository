@@ -6,6 +6,6 @@ export const notifyError = (error) => {
             NotificationManager.error(error.response.data.errors.json[prop], `${prop}`, 4000)
         }
     } else {
-        NotificationManager.error("Network error", "Error", 4000)
+        NotificationManager.error("Network error. Please try again later", "Error", 4000)
     }
 }

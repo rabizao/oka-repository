@@ -304,6 +304,14 @@ button, input[type="submit"], input[type="reset"] {
     justify-content: safe center;
 }
 
+.flex-crossaxis-end {
+    justify-content: flex-end;
+}
+
+.flex-axis-end {
+    align-items: flex-end;
+}
+
 .flex-space-between {
     justify-content: space-between;
 }
@@ -421,6 +429,10 @@ button, input[type="submit"], input[type="reset"] {
     padding: 18px;
     border-radius: 10px;
     transition-duration: var(--transition-time);
+}
+
+.radius {
+    border-radius: 10px;
 }
 
 .button-primary:hover {
@@ -588,6 +600,10 @@ button, input[type="submit"], input[type="reset"] {
 
 .background-primary-color {
     background-color: var(--primary-color);
+}
+
+.background-secondary-color {
+    background-color: var(--secondary-color);
 }
 
 .width100 {

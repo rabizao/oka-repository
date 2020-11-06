@@ -1,6 +1,6 @@
 import json
 
-from aiuna.file import File
+from aiuna.step.file import File
 from tatu.okast import OkaSt
 from util.create import user, token
 

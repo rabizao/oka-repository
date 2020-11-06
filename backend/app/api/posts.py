@@ -14,7 +14,7 @@ from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
                          RunSchema, TaskBaseSchema, UserBaseSchema, StatsQuerySchema)
 
 from . import bp
-from tatu.sql.mysql import MySQL
+from tatu import Tatu
 
 
 # noinspection PyArgumentList
@@ -244,7 +244,7 @@ class PostsStatsById(MethodView):
             abort(422, errors={
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
-        tatu = MySQL(db=current_app.config['TATU_URL'], threaded=False)
+        tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
         data = tatu.fetch(post.data_uuid, lazy=False)
 
         datas = []
@@ -315,53 +315,53 @@ class PostsTransformById(MethodView):
 #     @jwt_required
 #     @bp.response(PostBaseSchema)
 #     def post(self, uuid):
-#         """
-#         Create a new Post on demand.
-#         """
-#         tatu = MySQL(db=current_app.config['TATU_URL'], threaded=False)
-#         data = tatu.fetch(uuid)
-#         if data is None:
-#             abort(
-#                 422, errors={"json": {"OnDemand": [f"Data {uuid} was not cached nor uploaded,
+#     """
+#     Create a new Post on demand.
+#     """
+#     tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+#     data = tatu.fetch(uuid)
+#     if data is None:
+#         abort(
+#             422, errors={"json": {"OnDemand": [f"Data {uuid} was not cached nor uploaded,
 # so it does not exist!"]}}
-#             )
+#         )
 
-#         username = get_jwt_identity()
-#         logged_user = User.get_by_username(username)
-#         if logged_user.posts.filter_by(data_uuid=uuid).first():
-#             abort(422, errors={
-#                 "json": {"OnDemand": ["Dataset already exists!"]}})
+#     username = get_jwt_identity()
+#     logged_user = User.get_by_username(username)
+#     if logged_user.posts.filter_by(data_uuid=uuid).first():
+#         abort(422, errors={
+#             "json": {"OnDemand": ["Dataset already exists!"]}})
 
-#         # TODO: refactor duplicate code
+#     # TODO: refactor duplicate code
 
-#         name = "←".join([step["desc"]["name"]
-#                          for step in reversed(data.history) or "No Name"])
+#     name = "←".join([step["desc"]["name"]
+#                      for step in reversed(data.history) or "No Name"])
 
-#         # noinspection PyArgumentList
-#         post = Post(author=logged_user,
-#                     data_uuid=uuid,
-#                     name=name,
-#                     description="Title and description automatically generated."
-#                     )
-#         duuid = Root.uuid
-#         for step in data.history:
-#             dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(
-#                 step), "stored": True}  # TODO: stored is useless
-#             db.session.add(Transformation(**dic, post=post))
-#             duuid *= UUID(step["id"])
+#     # noinspection PyArgumentList
+#     post = Post(author=logged_user,
+#                 data_uuid=uuid,
+#                 name=name,
+#                 description="Title and description automatically generated."
+#                 )
+#     duuid = Root.uuid
+#     for step in data.history:
+#         dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(
+#             step), "stored": True}  # TODO: stored is useless
+#         db.session.add(Transformation(**dic, post=post))
+#         duuid *= UUID(step["id"])
 
-#         db.session.add(post)
-#         db.session.commit()
+#     db.session.add(post)
+#     db.session.commit()
 
-#         return post
+#     return post
 
 #     @jwt_required
 #     @bp.response(PostBaseSchema)
 #     def get(self, uuid):
-#         username = get_jwt_identity()
-#         logged_user = User.get_by_username(username)
-#         post = logged_user.posts.filter_by(data_uuid=uuid).first()
-#         if not post:
-#             abort(422, errors={
-#                 "json": {"OnDemand": ["Dataset does not exist!"]}})
-#         return post
+#     username = get_jwt_identity()
+#     logged_user = User.get_by_username(username)
+#     post = logged_user.posts.filter_by(data_uuid=uuid).first()
+#     if not post:
+#         abort(422, errors={
+#             "json": {"OnDemand": ["Dataset does not exist!"]}})
+#     return post

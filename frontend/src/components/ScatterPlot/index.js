@@ -25,7 +25,6 @@ export default function ScatterPlot({ postId, attrs }) {
     function handleSelection(id, axis) {
         if (axis === 0) {
             setX(id);
-            console.log(id)
         } else {
             setY(id);
         }
