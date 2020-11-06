@@ -602,6 +602,10 @@ button, input[type="submit"], input[type="reset"] {
     background-color: var(--primary-color);
 }
 
+.background-secondary-color {
+    background-color: var(--secondary-color);
+}
+
 .width100 {
     width: 100%;
 }

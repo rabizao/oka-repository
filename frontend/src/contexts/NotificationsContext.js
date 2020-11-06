@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, createContext } from 'react';
 
 import { saveAs } from 'file-saver';
+import useSound from 'use-sound';
 
 import api from '../services/api';
 import { useInterval } from '../hooks/useInterval';
@@ -8,6 +9,7 @@ import { LoginContext } from './LoginContext';
 import { RunningTasksBarContext } from './RunningTasksBarContext';
 import { NotificationManager } from 'react-notifications';
 import { downloadsUrl } from '../services/api';
+import alertSound from '../assets/notification_simple-01.ogg';
 
 export const NotificationsContext = createContext();
 
@@ -16,9 +18,13 @@ const NotificationsProvider = ({ children }) => {
     const [since, setSince] = useState((new Date(Date.UTC(1970))).toISOString());
     const [delay, setDelay] = useState(10000);
     const [notificationsBadgeCount, setNotificationsBadgeCount] = useState(0);
+    const [messagesBadgeCount, setMessagesBadgeCount] = useState(0);
+    const [notifyNewMessage, setNotifyNewMessage] = useState(0);
     const loggedUser = useContext(LoginContext);
     const runningTasksBar = useContext(RunningTasksBarContext);
     const [first, setFirst] = useState(true);
+    const [playAlertSound] = useSound(alertSound);
+
 
     async function repeat() {
         var newNotifications = [...notifications];
@@ -38,11 +44,11 @@ const NotificationsProvider = ({ children }) => {
                                 progress: payload.progress,
                                 description: payload.description
                             }
-                            var timestampNow = (new Date()).getTime() / 1000;     
+                            var timestampNow = (new Date()).getTime() / 1000;
                             // Do not show progress older than 20 days because it certainly crashed
                             if (Number(notification.timestamp) < timestampNow - 3600 * 24 * 20) {
                                 delete newTasks[payload.task_id]
-                            }                            
+                            }
                         } else {
                             if (!first) {
                                 if (payload.state === 'FAILURE') {
@@ -72,7 +78,13 @@ const NotificationsProvider = ({ children }) => {
                         }
                         newNotifications.push(notification);
                     } else if (notificationName === "unread_notification_count") {
-                        setNotificationsBadgeCount(payload)
+                        setNotificationsBadgeCount(payload);
+                    } else if (notificationName === "unread_message_count") {
+                        setMessagesBadgeCount(payload);
+                        if (payload > 0) {
+                            setNotifyNewMessage(notifyNewMessage + 1);
+                            playAlertSound();
+                        }
                     }
                 }
                 setSince(data[data.length - 1].timestamp)
@@ -99,7 +111,7 @@ const NotificationsProvider = ({ children }) => {
     useInterval(repeat, delay, loggedUser.logged);
 
     return (
-        <NotificationsContext.Provider value={{ notifications, delay, setDelay, notificationsBadgeCount, setNotificationsBadgeCount }}>
+        <NotificationsContext.Provider value={{ notifications, delay, setDelay, notificationsBadgeCount, setNotificationsBadgeCount, messagesBadgeCount, setMessagesBadgeCount, notifyNewMessage }}>
             {children}
         </NotificationsContext.Provider>
     )

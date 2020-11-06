@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { useHistory, Link } from 'react-router-dom';
-import { Search, Apps, Notifications, AccountBalance } from '@material-ui/icons';
+import { Search, Apps, Notifications, AccountBalance, ChatBubble } from '@material-ui/icons';
 import Badge from '@material-ui/core/Badge';
 
 import './styles.css';
@@ -48,9 +48,14 @@ export default function OkaHeader(props) {
         }
     }
 
+    function handleMessageBadgeClick() {
+        notificationsContext.setMessagesBadgeCount(0);
+        history.push(`/users/${loggedUser.username}/messages`);
+    }
+
     return (
         <div className="flex-row flex-axis-center flex-space-between background-primary-color padding-medium">
-            <Link to="/home"><h1 onClick={()=>loggedUser.setRenderFeed(loggedUser.renderFeed+1)} className="color-secondary">Oka</h1></Link>
+            <Link to="/home"><h1 onClick={() => loggedUser.setRenderFeed(loggedUser.renderFeed + 1)} className="color-secondary">Oka</h1></Link>
             <div id="small-hide">
                 <form className="search-form-primary" onSubmit={handleSearch}>
                     <input
@@ -106,29 +111,33 @@ export default function OkaHeader(props) {
                     </li>
                     <li className="flex-row cursor-pointer icon-normal">
                         <Badge badgeContent={notificationsContext.notificationsBadgeCount} color="error">
-                        <PopOver
-                            component={Notifications}
-                            onClick={handleNotificationsClick}
-                            id="notifications"
-                            componentClasses="icon-tertiary"
-                            content=
-                            {
-                                <div className="max-width-very-huge">
-                                    <h1 className="padding-sides-small padding-top-medium">Notifications</h1>
-                                    <div className="flex-column padding-vertical-small">
-                                        {
-                                            notificationsContext.notifications.length > 0 ?
-                                                notificationsContext.notifications.slice(0).reverse().map((notification) =>
-                                                    renderNotification(notification)
-                                                ) :
-                                                <div className="padding-sides-small padding-vertical-small width100">Nothing to show yet</div>
-                                        }
+                            <PopOver
+                                component={Notifications}
+                                onClick={handleNotificationsClick}
+                                id="notifications"
+                                componentClasses="icon-tertiary"
+                                content=
+                                {
+                                    <div className="max-width-very-huge">
+                                        <h1 className="padding-sides-small padding-top-medium">Notifications</h1>
+                                        <div className="flex-column padding-vertical-small">
+                                            {
+                                                notificationsContext.notifications.length > 0 ?
+                                                    notificationsContext.notifications.slice(0).reverse().map((notification) =>
+                                                        renderNotification(notification)
+                                                    ) :
+                                                    <div className="padding-sides-small padding-vertical-small width100">Nothing to show yet</div>
+                                            }
+                                        </div>
                                     </div>
-                                </div>
-                            }
-                        />
+                                }
+                            />
                         </Badge>
-                        
+                    </li>
+                    <li className="flex-row cursor-pointer icon-normal" onClick={handleMessageBadgeClick}>
+                        <Badge badgeContent={notificationsContext.messagesBadgeCount} color="error">
+                            <ChatBubble className="icon-tertiary" />
+                        </Badge>
                     </li>
                     <li className="flex-row cursor-pointer icon-normal">
                         <OkaMyAccount />

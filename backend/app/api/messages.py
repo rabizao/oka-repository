@@ -7,6 +7,7 @@ from flask_smorest import abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy.sql import expression
 from sqlalchemy import types, case
+from datetime import datetime
 
 
 @bp.route('/messages/<string:username>')
@@ -50,7 +51,10 @@ class MessagesByUsername(MethodView):
         message = Message(body=args['body'],
                           author=logged_user, recipient=user)
         db.session.add(message)
+        user.add_notification(
+            "unread_message_count", user.new_messages(), overwrite=True)
         db.session.commit()
+
         return message
 
 
@@ -76,7 +80,7 @@ class MessagesConversationByUsername(MethodView):
             recipient=user, author=logged_user)
         query = logged_user_messages.union(user_messages)
 
-        order_by = Message.timestamp.asc()
+        order_by = Message.timestamp.desc()
         data, pagination_parameters.item_count = Message.get(args, pagination_parameters.page,
                                                              pagination_parameters.page_size,
                                                              query=query, order_by=order_by)
@@ -114,6 +118,11 @@ class MessagesLastsByUsername(MethodView):
             Message.timestamp.desc()).subquery()
         query = Message.query.join(subqry, Message.id == subqry.c.id).group_by(
             subqry.c.sender_recipient)
+
+        logged_user.last_message_read_time = datetime.utcnow()
+        logged_user.add_notification(
+            name='unread_message_count', data=0, overwrite=True)
+        db.session.commit()
 
         data, pagination_parameters.item_count = Message.get(args, pagination_parameters.page,
                                                              pagination_parameters.page_size,

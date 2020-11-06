@@ -17,7 +17,8 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "^3.4.4",
     "react-scroll-section": "^3.0.1",
-    "timeago-react": "^3.0.1"
+    "timeago-react": "^3.0.1",
+    "use-sound": "^1.0.2"
   },
   "scripts": {
     "start": "react-scripts start",

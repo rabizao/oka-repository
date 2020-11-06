@@ -4,10 +4,12 @@ import { Link } from 'react-router-dom';
 import { Search } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 import TimeAgo from 'timeago-react';
+import Avatar from 'react-avatar';
 
 import api from '../../services/api';
 import { notifyError } from '../../utils';
 import { LoginContext } from '../../contexts/LoginContext';
+import { NotificationsContext } from '../../contexts/NotificationsContext';
 
 export default function OkaMessagesBox() {
     const [filter, setFilter] = useState('');
@@ -18,6 +20,7 @@ export default function OkaMessagesBox() {
     const [totalPages, setTotalPages] = useState();
     const [lastPage, setLastPage] = useState();
     const loggedUser = useContext(LoginContext);
+    const notificationContext = useContext(NotificationsContext);
 
     useEffect(() => {
         async function fetchData() {
@@ -35,7 +38,7 @@ export default function OkaMessagesBox() {
             }
         }
         fetchData();
-    }, [loggedUser.username])
+    }, [loggedUser.username, notificationContext.notifyNewMessage])
 
     function handleFilter(e) {
         e.preventDefault();
@@ -69,9 +72,10 @@ export default function OkaMessagesBox() {
                     {filteredMessages.map(
                         (message) =>
                             <div key={message.id} className="flex-row box-horizontal background-hover padding-sides-small">
-                                <Link className="flex-row flex-space-between padding-vertical-small width100" to={`/users/${loggedUser.username}/conversation/${message.author.username === loggedUser.username ? message.recipient.username : message.author.username}`}>
-                                    <div className="bold padding-sides-small min-width-big max-width-very-huge ellipsis width100">
-                                        {message.author.name}
+                                <Link className="flex-row flex-axis-center flex-space-between padding-vertical-small width100" to={`/users/${loggedUser.username}/conversation/${message.author.username === loggedUser.username ? message.recipient.username : message.author.username}`}>
+                                    <div className="bold min-width-big max-width-very-huge ellipsis width100">
+                                        <Avatar name={message.author.username === loggedUser.username ? message.recipient.name : message.author.name} size="40" round={true} />
+                                        <span className="padding-left-small">{message.author.name}</span>
                                     </div>
                                     <div id="small-hide" className="ellipsis padding-sides-small width100">
                                         {message.body}

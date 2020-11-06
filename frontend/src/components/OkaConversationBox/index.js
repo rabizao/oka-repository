@@ -12,6 +12,7 @@ import Avatar from 'react-avatar';
 import api from '../../services/api';
 import { notifyError } from '../../utils';
 import { LoginContext } from '../../contexts/LoginContext';
+import { NotificationsContext } from '../../contexts/NotificationsContext';
 
 export default function OkaConversationBox() {
     const [messages, setMessages] = useState([]);
@@ -21,6 +22,7 @@ export default function OkaConversationBox() {
     const [replyUser, setReplyUser] = useState({})
     const replyTo = location.pathname.split('/')[location.pathname.split('/').length - 1]
     const loggedUser = useContext(LoginContext);
+    const notificationContext = useContext(NotificationsContext);
 
     useEffect(() => {
         async function fetchData() {
@@ -35,7 +37,7 @@ export default function OkaConversationBox() {
             }
         }
         fetchData();
-    }, [])
+    }, [replyTo, notificationContext.notifyNewMessage])
 
     async function handleSubmitMessage(e) {
         e.preventDefault();
@@ -47,7 +49,7 @@ export default function OkaConversationBox() {
         try {
             const response = await api.post(`messages/${replyUser.username}`, data);
             const newMessages = [...messages];
-            newMessages.push(response.data);
+            newMessages.unshift(response.data);
             setMessages(newMessages);
         } catch (error) {
             notifyError(error);
@@ -74,13 +76,13 @@ export default function OkaConversationBox() {
                         {messages.map((message) =>
                             <li key={message.id}>
                                 <div className={`flex-row padding-very-small ${(message.author.username === loggedUser.username) && 'flex-crossaxis-end'}`}>
-                                    <div className="flex-column box radius padding-small flex-axis-end">
-                                        <span>{message.body}</span>                                        
-                                        <h6><TimeAgo className="nowrap" datetime={message.timestamp + 'Z'} /></h6>
+                                    <div className={`flex-column box radius padding-small ${(message.author.username === loggedUser.username) ? 'background-primary-color flex-axis-end' : 'background-secondary-color'}`}>
+                                        <span className={`${(message.author.username === loggedUser.username) && 'color-tertiary'}`}>{message.body}</span>                                        
+                                        <h6><TimeAgo className={`nowrap ${(message.author.username === loggedUser.username) && 'color-tertiary'}`} datetime={message.timestamp + 'Z'} /></h6>
                                     </div>
                                 </div>
                             </li>
-                        )}
+                        ).reverse()}
                     </ul>
                     <form className="margin-top-small" onSubmit={e => handleSubmitMessage(e)}>
                         <input
