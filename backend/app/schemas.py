@@ -325,7 +325,16 @@ class SyncContentFileSchema(SQLAlchemySchema):
 
 
 class SyncFieldsSchema(SQLAlchemySchema):
-    cols = fields.Dict(required=0, NotImplemented=0)
+    rows = fields.List(fields.Dict(), required=True)
+    ignoredup = fields.Bool(missing=False)
+
+
+class SyncFieldsQuerySchema(SQLAlchemySchema):
+    ignoredup = fields.Bool(missing=False)
+
+
+class SyncFieldsResponseSchema(SQLAlchemySchema):
+    put = fields.Bool()
 
 
 class SyncContentSchema(SQLAlchemySchema):

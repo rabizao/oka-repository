@@ -33,7 +33,10 @@ setup(
     packages=find_packages(where='oka'),  # Required
     python_requires='>=3.7, <4',
 
-    install_requires=['python-dotenv', 'celery', 'flask', 'flask-cors', 'flask-mail', 'flask-migrate', 'flask-smorest', 'flask-sqlalchemy', 'marshmallow', 'redis'],   # Optional
+    install_requires=['python-dotenv', 'celery', 'flask',
+                      'flask-cors', 'flask-mail', 'flask-migrate', 'flask-smorest',
+                      'flask-sqlalchemy', 'marshmallow', 'redis', 'flask-jwt-extended',
+                      'marshmallow-sqlalchemy', 'gunicorn'],   # Optional
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"

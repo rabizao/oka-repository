@@ -1,10 +1,12 @@
 # noinspection PyArgumentList
 from app.schemas import (SyncCheckBaseSchema, SyncCheckResponseSchema, SyncPostSchema, SyncPostQuerySchema,
-                         SyncResponseSchema, SyncContentFileSchema, SyncFieldsSchema)
+                         SyncResponseSchema, SyncContentFileSchema, SyncFieldsSchema, SyncFieldsResponseSchema,
+                         SyncFieldsQuerySchema)
 from flask import make_response, current_app, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from tatu import Tatu
+import simplejson as json2
 
 from . import bp
 
@@ -59,18 +61,34 @@ class Sync(MethodView):
 
 @bp.route("/sync/<string:uuid>/fields")
 class SyncFieldsByUuid(MethodView):
-    #     @jwt_required
-    #     def get(self, uuid):  # given a data-uuid, return dict of binaries   /  still not used
-    #         tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
-    #         return jsonify(tatu.getfields(uuid))
-
     @jwt_required
-    @bp.arguments(SyncFieldsSchema, location="files")
-    @bp.response(code=201)
-    def post(self, argFiles, uuid):  # insert list of dicts as rows in table 'field'  /  essential for upload
+    @bp.response(code=200)
+    def get(self, uuid):  # given a data-uuid, return dict of binaries   /  still not used
+        # tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+
+        # input: no body, response:
+        response = {
+            "bin1": b"\x00\x13...\x31",
+            "bin2": b"teste2"
+        }
+        # response = {
+        #     "fields": tatu.getfields(uuid)
+        # }
+        return json2.dumps(response)
+
+
+@bp.route("/sync/fields")
+class SyncFields(MethodView):
+    @jwt_required
+    @bp.arguments(SyncFieldsSchema)
+    @bp.arguments(SyncFieldsQuerySchema, location="query")
+    @bp.response(SyncFieldsResponseSchema)
+    def post(self, args, argsQuery):
         tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
-        return NotImplemented
-        # return make_response(tatu.putfields(uuid, argFiles['????????????']))
+        response = {
+            "put": tatu.putfields(args['rows'], argsQuery['ignoredup'])
+        }
+        return response
 
 
 @bp.route("/sync/<string:uuid>/content")
