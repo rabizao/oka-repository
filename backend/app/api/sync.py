@@ -1,7 +1,7 @@
 # noinspection PyArgumentList
 from app.schemas import (SyncCheckBaseSchema, SyncCheckResponseSchema, SyncPostSchema, SyncPostQuerySchema,
-                         SyncResponseSchema, SyncContentFileSchema, SyncFieldsSchema, SyncFieldsResponseSchema,
-                         SyncFieldsQuerySchema)
+                         SyncResponseSchema, SyncContentFileSchema, SyncFieldsSchema, SyncFieldsQuerySchema,
+                         SuccessResponseSchema)
 from flask import make_response, current_app, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
@@ -36,17 +36,25 @@ class SyncCheck(MethodView):
 @bp.route("/sync/<string:uuid>/lock")
 class SyncLock(MethodView):
     @jwt_required
-    @bp.response(code=200)
+    @bp.response(SuccessResponseSchema)
     def put(self, uuid):  # return if insertion of a locked data row succeeded
-        print(uuid)
+        tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+        response = {
+            "success": tatu.lock(uuid)
+        }
+        return response
 
 
 @bp.route("/sync/<string:uuid>/unlock")
 class SyncUnlock(MethodView):
     @jwt_required
-    @bp.response(code=200)
+    @bp.response(SuccessResponseSchema)
     def put(self, uuid):  # return if deletion of a locked data row succeeded
-        print(uuid)
+        tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+        response = {
+            "success": tatu.unlock(uuid)
+        }
+        return response
 
 
 @bp.route("/sync")
@@ -82,11 +90,11 @@ class SyncFields(MethodView):
     @jwt_required
     @bp.arguments(SyncFieldsSchema)
     @bp.arguments(SyncFieldsQuerySchema, location="query")
-    @bp.response(SyncFieldsResponseSchema)
+    @bp.response(SuccessResponseSchema)
     def post(self, args, argsQuery):
         tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
         response = {
-            "put": tatu.putfields(args['rows'], argsQuery['ignoredup'])
+            "success": tatu.putfields(args['rows'], argsQuery['ignoredup'])
         }
         return response
 
@@ -101,7 +109,12 @@ class SyncContentByUuid(MethodView):
 
     @jwt_required
     @bp.arguments(SyncContentFileSchema, location="files")
-    @bp.response(code=201)
-    def post(self, argFiles, uuid):  # ok
+    @bp.arguments(SyncFieldsQuerySchema, location="query")
+    @bp.response(SuccessResponseSchema)
+    def post(self, argFiles, argsQuery, uuid):  # ok
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", argFiles['bina'])
         tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
-        return make_response(tatu.putcontent(uuid, argFiles['bina']))
+        response = {
+            "success": tatu.putcontent(uuid, argFiles['bina'].read(), argsQuery['ignoredup'])
+        }
+        return response

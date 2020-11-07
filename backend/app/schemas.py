@@ -333,8 +333,8 @@ class SyncFieldsQuerySchema(SQLAlchemySchema):
     ignoredup = fields.Bool(missing=False)
 
 
-class SyncFieldsResponseSchema(SQLAlchemySchema):
-    put = fields.Bool()
+class SuccessResponseSchema(SQLAlchemySchema):
+    success = fields.Bool()
 
 
 class SyncContentSchema(SQLAlchemySchema):
