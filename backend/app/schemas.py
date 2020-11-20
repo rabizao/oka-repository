@@ -282,19 +282,7 @@ class PostEditSchema(SQLAlchemySchema):
 
 
 class PostFilesSchema(SQLAlchemySchema):
-    files = fields.List(Upload())
-    sid = fields.String()
-
-
-class TatuUploadSchema(SQLAlchemySchema):
-    # @pre_load  # Diferentes estágios de tratamento dos dados: pre/pos load/dump
-    # def test(self, data, **kwargs):
-    #     print("test, TatuUploadSchema", data, "----------", kwargs)
-    #
-    #     return data
-
-    file = Upload()
-    json = Upload()
+    files = fields.List(Upload(), required=True)
 
 
 class SyncCheckBaseSchema(SQLAlchemySchema):
