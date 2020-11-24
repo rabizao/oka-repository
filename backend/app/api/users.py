@@ -77,8 +77,9 @@ class UsersById(MethodView):
         Delete an existing user. Available only for that user
         """
         logged_user = User.get_by_username(get_jwt_identity())
+        user = User.get_by_username(username)
 
-        if not User.query.get(username):
+        if not user:
             abort(422, errors={"json": {"username": [
                   "Does not exist. [" + self.__class__.__name__ + "]"]}})
 
@@ -87,7 +88,6 @@ class UsersById(MethodView):
                 abort(422, errors={
                     "json": {"username": ["You can only edit your own user."]}})
 
-        user = User.get_by_username(username)
         user.revoke_all_tokens()
         user.active = False
         db.session.commit()
@@ -173,6 +173,9 @@ class UsersFollow(MethodView):
         if not user:
             abort(422, errors={"json": {"username": [
                   "Does not exist. [" + self.__class__.__name__ + "]"]}})
+        if user == logged_user:
+            abort(422, errors={"json": {"username": [
+                  "You can not follow yourself. [" + self.__class__.__name__ + "]"]}})
         if logged_user.is_following(user):
             logged_user.unfollow(user)
         else:

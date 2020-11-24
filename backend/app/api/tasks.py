@@ -4,6 +4,7 @@ import uuid as u
 from os import sys
 from zipfile import ZipFile
 
+from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from flask_mail import Message
@@ -11,21 +12,18 @@ from celery.signals import worker_init
 
 from aiuna.content.root import Root
 from aiuna.step.file import File
-from app import celery, create_app, db, mail
+from app import celery, db, mail
 from app.models import Post, Task, Transformation, User
 from app.schemas import TaskStatusBaseSchema
 
 from tatu import Tatu
 from . import bp
 
-app = create_app()
-app.app_context().push()
-
 
 class BaseTask(celery.Task):
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
-        app.logger.error('Unhandled exception', exc_info=sys.exc_info())
+        current_app.logger.error('Unhandled exception', exc_info=sys.exc_info())
         task = Task.query.get(task_id)
         if task:
             task.complete = True
@@ -45,7 +43,7 @@ def configure(sender=None, conf=None, **kwargs):
     conn = celery.connection(transport_options={'visibility_timeout': 0})
     qos = conn.channel().qos
     qos.restore_visible()
-    app.logger.info('Unacknowledged messages restored')
+    current_app.logger.info('Unacknowledged messages restored')
 
 
 def _set_job_progress(job, progress, failure=False, result={}):
@@ -82,11 +80,11 @@ def send_async_email(message):
     '''
     Background task to send an email
     '''
-    msg = Message('[Oka - Contato]', sender=app.config['ADMINS'][0],
-                  recipients=[*app.config['ADMINS']])
+    msg = Message('[Oka - Contato]', sender=current_app.config['ADMINS'][0],
+                  recipients=[*current_app.config['ADMINS']])
     msg.html = message
 
-    with app.app_context():
+    with current_app.app_context():
         mail.send(msg)
 
 
@@ -114,9 +112,9 @@ def download_data(self, uuids):
     Background task to run async download process
     '''
     # TODO: Check if user has access to files
-    tatu = Tatu(url=app.config['TATU_URL'], threaded=False)
+    tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
     filename_server_zip = str(u.uuid4())
-    path_server_zip = app.static_folder + '/' + filename_server_zip + '.zip'
+    path_server_zip = current_app.static_folder + '/' + filename_server_zip + '.zip'
     with ZipFile(path_server_zip, 'w') as zipped_file:
         for uuid in uuids:
             actual_index = uuids.index(uuid)
@@ -137,7 +135,7 @@ def process_data(self, files, username):
     '''
     logged_user = User.get_by_username(username)
     result = []
-    tatu = Tatu(url=app.config['TATU_URL'], threaded=False)
+    tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
 
     for file in files:
         actual_index = files.index(file)

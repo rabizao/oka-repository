@@ -2,11 +2,14 @@
 import unittest
 import warnings
 import json
+from werkzeug.datastructures import FileStorage
 
 from app import create_app, db
 from app.config import Config
-from app.models import User, Token, Notification
+from app.models import User, Token, Notification, Post
 from aiuna.step.dataset import Dataset
+from app.api.tasks import process_data
+from app.api.posts import save_files
 
 
 create_user1 = {
@@ -34,9 +37,12 @@ create_user3 = {
 class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
+    BROKER_URL = 'redis://'
+    CELERY_RESULT_BACKEND = None
+    TATU_URL = 'sqlite://:memory:'
 
 
-class UserModelCase(unittest.TestCase):
+class ApiCase(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter(
             'ignore', (DeprecationWarning, UserWarning, ImportWarning))
@@ -254,20 +260,74 @@ class UserModelCase(unittest.TestCase):
         """
             1 - Login
             2 - Create a new post uploading a dataset
-            3 - List the post
+            3 - Run celery task to create the post
+            4 - List the post
         """
+        # 1
+        username = self.login()['username']
+        # 2
         arff = Dataset().data.arff("rel", "desc")
-        filename = "/dev/shm/iris.arff"
+        filename = "/tmp/iris.arff"
         with open(filename, 'w') as fw:
             fw.write(arff)
-        fr = open(filename, 'rb')
-        # 1
-        self.login()
-        # 2
-        response = self.client.post(
-            "/api/posts", data={'files': (fr, "test.arff")})
+        with open(filename, 'rb') as fr:
+            response = self.client.post(
+                "/api/posts", data={'files': (fr, "test.arff")})
         self.assertEqual(response.status_code, 200)
+        # 3
+        with open(filename, 'rb') as fr:
+            filestorage = FileStorage(
+                fr, filename="iris_send.arff", content_type="application/octet-stream")
+            files = save_files([filestorage])
+        result = process_data.run(files, username)
+        # 4
+        self.assertEqual(result['state'], 'SUCCESS')
+        self.assertEqual(len(Post.query.all()), 1)
+
+    def test_tasks(self):
+        """
+            1 - Start a new task
+            2 - Check the status
+        """
         # needs run celery
+
+    def test_create_user(self):
+        """
+            1 - Create user
+            2 - List user
+        """
+        # 1
+        username = self.login()['username']
+        # 2
+        response = self.client.get("/api/users")
+        self.assertEqual(len(response.json), 1)
+        response = self.client.get(f"/api/users/{username}")
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_user(self):
+        """
+            1 - Create user2
+            2 - Login user1
+            3 - User1 can not delete user2
+            4 - User1 can delete himself
+            5 - Login admin
+            6 - Admin can delete user2
+        """
+        # 1
+        username2 = self.login(user=create_user2)['username']
+        # 2
+        username1 = self.login()['username']
+        # 3
+        response = self.client.delete(f"/api/users/{username2}")
+        self.assertEqual(response.status_code, 422)
+        # 4
+        response = self.client.delete(f"/api/users/{username1}")
+        self.assertEqual(response.status_code, 200)
+        # 5
+        self.login(user=create_user3, admin=True)['username']
+        # 6
+        response = self.client.delete(f"/api/users/{username2}")
+        self.assertEqual(response.status_code, 200)
 
     def test_edit_user(self):
         """
@@ -280,20 +340,54 @@ class UserModelCase(unittest.TestCase):
         username2 = self.login(user=create_user2)['username']
         # 2
         username1 = self.login()['username']
-
         # 3
         response = self.client.put("api/users/" + str(username2),
                                    json={"email": "newemail@ll.com"})
         self.assertNotEqual(response.status_code, 200)
         user = User.get_by_username(username2)
         self.assertNotEqual(user.email, "newemail@ll.com")
-
         # 4
         response = self.client.put("api/users/" + str(username1),
                                    json={"email": "newemail@ll.com"})
         self.assertEqual(response.status_code, 200)
         user = User.get_by_username(username1)
         self.assertEqual(user.email, "newemail@ll.com")
+
+    def test_follow_user(self):
+        """
+            1 - Create user2
+            2 - Create user1 and login with user1
+            3 - User1 can not follow himself
+            4 - Follow user2
+            5 - Check user1 and user2 followers
+            6 - Unfollow
+            7 - Check user1 and user2 followers
+        """
+        # 1
+        username2 = self.login(user=create_user2)['username']
+        # 2
+        username1 = self.login()['username']
+        # 3
+        response = self.client.post(f"api/users/{username2}/follow")
+        self.assertEqual(response.status_code, 200)
+        # 4
+        response = self.client.post(f"api/users/{username1}/follow")
+        self.assertNotEqual(response.status_code, 200)
+        # 5
+        user1 = User.get_by_username(username1)
+        user2 = User.get_by_username(username2)
+        self.assertEqual(len(user2.followers.all()), 1)
+        self.assertEqual(len(user1.followers.all()), 0)
+        self.assertEqual(len(user1.followed.all()), 1)
+        self.assertEqual(len(user2.followed.all()), 0)
+        # 6
+        response = self.client.post(f"api/users/{username2}/follow")
+        self.assertEqual(response.status_code, 200)
+        # 7
+        self.assertEqual(len(user2.followers.all()), 0)
+        self.assertEqual(len(user1.followers.all()), 0)
+        self.assertEqual(len(user1.followed.all()), 0)
+        self.assertEqual(len(user2.followed.all()), 0)
 
 
 if __name__ == '__main__':

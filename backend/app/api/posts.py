@@ -17,6 +17,16 @@ from . import bp
 from tatu import Tatu
 
 
+def save_files(input_files):
+    files = []
+    for file in input_files:
+        full_path = current_app.config['TMP_FOLDER'] + \
+            str(u.uuid4()) + file.filename[-10:]
+        file.save(full_path)
+        files.append({"path": full_path, "original_name": file.filename})
+    return files
+
+
 # noinspection PyArgumentList
 @bp.route("/posts")
 class Posts(MethodView):
@@ -46,18 +56,10 @@ class Posts(MethodView):
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
 
-        original_names = []
-        files = []
-
-        for file in argsFiles['files']:
-            full_path = current_app.config['TMP_FOLDER'] + \
-                str(u.uuid4()) + file.filename[-10:]
-            file.save(full_path)
-            files.append({"path": full_path, "original_name": file.filename})
-            original_names.append(file.filename)
+        files = save_files(argsFiles['files'])
 
         task = logged_user.launch_task('process_data',
-                                       f"Processing your uploaded files: {', '.join(original_names)}",
+                                       "Processing your uploaded files",
                                        [files, username])
         db.session.commit()
         return task
