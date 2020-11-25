@@ -334,7 +334,7 @@ class DownloadQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
-    uuids = fields.List(fields.String())
+    pids = fields.List(fields.String(), required=True)
 
 
 class StatsQuerySchema(SQLAlchemySchema):

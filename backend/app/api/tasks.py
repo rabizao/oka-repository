@@ -23,7 +23,8 @@ from . import bp
 class BaseTask(celery.Task):
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
-        current_app.logger.error('Unhandled exception', exc_info=sys.exc_info())
+        current_app.logger.error(
+            'Unhandled exception', exc_info=sys.exc_info())
         task = Task.query.get(task_id)
         if task:
             task.complete = True
@@ -107,25 +108,31 @@ def run_step(self, post_id, step, username):
 
 
 @celery.task(bind=True, base=BaseTask)
-def download_data(self, uuids):
+def download_data(self, pids, username):
     '''
     Background task to run async download process
     '''
     # TODO: Check if user has access to files
+    logged_user = User.get_by_username(username)
     tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
     filename_server_zip = str(u.uuid4())
-    path_server_zip = current_app.static_folder + '/' + filename_server_zip + '.zip'
+    path_server_zip = f'{current_app.static_folder}/{filename_server_zip}.zip'
     with ZipFile(path_server_zip, 'w') as zipped_file:
-        for uuid in uuids:
-            actual_index = uuids.index(uuid)
-            _set_job_progress(self, actual_index / len(uuids) * 100)
-            data = tatu.fetch(uuid, lazy=False)
+        for pid in pids:
+            actual_index = pids.index(pid)
+            _set_job_progress(self, actual_index / len(pids) * 100)
+            post = Post.query.get(pid)
+            if not post:
+                raise Exception(f'Download failed: {pid} not found!')
+            if not logged_user.has_access(post):
+                raise Exception(
+                    f'Download failed. You do not have access to post {pid}!')
+            data = tatu.fetch(post.data_uuid, lazy=False)
             if data is None:
-                raise Exception('Download failed: ' + uuid + ' not found!')
-            zipped_file.writestr(
-                uuid + '.arff', data.arff('No name', 'No description'))
-    result = filename_server_zip + '.zip'
-    return _set_job_progress(self, 100, result=result)
+                raise Exception(f'Download failed: {pid} not found!')
+            zipped_file.writestr(f'{pid}.arff', data.arff(
+                'No name', 'No description'))
+    return _set_job_progress(self, 100, result=f'{filename_server_zip}.zip')
 
 
 @celery.task(bind=True, base=BaseTask)

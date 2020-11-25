@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 
 import { CheckBoxOutlineBlank, CheckBox, CloudDownload, Search, ArrowLeft, ArrowRight } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
-import { saveAs } from 'file-saver';
 import TimeAgo from 'timeago-react';
 import queryString from 'query-string';
 
-import api, { downloadsUrl } from '../../services/api';
+import api from '../../services/api';
 import { notifyError } from '../../utils';
+import { RunningTasksBarContext } from '../../contexts/RunningTasksBarContext';
+import { NotificationsContext } from '../../contexts/NotificationsContext';
 
 export default function OkaPostsBox({ fetch_url }) {
     let location = useLocation();
@@ -22,7 +23,10 @@ export default function OkaPostsBox({ fetch_url }) {
     const [page, setPage] = useState();
     const [totalPages, setTotalPages] = useState();
     const [lastPage, setLastPage] = useState();
-    const [pageSize, setPageSize] = useState(queryString.parse(location.search).page_size || 10);    
+    const [pageSize, setPageSize] = useState(queryString.parse(location.search).page_size || 10);
+    
+    const runningTasksBar = useContext(RunningTasksBarContext);
+    const notificationsContext = useContext(NotificationsContext);
 
     useEffect(() => {
         async function fetchData() {
@@ -42,17 +46,17 @@ export default function OkaPostsBox({ fetch_url }) {
         fetchData();
     }, [fetch_url])
 
-    function handleSelect(e, post) {
+    function handleSelect(e, postId) {
         e.preventDefault();
         var newSelection = [...selection];
 
-        if (newSelection.includes(post.data_uuid)) {
-            newSelection = newSelection.filter(item => item !== post.data_uuid);
+        if (newSelection.includes(postId)) {
+            newSelection = newSelection.filter(item => item !== postId);
             if (selectAll) {
                 setSelectAll(false);
             }
         } else {
-            newSelection.push(post.data_uuid);
+            newSelection.push(postId);
             if (newSelection.length >= posts.length) {
                 setSelectAll(true);
             }
@@ -65,7 +69,7 @@ export default function OkaPostsBox({ fetch_url }) {
             setSelection([])
         } else {
             var newSelection = []
-            posts.map((post) => newSelection.push(post.data_uuid));
+            posts.map((post) => newSelection.push(post.id));
             setSelection(newSelection);
         }
         setSelectAll(!selectAll);
@@ -74,20 +78,15 @@ export default function OkaPostsBox({ fetch_url }) {
     async function handleDownload() {
         try {
             var serializedSelection = JSON.stringify(selection);
-            serializedSelection = serializedSelection.replace(/","/g, '&uuids=').replace('["', "").replace('"]', "")
-            const resp = await api.get('/downloads/data?uuids=' + serializedSelection);
-            var status = setInterval(async function () {
-                try {
-                    const response = await api.get(`tasks/${resp.data}/status`);
-                    if (response.data.status === "done") {
-                        saveAs(downloadsUrl + response.data.result, "datasets.zip");
-                        clearInterval(status);
-                    }
-                } catch (error) {
-                    notifyError(error);
-                    clearInterval(status);
-                }
-            }, 1000);
+            serializedSelection = serializedSelection.replace(/,/g, '&pids=').replace('[', "").replace(']', "")
+            const resp = await api.get('/downloads/data?pids=' + serializedSelection);
+            var newTasks = { ...runningTasksBar.tasks };
+            newTasks[resp.data.id] = {
+                description: "Starting..."
+            };
+            runningTasksBar.setTasks(newTasks);
+            runningTasksBar.setActive(true);
+            notificationsContext.setDelay(1000);
         } catch (error) {
             notifyError(error);
         }
@@ -184,9 +183,9 @@ export default function OkaPostsBox({ fetch_url }) {
                     {filteredPosts.map(
                         (post) =>
                             <div key={post.id} className="flex-row box-horizontal background-hover padding-sides-small">
-                                <button onClick={(e) => handleSelect(e, post)}>
+                                <button onClick={(e) => handleSelect(e, String(post.id))}>
                                     {
-                                        selection.includes(post.data_uuid) ?
+                                        selection.includes(post.id) ?
                                             <CheckBox className="icon-primary" /> :
                                             <CheckBoxOutlineBlank className="icon-primary" />
                                     }

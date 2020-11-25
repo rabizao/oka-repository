@@ -15,15 +15,15 @@ class Downloads(MethodView):
     @jwt_required
     @bp.arguments(DownloadQuerySchema, location="query")
     @bp.response(TaskBaseSchema)
-    def get(self, args):  # args significa todas as variáveis da classe-schema
+    def get(self, args):
         """Download a zipped file containing all the requested datasets"""
 
-        uuids = sorted(args['uuids'])
+        pids = sorted(args['pids'])
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
 
         task = logged_user.launch_task('download_data', 'Processing your download',
-                                       [uuids])
+                                       [pids, username])
         db.session.commit()
 
         return task

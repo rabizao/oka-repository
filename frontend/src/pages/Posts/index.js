@@ -159,7 +159,7 @@ export default function Posts(props) {
 
     async function handleDownload() {
         try {
-            const resp = await api.get(`downloads/data?uuids=${post.data_uuid}`);
+            const resp = await api.get(`downloads/data?pids=${post.id}`);
             var newTasks = { ...runningTasksBar.tasks };
             newTasks[resp.data.id] = {
                 description: "Starting..."
