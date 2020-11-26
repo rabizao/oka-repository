@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from sqlalchemy import and_, asc, or_
+from sqlalchemy import and_, or_
 from werkzeug.security import check_password_hash
 
 from . import celery, db
@@ -240,20 +240,6 @@ class User(PaginateMixin, db.Model):
         return '<User {}>'.format(self.username)
 
 
-class Transformation(db.Model):
-    # "label" "name" "help" "stored" "avatar"
-    id = db.Column(db.Integer, primary_key=True)
-    label = db.Column(db.String(999))  # Visible text describind Data object.
-    name = db.Column(db.String(999))  # Name of the Transformer object.
-    # Complete description of the Transformer object.
-    help = db.Column(db.Text)
-    # Whether the Data object is already stored in tatu.
-    stored = db.Column(db.Boolean)
-    # Filename of the icon representing the Data object.
-    avatar = db.Column(db.String(999))
-    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
-
-
 class Post(PaginateMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
@@ -270,8 +256,6 @@ class Post(PaginateMixin, db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     publish_timestamp = db.Column(db.DateTime, index=True)
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
-    history = db.relationship(
-        'Transformation', backref='post', lazy='dynamic', order_by=asc(Transformation.id))
     tags = db.relationship('Tag', backref='post', lazy='dynamic')
     public = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
