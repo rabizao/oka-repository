@@ -3,12 +3,13 @@ import unittest
 import warnings
 import json
 from werkzeug.datastructures import FileStorage
+from unittest.mock import patch
 
 from app import create_app, db
 from app.config import Config
 from app.models import User, Token, Notification, Post
 from aiuna.step.dataset import Dataset
-from app.api.tasks import process_data
+from app.api.tasks import process_data, download_data
 from app.api.posts import save_files
 
 
@@ -256,12 +257,14 @@ class ApiCase(unittest.TestCase):
             name="unread_notification_count").first()
         self.assertEqual(json.loads(nc.payload_json), 0)
 
-    def test_posts(self):
+    @patch('app.api.tasks.User.launch_task')
+    def test_posts(self, user_launch_task):
         """
             1 - Login
             2 - Create a new post uploading a dataset
             3 - Run celery task to create the post
             4 - List the post
+            5 - Download the dataset
         """
         # 1
         username = self.login()['username']
@@ -283,13 +286,12 @@ class ApiCase(unittest.TestCase):
         # 4
         self.assertEqual(result['state'], 'SUCCESS')
         self.assertEqual(len(Post.query.all()), 1)
-
-    def test_tasks(self):
-        """
-            1 - Start a new task
-            2 - Check the status
-        """
-        # needs run celery
+        # 5
+        post_id = json.loads(result['result'])[0]['id']
+        response = self.client.get(f"/api/downloads/data?pids={post_id}")
+        self.assertEqual(response.status_code, 200)
+        result = download_data.run([post_id], username)
+        self.assertEqual(result['state'], 'SUCCESS')
 
     def test_create_user(self):
         """

@@ -123,13 +123,14 @@ def download_data(self, pids, username):
             _set_job_progress(self, actual_index / len(pids) * 100)
             post = Post.query.get(pid)
             if not post:
-                raise Exception(f'Download failed: {pid} not found!')
+                raise Exception(f'Download failed: post {pid} not found!')
             if not logged_user.has_access(post):
                 raise Exception(
                     f'Download failed. You do not have access to post {pid}!')
             data = tatu.fetch(post.data_uuid, lazy=False)
             if data is None:
-                raise Exception(f'Download failed: {pid} not found!')
+                raise Exception(
+                    f'Download failed: data {post.data_uuid} not found!')
             zipped_file.writestr(f'{pid}.arff', data.arff(
                 'No name', 'No description'))
     return _set_job_progress(self, 100, result=f'{filename_server_zip}.zip')
