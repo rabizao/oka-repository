@@ -12,7 +12,7 @@ from app.models import User, Token, Notification, Post
 from aiuna.step.dataset import Dataset
 from app.api.tasks import process_data, download_data
 from app.api.posts import save_files
-
+from tatu import Tatu
 
 create_user1 = {
     "username": "user1111",
@@ -48,12 +48,13 @@ class TestConfig(Config):
 class ApiCase(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter(
-            'ignore', (DeprecationWarning, UserWarning, ImportWarning))
+            'ignore', (DeprecationWarning, UserWarning, ImportWarning))  # checar se SAWarning do SQLAlchemy é relevante
         self.app = create_app(TestConfig)
         self.app_context = self.app.app_context()
         self.app_context.push()
         self.client = self.app.test_client()
         db.create_all()
+        self.tatu = Tatu(url=self.app.config['TATU_URL'], threaded=False)
         # if os.path.exists('testdb.db'):
         #     os.remove('testdb.db')
 
@@ -77,7 +78,7 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json
         self.client.environ_base["HTTP_AUTHORIZATION"] = "Bearer " + \
-            data["access_token"]
+                                                         data["access_token"]
 
         if admin:
             user = User.query.get(data['id'])
@@ -89,7 +90,7 @@ class ApiCase(unittest.TestCase):
             self.assertEqual(response.status_code, 201)
             data_api = response.json
             self.client.environ_base["HTTP_AUTHORIZATION"] = "Bearer " + \
-                data_api["api_token"]
+                                                             data_api["api_token"]
 
         return data
 
@@ -300,6 +301,47 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         result = download_data.run([post_id], username)
         self.assertEqual(result['state'], 'SUCCESS')
+
+    def test_concurrence(self):
+        """
+            1 - Login
+            2 - Create a new post uploading a dataset
+            3 - Run celery task to create the post
+            4 - List the post
+            5 - Download the dataset
+        """
+        # 1
+        username = self.login()['username']
+        # 2
+        arff = Dataset().data.arff("rel", "desc")
+        filename = "/tmp/iris.arff"
+        with open(filename, 'w') as fw:
+            fw.write(arff)
+        with open(filename, 'rb') as fr:
+            with patch('app.api.tasks.User.launch_task'):
+                response = self.client.post(
+                    "/api/posts", data={'files': (fr, "test.arff")})
+
+        self.assertEqual(response.status_code, 200)
+        # 3
+        with open(filename, 'rb') as fr:
+            filestorage = FileStorage(
+                fr, filename="iris_send.arff", content_type="application/octet-stream")
+            files = save_files([filestorage])
+        result = process_data.run(files, username)
+        # 4
+        self.assertEqual(result['state'], 'SUCCESS')
+        self.assertEqual(len(Post.query.all()), 1)
+
+        def get_data():
+            data = self.tatu.fetch("3l9bSwFwL0TsSztkDb0iuVQ", lazy=False)
+            attrs = data.Xd
+            print("ATTRS>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", attrs)
+
+        for i in range(10000):
+            get_data()
+            response = self.client.get('/api/posts/1')
+            print(i, response.json()['attrs'])
 
     def test_create_user(self):
         """
