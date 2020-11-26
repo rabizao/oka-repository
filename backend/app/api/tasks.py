@@ -114,6 +114,8 @@ def download_data(self, pids, username):
     '''
     # TODO: Check if user has access to files
     logged_user = User.get_by_username(username)
+    if not logged_user:
+        raise Exception(f'Username {username} not found!')
     tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
     filename_server_zip = str(u.uuid4())
     path_server_zip = f'{current_app.static_folder}/{filename_server_zip}.zip'
@@ -142,6 +144,8 @@ def process_data(self, files, username):
     Background task to run async post process
     '''
     logged_user = User.get_by_username(username)
+    if not logged_user:
+        raise Exception(f'Username {username} not found!')
     result = []
     tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
 

@@ -2,6 +2,7 @@
 import unittest
 import warnings
 import json
+# import os
 from werkzeug.datastructures import FileStorage
 from unittest.mock import patch
 
@@ -40,6 +41,7 @@ class TestConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
     BROKER_URL = 'redis://'
     CELERY_RESULT_BACKEND = None
+    # TATU_URL = 'sqlite://testdb'
     TATU_URL = 'sqlite://:memory:'
 
 
@@ -52,6 +54,8 @@ class ApiCase(unittest.TestCase):
         self.app_context.push()
         self.client = self.app.test_client()
         db.create_all()
+        # if os.path.exists('testdb.db'):
+        #     os.remove('testdb.db')
 
     def tearDown(self):
         db.session.remove()
@@ -153,9 +157,10 @@ class ApiCase(unittest.TestCase):
         with open(filename, 'w') as fw:
             fw.write(arff)
         fr = open(filename, 'rb')
-        self.client.post(
-            "/api/posts", data={'files': (fr, "test.arff")})
-        # needs run celery
+        with patch('app.api.tasks.User.launch_task'):
+            self.client.post(
+                "/api/posts", data={'files': (fr, "test.arff")})
+            # needs run celery
 
     def test_contacts(self):
         """
@@ -165,8 +170,9 @@ class ApiCase(unittest.TestCase):
             4 - Login with admin
             5 - Get contact info
         """
-        response = self.client.post(
-            "/api/contacts", json={"name": "Test", "email": "test@test.com"})
+        with patch('app.api.tasks.send_async_email.delay'):
+            response = self.client.post(
+                "/api/contacts", json={"name": "Test", "email": "test@test.com"})
         self.assertEqual(response.status_code, 201)
         self.login()
         response = self.client.get("/api/contacts")
@@ -257,8 +263,7 @@ class ApiCase(unittest.TestCase):
             name="unread_notification_count").first()
         self.assertEqual(json.loads(nc.payload_json), 0)
 
-    @patch('app.api.tasks.User.launch_task')
-    def test_posts(self, user_launch_task):
+    def test_posts(self):
         """
             1 - Login
             2 - Create a new post uploading a dataset
@@ -274,8 +279,10 @@ class ApiCase(unittest.TestCase):
         with open(filename, 'w') as fw:
             fw.write(arff)
         with open(filename, 'rb') as fr:
-            response = self.client.post(
-                "/api/posts", data={'files': (fr, "test.arff")})
+            with patch('app.api.tasks.User.launch_task'):
+                response = self.client.post(
+                    "/api/posts", data={'files': (fr, "test.arff")})
+
         self.assertEqual(response.status_code, 200)
         # 3
         with open(filename, 'rb') as fr:
@@ -288,7 +295,8 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(len(Post.query.all()), 1)
         # 5
         post_id = json.loads(result['result'])[0]['id']
-        response = self.client.get(f"/api/downloads/data?pids={post_id}")
+        with patch('app.api.tasks.User.launch_task'):
+            response = self.client.get(f"/api/downloads/data?pids={post_id}")
         self.assertEqual(response.status_code, 200)
         result = download_data.run([post_id], username)
         self.assertEqual(result['state'], 'SUCCESS')
