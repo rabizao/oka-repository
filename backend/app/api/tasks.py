@@ -10,10 +10,9 @@ from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from flask_mail import Message
 
-from aiuna.content.root import Root
 from aiuna.step.file import File
 from app import celery, db, mail
-from app.models import Post, Task, Transformation, User
+from app.models import Post, Task, User
 from app.schemas import TaskStatusBaseSchema
 from . import bp
 
@@ -174,19 +173,6 @@ def process_data(self, files, username):
                     number_of_instances=len(data.X), number_of_features=len(data.Y))
         # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
         # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
-        duuid = Root.uuid
-        for step in data.history:
-            # TODO: stored is useless
-            dic = {"label": duuid.id, "name": step.name,
-                   "help": str(step), "stored": True}
-            db.session.add(Transformation(**dic, post=post))
-            duuid *= step.uuid
-        # for uid, step in data.history.items():
-        #     # TODO: stored is useless
-        #     dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(step), "stored": True}
-
-        #     db.session.add(Transformation(**dic, post=post))
-        #     duuid *= UUID(step["id"])
         db.session.add(post)
         db.session.commit()
         obj = {'original_name': file['original_name'],

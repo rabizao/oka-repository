@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash
 
 from aiuna.content.root import Root
 from app import db
-from app.models import User, Post, Comment, Transformation, Contact, Notification, Task, Message
+from app.models import User, Post, Comment, Contact, Notification, Task, Message
 from cruipto.avatar23 import colors
 
 
@@ -228,13 +228,6 @@ class UserEditSchema(SQLAlchemySchema):
         return data
 
 
-class TransformationBaseSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = Transformation
-
-    id = auto_field(dump_only=True)
-
-
 class MessageBaseSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Message
@@ -267,7 +260,6 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     attrs = fields.Function(
         lambda obj: get_attrs(obj.data_uuid), dump_only=True)
     history = fields.Function(lambda obj: past(obj.data_uuid), dump_only=True)
-    # history = Nested(TransformationBaseSchema, many=True, dump_only=True)
 
 
 class PostEditSchema(SQLAlchemySchema):
