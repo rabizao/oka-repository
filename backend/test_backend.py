@@ -1,18 +1,18 @@
 #!/usr/bin/env python
+import json
 import unittest
 import warnings
-import json
-# import os
-from werkzeug.datastructures import FileStorage
 from unittest.mock import patch
 
+# import os
+from werkzeug.datastructures import FileStorage
+
+from aiuna.step.dataset import Dataset
 from app import create_app, db
+from app.api.posts import save_files
+from app.api.tasks import process_data, download_data
 from app.config import Config
 from app.models import User, Token, Notification, Post
-from aiuna.step.dataset import Dataset
-from app.api.tasks import process_data, download_data
-from app.api.posts import save_files
-from tatu import Tatu
 
 create_user1 = {
     "username": "user1111",
@@ -54,7 +54,7 @@ class ApiCase(unittest.TestCase):
         self.app_context.push()
         self.client = self.app.test_client()
         db.create_all()
-        self.tatu = Tatu(url=self.app.config['TATU_URL'], threaded=False)
+        self.tatu = self.app.config['TATU_SERVER']
         # if os.path.exists('testdb.db'):
         #     os.remove('testdb.db')
 
@@ -329,19 +329,22 @@ class ApiCase(unittest.TestCase):
                 fr, filename="iris_send.arff", content_type="application/octet-stream")
             files = save_files([filestorage])
         result = process_data.run(files, username)
+
         # 4
         self.assertEqual(result['state'], 'SUCCESS')
         self.assertEqual(len(Post.query.all()), 1)
+        post_id = json.loads(result['result'])[0]['id']
+        data_uuid = Post.query.get(post_id).data_uuid
 
         def get_data():
-            data = self.tatu.fetch("3l9bSwFwL0TsSztkDb0iuVQ", lazy=False)
+            data = self.tatu.fetch(data_uuid, lazy=False)
             attrs = data.Xd
             print("ATTRS>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", attrs)
 
-        for i in range(10000):
-            get_data()
-            response = self.client.get('/api/posts/1')
-            print(i, response.json()['attrs'])
+        for i in range(50):
+            data = self.tatu.fetch(data_uuid, lazy=False)
+            attrs = data.Xd
+            response = self.client.get(f"/api/posts/{post_id}")
 
     def test_create_user(self):
         """

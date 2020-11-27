@@ -1,27 +1,26 @@
+from datetime import datetime
+
 from flask import current_app
 from flask_smorest.fields import Upload
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
 from marshmallow_sqlalchemy.fields import Nested
 from werkzeug.security import generate_password_hash
-from datetime import datetime
 
+from aiuna.content.root import Root
 from app import db
 from app.models import User, Post, Comment, Transformation, Contact, Notification, Task, Message
 from cruipto.avatar23 import colors
-from aiuna.content.root import Root
-from tatu import Tatu
 
 
 def get_attrs(uuid):
-    tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+    tatu = current_app.config['TATU_SERVER']
     data = tatu.fetch(uuid, lazy=False)
     return data.Xd
 
 
 def past(uuid):
-    tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
-    print(111111111111111, current_app.config['TATU_URL'])
+    tatu = current_app.config['TATU_SERVER']
     data = tatu.fetch(uuid, lazy=False)
     duuid = Root.uuid
     history = []

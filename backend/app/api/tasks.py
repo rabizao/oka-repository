@@ -4,19 +4,17 @@ import uuid as u
 from os import sys
 from zipfile import ZipFile
 
+from celery.signals import worker_init
 from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from flask_mail import Message
-from celery.signals import worker_init
 
 from aiuna.content.root import Root
 from aiuna.step.file import File
 from app import celery, db, mail
 from app.models import Post, Task, Transformation, User
 from app.schemas import TaskStatusBaseSchema
-
-from tatu import Tatu
 from . import bp
 
 
@@ -116,7 +114,7 @@ def download_data(self, pids, username):
     logged_user = User.get_by_username(username)
     if not logged_user:
         raise Exception(f'Username {username} not found!')
-    tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+    tatu = current_app.config['TATU_SERVER']
     filename_server_zip = str(u.uuid4())
     path_server_zip = f'{current_app.static_folder}/{filename_server_zip}.zip'
     with ZipFile(path_server_zip, 'w') as zipped_file:
@@ -147,7 +145,7 @@ def process_data(self, files, username):
     if not logged_user:
         raise Exception(f'Username {username} not found!')
     result = []
-    tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+    tatu = current_app.config['TATU_SERVER']
 
     for file in files:
         actual_index = files.index(file)

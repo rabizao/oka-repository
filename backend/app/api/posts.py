@@ -1,6 +1,6 @@
+import json
 import uuid as u
 from datetime import datetime
-import json
 
 from flask import current_app
 from flask.views import MethodView
@@ -12,16 +12,14 @@ from app.models import Comment, Post, User
 from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
                          PostEditSchema, PostFilesSchema, PostQuerySchema,
                          RunSchema, TaskBaseSchema, UserBaseSchema, StatsQuerySchema)
-
 from . import bp
-from tatu import Tatu
 
 
 def save_files(input_files):
     files = []
     for file in input_files:
         full_path = current_app.config['TMP_FOLDER'] + \
-            str(u.uuid4()) + file.filename[-10:]
+                    str(u.uuid4()) + file.filename[-10:]
         file.save(full_path)
         files.append({"path": full_path, "original_name": file.filename})
     return files
@@ -137,7 +135,7 @@ class PostsCollaboratorsById(MethodView):
         if not post.author == logged_user:
             abort(422, errors={
                 "json": {"username":
-                         ["Only the author can invite collaborators to the post. [" + self.__class__.__name__ + "]"]}})
+                             ["Only the author can invite collaborators to the post. [" + self.__class__.__name__ + "]"]}})
 
         if collaborator.has_access(post):
             collaborator.deny_access(post)
@@ -246,7 +244,7 @@ class PostsStatsById(MethodView):
             abort(422, errors={
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
-        tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+        tatu = current_app.config['TATU_SERVER']
         data = tatu.fetch(post.data_uuid, lazy=False)
 
         datas = []
@@ -311,7 +309,6 @@ class PostsTransformById(MethodView):
         db.session.commit()
         return task
 
-
 # @bp.route("/posts/<string:uuid>")
 # class PostsOnDemand(MethodView):
 #     @jwt_required
@@ -320,7 +317,7 @@ class PostsTransformById(MethodView):
 #     """
 #     Create a new Post on demand.
 #     """
-#     tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+#     tatu = current_app.config['TATU_SERVER']
 #     data = tatu.fetch(uuid)
 #     if data is None:
 #         abort(
