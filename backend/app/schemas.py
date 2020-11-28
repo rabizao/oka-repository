@@ -16,12 +16,14 @@ from cruipto.avatar23 import colors
 def get_attrs(uuid):
     tatu = current_app.config['TATU_SERVER']
     data = tatu.fetch(uuid, lazy=False)
-    return data.Xd
+    return data.Xd if data else {}
 
 
 def past(uuid):
     tatu = current_app.config['TATU_SERVER']
     data = tatu.fetch(uuid, lazy=False)
+    if not data:
+        return {}
     duuid = Root.uuid
     history = []
     for step in data.history:
