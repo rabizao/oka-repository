@@ -10,7 +10,7 @@ from werkzeug.datastructures import FileStorage
 from aiuna.step.dataset import Dataset
 from app import create_app, db
 from app.api.posts import save_files
-from app.api.tasks import process_data, download_data
+from app.api.tasks import process_data, download_data, run_step
 from app.config import Config
 from app.models import User, Token, Notification, Post
 
@@ -141,28 +141,6 @@ class ApiCase(unittest.TestCase):
         tokens = user.tokens.filter(Token.revoked == 0).count()
         self.assertEqual(tokens, 0)
 
-    def test_comments(self):
-        """
-            1 - Login
-            2 - Create a new post
-            3 - Insert a comment into the post
-            4 - Get the comment info
-            5 - Insert a reply into the post
-            6 - Get the reply info
-        """
-        # 1
-        self.login()
-        # 2
-        arff = Dataset().data.arff("rel", "desc")
-        filename = "/dev/shm/iris.arff"
-        with open(filename, 'w') as fw:
-            fw.write(arff)
-        fr = open(filename, 'rb')
-        with patch('app.api.tasks.User.launch_task'):
-            self.client.post(
-                "/api/posts", data={'files': (fr, "test.arff")})
-            # needs run celery
-
     def test_contacts(self):
         """
             1 - Send contact form
@@ -184,14 +162,6 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(len(data), 1)
         response = self.client.get(f"/api/contacts/{data[0]['id']}")
         self.assertEqual(response.status_code, 200)
-
-    def test_downloads(self):
-        """
-            1 - Login
-            2 - Create a new post
-            3 - Download dataset from post
-        """
-        # needs run celery
 
     def test_messages(self):
         """
@@ -266,13 +236,24 @@ class ApiCase(unittest.TestCase):
 
     def test_posts(self):
         """
-            1 - Login
+            1 - Create user2 and create/login with user1
             2 - Create a new post uploading a dataset
             3 - Run celery task to create the post
-            4 - List the post
-            5 - Download the dataset
+            4 - Concurrency test
+            5 - Edit post's description and name
+            6 - List the post
+            7 - Download the dataset
+            8 - Favorite/Unfavorite post
+            9 - Publish post
+            10 - Comment post
+            11 - Reply to comment
+            12 - Add user2 as collaborator, check, remove and check again
+            13 - Get stats data
+            14 - TODO: Create same post with user2 and get twins
+            15 - TODO: Run step
         """
         # 1
+        username2 = self.login(user=create_user2)['username']
         username = self.login()['username']
         # 2
         arff = Dataset().data.arff("rel", "desc")
@@ -291,60 +272,88 @@ class ApiCase(unittest.TestCase):
                 fr, filename="iris_send.arff", content_type="application/octet-stream")
             files = save_files([filestorage])
         result = process_data.run(files, username)
-        # 4
         self.assertEqual(result['state'], 'SUCCESS')
         self.assertEqual(len(Post.query.all()), 1)
-        # 5
+        # 4
         post_id = json.loads(result['result'])[0]['id']
+        data_uuid = Post.query.get(post_id).data_uuid
+
+        for i in range(50):
+            self.tatu.fetch(data_uuid, lazy=False)
+            response = self.client.get(f"/api/posts/{post_id}")
+        # 5
+        new_name = "new name"
+        new_description = "new description"
+        response = self.client.put(
+            f"/api/posts/{post_id}", json={"name": new_name, "description": new_description})
+        self.assertEqual(response.status_code, 200)
+        # 6
+        response = self.client.get(f"/api/posts/{post_id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['name'], new_name)
+        self.assertEqual(response.json['description'], new_description)
+        # 7
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.get(f"/api/downloads/data?pids={post_id}")
         self.assertEqual(response.status_code, 200)
         result = download_data.run([post_id], username)
         self.assertEqual(result['state'], 'SUCCESS')
-
-    def test_concurrence(self):
-        """
-            1 - Login
-            2 - Create a new post uploading a dataset
-            3 - Run celery task to create the post
-            4 - List the post
-            5 - Download the dataset
-        """
-        # 1
-        username = self.login()['username']
-        # 2
-        arff = Dataset().data.arff("rel", "desc")
-        filename = "/tmp/iris.arff"
-        with open(filename, 'w') as fw:
-            fw.write(arff)
-        with open(filename, 'rb') as fr:
-            with patch('app.api.tasks.User.launch_task'):
-                response = self.client.post(
-                    "/api/posts", data={'files': (fr, "test.arff")})
-
+        # 8
+        user = User.get_by_username(username)
+        post = Post.query.get(post_id)
+        response = self.client.post(f"/api/posts/{post_id}/favorite")
         self.assertEqual(response.status_code, 200)
-        # 3
-        with open(filename, 'rb') as fr:
-            filestorage = FileStorage(
-                fr, filename="iris_send.arff", content_type="application/octet-stream")
-            files = save_files([filestorage])
-        result = process_data.run(files, username)
-
-        # 4
+        self.assertEqual(user.has_favorited(post), True)
+        response = self.client.post(f"/api/posts/{post_id}/favorite")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(user.has_favorited(post), False)
+        # 9
+        self.assertEqual(post.public, False)
+        response = self.client.post(f"/api/posts/{post_id}/publish")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(post.public, True)
+        # 10
+        response = self.client.post(
+            f"/api/posts/{post_id}/comments", json={"text": "Comment 1"})
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(f"/api/posts/{post_id}/comments")
+        self.assertEqual(len(response.json), 1)
+        # 11
+        comment_id = response.json[0]['id']
+        response = self.client.post(
+            f"/api/comments/{comment_id}/replies", json={"text": "Reply to comment 1"})
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(f"/api/comments/{comment_id}/replies")
+        self.assertEqual(len(response.json), 1)
+        # 12
+        response = self.client.post(
+            f"/api/posts/{comment_id}/collaborators", json={"username": username2})
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(User.get_by_username(
+            username2).has_access(post), True)
+        response = self.client.post(
+            f"/api/posts/{comment_id}/collaborators", json={"username": username2})
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(User.get_by_username(
+            username2).has_access(post), False)
+        # 13
+        response = self.client.get(f"/api/posts/{post_id}/stats?plt=scatter")
+        self.assertEqual(response.status_code, 200)
+        # 14
+        # result = process_data.run(files, username2)
+        # self.assertEqual(result['state'], 'SUCCESS')
+        # self.assertEqual(len(Post.query.all()), 2)
+        # 15
+        step = {
+            "category": "runCategory",
+            "algorithm": "runAlgorithm",
+            "parameters": "runParameter"
+        }
+        with patch('app.api.tasks.User.launch_task'):
+            response = self.client.post(f"/api/posts/{post_id}/run", json={"step": step})
+        self.assertEqual(response.status_code, 200)
+        result = run_step.run(post_id, step, username)
         self.assertEqual(result['state'], 'SUCCESS')
-        self.assertEqual(len(Post.query.all()), 1)
-        post_id = json.loads(result['result'])[0]['id']
-        data_uuid = Post.query.get(post_id).data_uuid
-
-        def get_data():
-            data = self.tatu.fetch(data_uuid, lazy=False)
-            attrs = data.Xd
-            print("ATTRS>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", attrs)
-
-        for i in range(50):
-            data = self.tatu.fetch(data_uuid, lazy=False)
-            attrs = data.Xd
-            response = self.client.get(f"/api/posts/{post_id}")
 
     def test_create_user(self):
         """

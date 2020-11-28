@@ -19,7 +19,7 @@ def save_files(input_files):
     files = []
     for file in input_files:
         full_path = current_app.config['TMP_FOLDER'] + \
-                    str(u.uuid4()) + file.filename[-10:]
+            str(u.uuid4()) + file.filename[-10:]
         file.save(full_path)
         files.append({"path": full_path, "original_name": file.filename})
     return files
@@ -135,7 +135,7 @@ class PostsCollaboratorsById(MethodView):
         if not post.author == logged_user:
             abort(422, errors={
                 "json": {"username":
-                             ["Only the author can invite collaborators to the post. [" + self.__class__.__name__ + "]"]}})
+                         ["Only the author can invite collaborators to the post. [" + self.__class__.__name__ + "]"]}})
 
         if collaborator.has_access(post):
             collaborator.deny_access(post)

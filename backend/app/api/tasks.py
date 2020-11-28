@@ -98,7 +98,7 @@ def run_step(self, post_id, step, username):
     size = 10
     for i in range(size):
         _set_job_progress(self, i / size * 100)
-        time.sleep(5)
+        time.sleep(1)
     print(post.id, step, logged_user.username)
     result = 'UUID?'
     return _set_job_progress(self, 100, result=result)
