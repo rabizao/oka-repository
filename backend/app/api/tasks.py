@@ -10,6 +10,7 @@ from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from flask_mail import Message
 
+from aiuna.content.root import Root
 from aiuna.step.file import File
 from app import celery, db, mail
 from app.models import Post, Task, User
@@ -169,11 +170,20 @@ def process_data(self, files, username):
             continue
 
         tatu.store(data, lazy=False)
-        post = Post(author=logged_user, data_uuid=data.id, name=name, description=description,
-                    number_of_instances=len(data.X), number_of_features=len(data.Y))
-        # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
-        # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
-        db.session.add(post)
+
+        # History.
+        datauuid, ok = Root.uuid, False
+        name0, description0 = "No name", "No description"
+        for step in list(data.history):
+            datauuid = datauuid * step.uuid
+            if datauuid == data.id:
+                name0 = name, description0 = description
+            post = Post(author=logged_user, data_uuid=datauuid.id, name=name0, description=description0,
+                        number_of_instances=len(data.X), number_of_features=len(data.Y))
+            # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
+            # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
+            db.session.add(post)
+
         db.session.commit()
         obj = {'original_name': file['original_name'],
                'message': 'Dataset successfully uploaded', 'code': 'success', 'id': post.id}
