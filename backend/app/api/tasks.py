@@ -176,8 +176,8 @@ def process_data(self, files, username):
         name0, description0 = "No name", "No description"
         for step in list(data.history):
             datauuid = datauuid * step.uuid
-            if datauuid == data.id:
-                name0 = name, description0 = description
+            if datauuid.id == data.id:
+                name0, description0 = name, description
             post = Post(author=logged_user, data_uuid=datauuid.id, name=name0, description=description0,
                         number_of_instances=len(data.X), number_of_features=len(data.Y))
             # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
