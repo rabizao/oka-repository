@@ -21,7 +21,7 @@ import { NotificationManager } from 'react-notifications';
 export default function Users(props) {
     const location = useLocation()
     const username = props.match.params.username;
-    const section = props.match.params.section;
+    const section = props.match.params.section ? props.match.params.section : "uploads";
     const [parsedQueries, setParsedQueries] = useState({});
     const [loadingHero, setLoadingHero] = useState(true);
     const [user, setUser] = useState({});

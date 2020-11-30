@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 import './styles.css';
 
@@ -18,6 +18,7 @@ import OkaMyAccount from '../../components/OkaMyAccount';
 import { Help } from '@material-ui/icons';
 import { ScrollingProvider, useScrollSection, Section } from 'react-scroll-section';
 import { notifyError } from "../../utils";
+import { useEffect } from "react";
 
 const StaticMenu = () => {
     const homeSection = useScrollSection('home');
@@ -50,6 +51,13 @@ export default function Index() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
+    const history = useHistory();
+
+    useEffect(() => {
+        if (loggedUser.logged) {
+            history.push("/home");
+        }        
+    }, [loggedUser.logged, history])
 
     async function handleContactSubmit(e) {
         e.preventDefault()

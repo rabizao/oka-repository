@@ -9,6 +9,8 @@ const api = axios.create({
 	baseURL: `${url}/api/`
 });
 
+export const cancelToken = axios.CancelToken.source();
+
 api.interceptors.request.use(async config => {
 	const token = getToken();
 	if (token) {
