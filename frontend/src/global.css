@@ -300,8 +300,14 @@ button, input[type="submit"], input[type="reset"] {
     align-items: center;
 }
 
-.flex-crossaxis-center {
+/* .flex-crossaxis-center {
     justify-content: safe center;
+} */
+
+.flex-crossaxis-center::before,
+.flex-crossaxis-center::after {
+  content: '';
+  flex: 1;
 }
 
 .flex-crossaxis-end {
@@ -591,7 +597,11 @@ button, input[type="submit"], input[type="reset"] {
     padding: 10px;
     border: 0;
     background-color: var(--secondary-color-light);
-    color: var(--tertiary-color);
+    color: var(--tertiary-color-light);
+}
+
+.search-form-primary input::placeholder {
+    color: var(--tertiary-color-light);
 }
 
 .background-secondary-color-light {
