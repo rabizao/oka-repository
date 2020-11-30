@@ -10,12 +10,13 @@ import { RunningTasksBarContext } from './RunningTasksBarContext';
 import { NotificationManager } from 'react-notifications';
 import { downloadsUrl } from '../services/api';
 import alertSound from '../assets/notification_simple-01.ogg';
+import { timeStart } from '../services/auth';
 
 export const NotificationsContext = createContext();
 
 const NotificationsProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
-    const [since, setSince] = useState((new Date(Date.UTC(1970))).toISOString());
+    const [since, setSince] = useState(timeStart);
     const [delay, setDelay] = useState(10000);
     const [notificationsBadgeCount, setNotificationsBadgeCount] = useState(0);
     const [messagesBadgeCount, setMessagesBadgeCount] = useState(0);
@@ -106,12 +107,12 @@ const NotificationsProvider = ({ children }) => {
             repeat();
         }
         // eslint-disable-next-line
-    }, [loggedUser.logged, first])
+    }, [loggedUser.logged])
 
     useInterval(repeat, delay, loggedUser.logged);
 
     return (
-        <NotificationsContext.Provider value={{ notifications, delay, setDelay, notificationsBadgeCount, setNotificationsBadgeCount, messagesBadgeCount, setMessagesBadgeCount, notifyNewMessage }}>
+        <NotificationsContext.Provider value={{ notifications, setNotifications, delay, setDelay, notificationsBadgeCount, setNotificationsBadgeCount, messagesBadgeCount, setMessagesBadgeCount, notifyNewMessage, setSince, setFirst }}>
             {children}
         </NotificationsContext.Provider>
     )
