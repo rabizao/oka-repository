@@ -217,6 +217,11 @@ class User(PaginateMixin, db.Model):
         return can_see.union(own)
         # return self.accessible.filter(access.c.post_id == post.id).all() and self.posts
 
+    def accessible_twin_posts(self, post):
+        can_see = self.accessible.filter(Post.active)
+        own = Post.query.filter_by(user_id=self.id, active=True)
+        return can_see.union(own).filter_by(data_uuid=post.data_uuid).filter(Post.id != post.id)
+
     def launch_task(self, name, description, *args, **kwargs):
         job = celery.send_task('app.api.tasks.' + name, *args, **kwargs)
         task = Task(id=job.id, name=name, description=description,

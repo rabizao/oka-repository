@@ -101,7 +101,8 @@ def run_step(self, post_id, step, username):
         _set_job_progress(self, i / size * 100)
         time.sleep(1)
     print(post.id, step, logged_user.username)
-    result = 'UUID?'
+    result = {'uuid': "UUID",
+              'message': 'Successfully run', 'code': 'success'}
     return _set_job_progress(self, 100, result=result)
 
 
@@ -169,10 +170,10 @@ def process_data(self, files, username):
                 name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True)
             continue
 
-        tatu.store(data, lazy=False)
+        tatu.store(data, lazy=False, ignoredup=True)
 
         # History.
-        datauuid, ok = Root.uuid, False
+        datauuid = Root.uuid
         name0, description0 = "No name", "No description"
         for step in list(data.history):
             datauuid = datauuid * step.uuid

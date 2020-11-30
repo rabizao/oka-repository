@@ -281,10 +281,12 @@ class PostsTwinsById(MethodView):
             abort(422, errors={
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
-        filter_by = {"data_uuid": post.data_uuid, "id": not id}
-        data, pagination_parameters.item_count = Post.get(
-            args, pagination_parameters.page, pagination_parameters.page_size, filter_by=filter_by
-        )
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
+
+        data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
+                                                          pagination_parameters.page_size,
+                                                          query=logged_user.accessible_twin_posts(post))
         return data
 
 

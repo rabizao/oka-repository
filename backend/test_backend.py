@@ -249,8 +249,9 @@ class ApiCase(unittest.TestCase):
             11 - Reply to comment
             12 - Add user2 as collaborator, check, remove and check again
             13 - Get stats data
-            14 - TODO: Create same post with user2 and get twins
-            15 - TODO: Run step
+            14 - Users can not upload same dataset twice
+            15 - Check twins of post. Add user2 as collaborator. Check twins again
+            16 - Run step
         """
         # 1
         username2 = self.login(user=create_user2)['username']
@@ -272,8 +273,8 @@ class ApiCase(unittest.TestCase):
                 fr, filename="iris_send.arff", content_type="application/octet-stream")
             files = save_files([filestorage])
         result = process_data.run(files, username)
-        self.assertEqual(result['state'], 'SUCCESS')
-        # self.assertEqual(len(Post.query.all()), 1)
+        self.assertEqual(json.loads(result['result'])[
+                         0]["code"] == "success", True)
         # 4
         post_id = json.loads(result['result'])[0]['id']
         data_uuid = Post.query.get(post_id).data_uuid
@@ -327,12 +328,12 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(len(response.json), 1)
         # 12
         response = self.client.post(
-            f"/api/posts/{comment_id}/collaborators", json={"username": username2})
+            f"/api/posts/{post_id}/collaborators", json={"username": username2})
         self.assertEqual(response.status_code, 201)
         self.assertEqual(User.get_by_username(
             username2).has_access(post), True)
         response = self.client.post(
-            f"/api/posts/{comment_id}/collaborators", json={"username": username2})
+            f"/api/posts/{post_id}/collaborators", json={"username": username2})
         self.assertEqual(response.status_code, 201)
         self.assertEqual(User.get_by_username(
             username2).has_access(post), False)
@@ -340,20 +341,37 @@ class ApiCase(unittest.TestCase):
         response = self.client.get(f"/api/posts/{post_id}/stats?plt=scatter")
         self.assertEqual(response.status_code, 200)
         # 14
-        # result = process_data.run(files, username2)
-        # self.assertEqual(result['state'], 'SUCCESS')
-        # self.assertEqual(len(Post.query.all()), 2)
+        result = process_data.run(files, username2)
+        self.assertEqual(result['state'], 'SUCCESS')
+        self.assertEqual(json.loads(result['result'])[
+                         0]["code"] == "error", False)
+        result = process_data.run(files, username2)
+        self.assertEqual(result['state'], 'SUCCESS')
+        self.assertEqual(json.loads(result['result'])[
+                         0]["code"] == "error", True)
         # 15
+        response = self.client.get(f"/api/posts/{post_id}/twins")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json), 0)
+        response = self.client.post(
+            f"/api/posts/{post_id}/collaborators", json={"username": username2})
+        self.login(create_user=False, user=create_user2)
+        response = self.client.get(f"/api/posts/{post_id}/twins")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json), 1)
+        # 16
         step = {
             "category": "runCategory",
             "algorithm": "runAlgorithm",
             "parameters": "runParameter"
         }
         with patch('app.api.tasks.User.launch_task'):
-            response = self.client.post(f"/api/posts/{post_id}/run", json={"step": step})
+            response = self.client.post(
+                f"/api/posts/{post_id}/run", json={"step": step})
         self.assertEqual(response.status_code, 200)
         result = run_step.run(post_id, step, username)
-        self.assertEqual(result['state'], 'SUCCESS')
+        self.assertEqual(json.loads(result['result'])[
+                         "code"] == "error", False)
 
     def test_create_user(self):
         """
