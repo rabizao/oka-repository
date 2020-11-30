@@ -26,6 +26,9 @@ class SyncCheck(MethodView):
             return jsonify(f(uuid, args['empty']) if args['fetch'] else {"has": f(uuid, args['empty'])})
         if args['cat'] == "step":
             return jsonify(tatu.getstep(uuid) if args['fetch'] else {"has": tatu.hasstep(uuid)})
+        if args['cat'] == "content":
+            print("                         WARNING: cannot handle more than one content yet")
+            return jsonify(tatu.getcontent(uuid) if args['fetch'] else {"has": tatu.hascontent([uuid])})
 
     @jwt_required
     @bp.arguments(SyncPostQuerySchema, location="query")
