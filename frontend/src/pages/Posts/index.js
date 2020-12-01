@@ -519,7 +519,7 @@ export default function Posts(props) {
                                                     {
                                                         post.history.map((transformation) =>
                                                             transformation.name &&
-                                                            <div key={transformation.id} className="flex-row">
+                                                            <div key={transformation.label} className="flex-row">
                                                                 <button
                                                                     title="Show Dataset" alt="Show Dataset"
                                                                     onClick={(e) => handleCreatePost(e, transformation.label)}
