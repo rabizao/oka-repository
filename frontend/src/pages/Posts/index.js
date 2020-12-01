@@ -48,7 +48,7 @@ const runData = [
 
 export default function Posts(props) {
     const id = props.match.params.id;
-    const section = props.match.params.section ? props.match.params.section : "description";
+    const section = props.match.params.section ? props.match.params.section : "empty";
     const [loadingHero, setLoadingHero] = useState(true);
     const [post, setPost] = useState({});
     const [openEdit, setOpenEdit] = useState(false);
@@ -111,6 +111,12 @@ export default function Posts(props) {
     }
 
     const navItems = {
+        empty: {
+            "name": "empty",
+            "url": "/posts/" + id,
+            "content": <></>,
+            "hide": true
+        },
         description: {
             "name": "Description",
             "url": "/posts/" + id + "/description",

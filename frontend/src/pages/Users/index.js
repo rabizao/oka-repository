@@ -21,7 +21,7 @@ import { NotificationManager } from 'react-notifications';
 export default function Users(props) {
     const location = useLocation()
     const username = props.match.params.username;
-    const section = props.match.params.section ? props.match.params.section : "uploads";
+    const section = props.match.params.section ? props.match.params.section : "empty";
     const [parsedQueries, setParsedQueries] = useState({});
     const [loadingHero, setLoadingHero] = useState(true);
     const [user, setUser] = useState({});
@@ -50,6 +50,12 @@ export default function Users(props) {
     }
 
     const navItems = {
+        empty: {
+            "name": "empty",
+            "url": "/users/" + username,
+            "content": <></>,
+            "hide": true
+        },
         uploads: {
             "name": "Uploads",
             "url": "/users/" + username + "/uploads",
