@@ -17,6 +17,7 @@ import { LoginContext } from '../../contexts/LoginContext';
 import queryString from 'query-string';
 import { notifyError } from '../../utils';
 import { NotificationManager } from 'react-notifications';
+import OkaProfileBox from '../../components/OkaProfileBox';
 
 export default function Users(props) {
     const location = useLocation()
@@ -72,6 +73,16 @@ export default function Users(props) {
             "private": true,
             "url": "/users/" + username + "/messages",
             "content": <OkaMessagesBox />
+        },
+        following: {
+            "name": "Following",
+            "url": "/users/" + username + "/following",
+            "content": <OkaProfileBox fetch_url={"/users/" + username + "/following?" + queryString.stringify(parsedQueries)} />
+        },
+        followers: {
+            "name": "Followers",
+            "url": "/users/" + username + "/followers",
+            "content": <OkaProfileBox fetch_url={"/users/" + username + "/followers?" + queryString.stringify(parsedQueries)} />
         },
         conversation: {
             "name": "Convesation",
