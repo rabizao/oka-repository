@@ -164,15 +164,11 @@ export default function Users(props) {
         setAbout_meEdit(about_me);
     }
 
-    function handleCloseMessage() {
-        setOpenMessage(false);
-    }
-
     return (
         <>
             <Modal
                 open={openEdit}
-                onClose={()=>setOpenMessage(false)}
+                onClose={()=>setOpenEdit(false)}
             >
                 <div className="modal padding-big">
                     <h3 className="margin-top-small">Update your data</h3>
@@ -199,7 +195,7 @@ export default function Users(props) {
             </Modal>
             <Modal
                 open={openMessage}
-                onClose={handleCloseMessage}
+                onClose={() => setOpenMessage(false)}
             >
                 <div className="modal padding-big">
                     <h3 className="margin-top-small">{`Send a message to ${user.name}`}</h3>

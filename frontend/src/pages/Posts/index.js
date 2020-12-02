@@ -53,6 +53,7 @@ export default function Posts(props) {
     const [post, setPost] = useState({});
     const [openEdit, setOpenEdit] = useState(false);
     const [openCite, setOpenCite] = useState(false);
+    const [openDeletePost, setOpenDeletePost] = useState(false);
     const [openShare, setOpenShare] = useState(false);
     const [collaboratorUsername, setCollaboratorUsername] = useState('');
     const [openPublish, setOpenPublish] = useState(false);
@@ -335,8 +336,29 @@ export default function Posts(props) {
         }
     }
 
+    async function handleDeletePost() {
+        try {
+            await api.delete(`posts/${id}`);
+            NotificationManager.success("Post was successfully deleted.", "Delete", 8000);
+            setOpenDeletePost(false);
+            history.push("/home");
+        } catch (error) {
+            notifyError(error);
+        }
+    }
+
     return (
         <>
+            <Modal
+                open={openDeletePost}
+                onClose={() => setOpenDeletePost(false)}
+            >
+                <div className="modal padding-big">
+                    <h3>Delete post</h3>
+                    <h5 className="margin-top-small">You can not undo this action. This dataset will be lost forever.</h5>
+                    <button onClick={handleDeletePost} className="button-negative margin-top-small">I want to delete {post.name} forever!</button>
+                </div>
+            </Modal>
             <Modal
                 open={openEdit}
                 onClose={() => setOpenEdit(false)}
@@ -504,6 +526,7 @@ export default function Posts(props) {
                             <div className="flex-row flex-crossaxis-center">
                                 <button onClick={handleOpenEdit} className="button-secondary margin-very-small">Edit</button>
                                 <button onClick={() => setOpenPublish(true)} className="button-secondary margin-very-small">Publish</button>
+                                <button onClick={() => setOpenDeletePost(true)} className="button-negative margin-very-small">Remove</button>
                             </div>
                         }
 
@@ -547,6 +570,7 @@ export default function Posts(props) {
                             </div>
                             <button
                                 onClick={(e) => copyToClipboard(e, post.data_uuid)}
+                                title="Click to copy to clipboard"
                                 className="box-uuid"
                                 style={{ backgroundColor: `rgb(${post.data_uuid_colors[0][0]}, ${post.data_uuid_colors[0][1]}, ${post.data_uuid_colors[0][2]})`, border: `var(--border)` }}>
                                 <span>&nbsp;</span>

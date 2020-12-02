@@ -97,12 +97,39 @@ class PostsById(MethodView):
             abort(422, errors={
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
+        if post.public:
+            abort(422, errors={
+                "json": {"id": ["Public posts can not be edited. [" + self.__class__.__name__ + "]"]}})
+
         if not logged_user.is_admin():
             if logged_user != post.author:
                 abort(422, errors={
                     "json": {"id": ["You can only edit your own datasets."]}})
 
         post.update(args)
+        db.session.commit()
+
+    @jwt_required
+    @bp.response(code=200)
+    def delete(self, id):
+        """
+        Delete post with id {id}
+        """
+        post = Post.query.get(id)
+        if not post or not post.active:
+            abort(422, errors={
+                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+
+        if post.public:
+            abort(422, errors={
+                "json": {"id": ["Public posts can not be deleted. [" + self.__class__.__name__ + "]"]}})
+
+        logged_user = User.get_by_username(get_jwt_identity())
+        if post.author != logged_user:
+            abort(422, errors={
+                "json": {"id": ["Only the author can delete the post. [" + self.__class__.__name__ + "]"]}})
+
+        post.active = False
         db.session.commit()
 
 
@@ -177,6 +204,10 @@ class PostsPublishById(MethodView):
         if not post or not post.active:
             abort(422, errors={
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+
+        if post.public:
+            abort(422, errors={
+                "json": {"id": ["The post is already published. [" + self.__class__.__name__ + "]"]}})
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)

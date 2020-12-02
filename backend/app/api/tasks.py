@@ -161,8 +161,14 @@ def process_data(self, files, username):
 
         existing_post = logged_user.posts.filter_by(data_uuid=data.id).first()
         if existing_post:
-            obj = {'original_name': file['original_name'],
-                   'message': 'Error! Dataset already uploaded', 'code': 'error', 'id': existing_post.id}
+            if existing_post.active:
+                obj = {'original_name': file['original_name'],
+                       'message': 'Error! Dataset already uploaded', 'code': 'error', 'id': existing_post.id}
+            else:
+                obj = {'original_name': file['original_name'],
+                       'message': 'Dataset successfully restored', 'code': 'success', 'id': existing_post.id}
+                existing_post.active = True
+                db.session.commit()
             result.append(obj)
             logged_user.add_notification(
                 name='data_uploaded', data=obj, overwrite=False)

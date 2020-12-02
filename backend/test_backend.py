@@ -252,10 +252,12 @@ class ApiCase(unittest.TestCase):
             14 - Users can not upload same dataset twice
             15 - Check twins of post. Add user2 as collaborator. Check twins again
             16 - Run step
+            17 - Delete post
         """
         # 1
         username2 = self.login(user=create_user2)['username']
         username = self.login()['username']
+        user = User.get_by_username(username)
         # 2
         arff = Dataset().data.arff("rel", "desc")
         filename = "/tmp/iris.arff"
@@ -278,6 +280,7 @@ class ApiCase(unittest.TestCase):
         # 4
         post_id = json.loads(result['result'])[0]['id']
         data_uuid = Post.query.get(post_id).data_uuid
+        post = Post.query.get(post_id)
 
         for i in range(50):
             self.tatu.fetch(data_uuid, lazy=False)
@@ -285,10 +288,31 @@ class ApiCase(unittest.TestCase):
         # 5
         new_name = "new name"
         new_description = "new description"
+        # User2 can not edit post
+        self.login(create_user=False, user=create_user2)
+        response = self.client.put(
+            f"/api/posts/{post_id}", json={"name": new_name, "description": new_description})
+        self.assertEqual(response.status_code, 422)
+        # Public post can not be edited
+        self.login(create_user=False)
+        post.public = True
+        db.session.commit()
+        response = self.client.put(
+            f"/api/posts/{post_id}", json={"name": new_name, "description": new_description})
+        self.assertEqual(response.status_code, 422)
+        post.public = False
+        db.session.commit()
+        # Edit post
         response = self.client.put(
             f"/api/posts/{post_id}", json={"name": new_name, "description": new_description})
         self.assertEqual(response.status_code, 200)
         # 6
+        # User2 can not list the post
+        self.login(create_user=False, user=create_user2)
+        response = self.client.get(f"/api/posts/{post_id}")
+        self.assertEqual(response.status_code, 422)
+        # List post
+        self.login(create_user=False)
         response = self.client.get(f"/api/posts/{post_id}")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json['name'], new_name)
@@ -300,8 +324,6 @@ class ApiCase(unittest.TestCase):
         result = download_data.run([post_id], username)
         self.assertEqual(result['state'], 'SUCCESS')
         # 8
-        user = User.get_by_username(username)
-        post = Post.query.get(post_id)
         response = self.client.post(f"/api/posts/{post_id}/favorite")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(user.has_favorited(post), True)
@@ -309,10 +331,14 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(user.has_favorited(post), False)
         # 9
+        # Publish
         self.assertEqual(post.public, False)
         response = self.client.post(f"/api/posts/{post_id}/publish")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(post.public, True)
+        # Can not publish twice
+        response = self.client.post(f"/api/posts/{post_id}/publish")
+        self.assertEqual(response.status_code, 422)
         # 10
         response = self.client.post(
             f"/api/posts/{post_id}/comments", json={"text": "Comment 1"})
@@ -327,11 +353,25 @@ class ApiCase(unittest.TestCase):
         response = self.client.get(f"/api/comments/{comment_id}/replies")
         self.assertEqual(len(response.json), 1)
         # 12
+        # Can not invite himself
+        response = self.client.post(
+            f"/api/posts/{post_id}/collaborators", json={"username": username})
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(User.get_by_username(
+            username2).has_access(post), False)
+        # Invite user2
         response = self.client.post(
             f"/api/posts/{post_id}/collaborators", json={"username": username2})
         self.assertEqual(response.status_code, 201)
         self.assertEqual(User.get_by_username(
             username2).has_access(post), True)
+        # User2 can not invite collaborators
+        self.login(create_user=False, user=create_user2)
+        response = self.client.post(
+            f"/api/posts/{post_id}/collaborators", json={"username": username2})
+        self.assertEqual(response.status_code, 422)
+        self.login(create_user=False)
+        # Remove collaborator
         response = self.client.post(
             f"/api/posts/{post_id}/collaborators", json={"username": username2})
         self.assertEqual(response.status_code, 201)
@@ -372,6 +412,23 @@ class ApiCase(unittest.TestCase):
         result = run_step.run(post_id, step, username)
         self.assertEqual(json.loads(result['result'])[
                          "code"] == "error", False)
+        # 17
+        # User2 can not delete post_id
+        response = self.client.delete(f"/api/posts/{post_id}")
+        self.assertEqual(response.status_code, 422)
+        # Public posts can not be deleted
+        self.login(create_user=False)
+        response = self.client.delete(f"/api/posts/{post_id}")
+        self.assertEqual(response.status_code, 422)
+        post.public = False
+        db.session.commit()
+        # Delete post
+        response = self.client.delete(f"/api/posts/{post_id}")
+        self.assertEqual(response.status_code, 200)
+        # Restore post uploading data again
+        result = process_data.run(files, username)
+        self.assertEqual(json.loads(result['result'])[
+                         0]["code"] == "success", True)
 
     def test_create_user(self):
         """
