@@ -66,7 +66,8 @@ class User(PaginateMixin, db.Model):
                          unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
     email = db.Column(db.String(120), index=True,
-                      unique=True, nullable=False)
+                      nullable=False)
+    email_confirmation = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(128), nullable=False)
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
@@ -238,7 +239,11 @@ class User(PaginateMixin, db.Model):
 
     @staticmethod
     def get_by_email(email):
-        return User.query.filter_by(email=email).first()
+        return User.query.filter_by(email=email).all()
+
+    @staticmethod
+    def get_by_confirmed_email(email):
+        return User.query.filter_by(email=email, email_confirmation=True).first()
 
     def __repr__(self):
         return '<User {}>'.format(self.username)

@@ -321,9 +321,15 @@ class ApiCase(unittest.TestCase):
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.get(f"/api/downloads/data?pids={post_id}")
         self.assertEqual(response.status_code, 200)
-        result = download_data.run([post_id], username)
+        result = download_data.run([post_id], username, "127.0.0.1")
         self.assertEqual(result['state'], 'SUCCESS')
-        self.assertEqual(post.downloads, 1)
+        self.assertEqual(post.get_unique_download_count(), 1)
+        result = download_data.run([post_id], username, "127.0.0.1")
+        self.assertEqual(result['state'], 'SUCCESS')
+        self.assertEqual(post.get_unique_download_count(), 1)
+        result = download_data.run([post_id], username, "127.0.0.2")
+        self.assertEqual(result['state'], 'SUCCESS')
+        self.assertEqual(post.get_unique_download_count(), 2)
         # 8
         response = self.client.post(f"/api/posts/{post_id}/favorite")
         self.assertEqual(response.status_code, 200)
@@ -475,23 +481,38 @@ class ApiCase(unittest.TestCase):
             2 - Create user1 and login with user1
             3 - Verify if user1 can edit user2
             4 - Verify if user1 can edit user1
+            5 - User1 can use user2's email while not confirmed
+            6 - User1 can not use user2's email because it was confirmed
         """
         # 1
         username2 = self.login(user=create_user2)['username']
+        user2 = User.get_by_username(username2)
         # 2
         username1 = self.login()['username']
+        user1 = User.get_by_username(username1)
         # 3
         response = self.client.put("api/users/" + str(username2),
                                    json={"email": "newemail@ll.com"})
         self.assertNotEqual(response.status_code, 200)
-        user = User.get_by_username(username2)
-        self.assertNotEqual(user.email, "newemail@ll.com")
+        self.assertNotEqual(user2.email, "newemail@ll.com")
         # 4
         response = self.client.put("api/users/" + str(username1),
                                    json={"email": "newemail@ll.com"})
         self.assertEqual(response.status_code, 200)
-        user = User.get_by_username(username1)
-        self.assertEqual(user.email, "newemail@ll.com")
+        self.assertEqual(user1.email, "newemail@ll.com")
+        # 5
+        response = self.client.put("api/users/" + str(username1),
+                                   json={"email": user2.email})
+        self.assertEqual(response.status_code, 200)
+        # 6
+        response = self.client.put("api/users/" + str(username1),
+                                   json={"email": user1.email})
+        self.assertEqual(response.status_code, 200)
+        user2.email_confirmation = True
+        db.session.commit()
+        response = self.client.put("api/users/" + str(username1),
+                                   json={"email": user2.email})
+        self.assertEqual(response.status_code, 422)
 
     def test_follow_user(self):
         """

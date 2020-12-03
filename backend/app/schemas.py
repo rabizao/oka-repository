@@ -158,7 +158,7 @@ class UserRegisterSchema(UserBaseSchema):
 
     @post_load
     def check_unique_email(self, data, **kwargs):
-        if User.get_by_email(data["email"]):
+        if User.get_by_confirmed_email(data["email"]):
             raise ValidationError(field_name='email',
                                   message="Already in use.")
         return data
@@ -221,7 +221,7 @@ class UserEditSchema(SQLAlchemySchema):
     @post_load
     def check(self, data, **kwargs):
         if 'email' in data:
-            if User.get_by_email(data["email"]):
+            if User.get_by_confirmed_email(data["email"]):
                 raise ValidationError(field_name='email',
                                       message="Already in use.")
         if 'password' in data:
