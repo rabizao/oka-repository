@@ -132,6 +132,8 @@ def download_data(self, pids, username):
             if data is None:
                 raise Exception(
                     f'Download failed: data {post.data_uuid} not found!')
+            post.downloads += 1
+            db.session.commit()
             zipped_file.writestr(f'{pid}.arff', data.arff(
                 'No name', 'No description'))
     return _set_job_progress(self, 100, result=f'{filename_server_zip}.zip')

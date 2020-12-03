@@ -6,8 +6,6 @@ from flask import make_response, current_app, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 
-from oka import app
-from tatu import Tatu
 import simplejson as json2
 
 from . import bp
@@ -27,7 +25,7 @@ class SyncCheck(MethodView):
         if args['cat'] == "step":
             return jsonify(tatu.getstep(uuid) if args['fetch'] else {"has": tatu.hasstep(uuid)})
         if args['cat'] == "content":
-            print("                         WARNING: cannot handle more than one content yet")
+            print("WARNING: cannot handle more than one content yet")
             return jsonify(tatu.getcontent(uuid) if args['fetch'] else {"has": tatu.hascontent([uuid])})
 
     @jwt_required

@@ -323,6 +323,7 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         result = download_data.run([post_id], username)
         self.assertEqual(result['state'], 'SUCCESS')
+        self.assertEqual(post.downloads, 1)
         # 8
         response = self.client.post(f"/api/posts/{post_id}/favorite")
         self.assertEqual(response.status_code, 200)
