@@ -409,24 +409,26 @@ export default function Posts(props) {
                             </button>
                         )
                     }
-                    <h4 className="margin-top-small bold">Include a new collaborator</h4>
                     {
                         post.public ?
                             <>
                                 <h5>You can share this dataset using the following link</h5>
                                 <h5 className="padding-small background-secondary-color-light">{postUrl}</h5>
                             </> :
-                            <form className="form flex-column" onSubmit={e => handleSubmitCollaborator(e, collaboratorUsername)}>
-                                <label>
-                                    Username
+                            <>
+                                <h4 className="margin-top-small bold">Include a new collaborator</h4>
+                                <form className="form flex-column" onSubmit={e => handleSubmitCollaborator(e, collaboratorUsername)}>
+                                    <label>
+                                        Username
                                     <input
-                                        placeholder="Username"
-                                        value={collaboratorUsername}
-                                        onChange={e => setCollaboratorUsername(e.target.value)}
-                                    />
-                                </label>
-                                <button className="button-primary" type="submit">Invite</button>
-                            </form>
+                                            placeholder="Username"
+                                            value={collaboratorUsername}
+                                            onChange={e => setCollaboratorUsername(e.target.value)}
+                                        />
+                                    </label>
+                                    <button className="button-primary" type="submit">Invite</button>
+                                </form>
+                            </>
                     }
                 </div>
             </Modal>
