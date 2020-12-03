@@ -221,6 +221,8 @@ export default function Posts(props) {
         try {
             await api.post(`posts/${id}/publish`);
             NotificationManager.success("Post was successfully published. Now it is available to everyone.", "Publish", 8000)
+            const response = await api.get(`posts/${id}`);
+            setPost(response.data);
             setOpenPublish(false);
         } catch (error) {
             notifyError(error);

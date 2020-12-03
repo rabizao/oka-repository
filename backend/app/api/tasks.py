@@ -107,7 +107,7 @@ def run_step(self, post_id, step, username):
 
 
 @celery.task(bind=True, base=BaseTask)
-def download_data(self, pids, username):
+def download_data(self, pids, username, ip):
     '''
     Background task to run async download process
     '''
@@ -132,7 +132,7 @@ def download_data(self, pids, username):
             if data is None:
                 raise Exception(
                     f'Download failed: data {post.data_uuid} not found!')
-            post.downloads += 1
+            post.add_download(ip)
             db.session.commit()
             zipped_file.writestr(f'{pid}.arff', data.arff(
                 'No name', 'No description'))

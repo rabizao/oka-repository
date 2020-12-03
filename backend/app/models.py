@@ -77,7 +77,6 @@ class User(PaginateMixin, db.Model):
 
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     comments = db.relationship('Comment', backref='author', lazy='dynamic')
-    tags = db.relationship('Tag', backref='author', lazy='dynamic')
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
     tokens = db.relationship('Token', backref='owner', lazy='dynamic')
     messages_sent = db.relationship('Message',
@@ -247,8 +246,6 @@ class User(PaginateMixin, db.Model):
 
 class Post(PaginateMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-
-    # Unique
     data_uuid = db.Column(db.String(120), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     __table_args__ = (db.UniqueConstraint(
@@ -257,11 +254,10 @@ class Post(PaginateMixin, db.Model):
     name = db.Column(db.String(120), default="No name")
     description = db.Column(db.Text, default="No description")
 
-    downloads = db.Column(db.Integer(), default=0)
+    downloads = db.relationship('Download', backref='post', lazy='dynamic')
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     publish_timestamp = db.Column(db.DateTime, index=True)
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
-    tags = db.relationship('Tag', backref='post', lazy='dynamic')
     public = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
     # Data attributes
@@ -302,18 +298,19 @@ class Post(PaginateMixin, db.Model):
         db.session.commit()
         return comment
 
-    # def add_tag(self, text, author):
-    #     tag = Tag(text=text, post=self, author=author)
-    #     db.session.commit()
-    #     return tag
-
-    # def show_tags(self):
-    #     return self.tags.all()
+    def add_download(self, ip):
+        download = Download(post=self, ip=ip)
+        db.session.add(download)
+        return download
 
     def update(self, args):
         for key, value in args.items():
             setattr(self, key, value)
         return self
+
+    def get_unique_download_count(self):
+        return Download.query.group_by(
+            Download.ip).filter_by(post_id=self.id).count()
 
     @staticmethod
     def get_by_uuid(uuid, active=False):
@@ -342,18 +339,11 @@ class Comment(db.Model):
         return reply
 
 
-class Tag(db.Model):
+class Download(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    ip = db.Column(db.String(140))
+    timestamp = db.Column(db.DateTime(), default=datetime.utcnow, index=True)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
-    text = db.Column(db.String(140))
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-    @staticmethod
-    def list_datasets_by_tag(search_term):
-        tags = Tag.query.filter(Tag.text.like(
-            "%{}%".format(search_term))).all()
-        datasets = [p.post.get_data_object() for p in tags]
-        return datasets
 
 
 class Message(db.Model, PaginateMixin):
