@@ -237,29 +237,16 @@ export default function Posts(props) {
 
     async function handleCreatePost(e, uuid) {
         e.preventDefault();
-        if (uuid === "00000000000001") {
+        if (uuid === "00000000000000000000001") {
             NotificationManager.info("All histories begin here!", "NoData");
             return
         }
 
         try {
-            // first, try to get.
             const response = await api.get(`/posts/${uuid}`);
             history.push(`/posts/${response.data.id}/description`);
-            return
         } catch (error) {
-            if (error.response) {
-
-                // now, try to create
-                try {
-                    const response = await api.post(`posts/${uuid}`);
-                    history.push(`/posts/${response.data.id}/description`);
-                } catch (error) {
-                    notifyError(error);
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
     }
 
