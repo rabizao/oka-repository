@@ -3,13 +3,14 @@
     --primary-color: #2A506F;
     --primary-color-deactivated: #dddddd;
     --secondary-color: #A5DE37;
-    --secondary-color-light: rgba(196,196,196, 0.15);
-    --tertiary-color: rgba(255,255,255, 1.0);
-    --tertiary-color-light: rgba(255,255,255, 0.60); 
+    --secondary-color-light: rgba(196, 196, 196, 0.15);
+    --tertiary-color: rgba(255, 255, 255, 1.0);
+    --tertiary-color-light: rgba(255, 255, 255, 0.60);
     --error-color: #E05853;
     --transition-time: 0.4s;
     --border: 1px solid #e5e5e5;
 }
+
 * {
     margin: 0;
     padding: 0;
@@ -20,7 +21,7 @@
 }
 
 body {
-    font: 400 20px/1.4rem  Roboto, sans-serif;
+    font: 400 20px/1.4rem Roboto, sans-serif;
     line-height: 1.2;
     background: #F8F9FD;
     -webkit-font-smoothing: antialiased;
@@ -35,13 +36,13 @@ input, button, textarea, select {
 }
 
 button, input[type="submit"], input[type="reset"] {
-	background: none;
-	color: inherit;
-	border: none;
-	padding: 0;
-	font: inherit;
-	cursor: pointer;
-	outline: inherit;
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    outline: inherit;
 }
 
 .row {
@@ -53,7 +54,7 @@ button, input[type="submit"], input[type="reset"] {
 .content-box {
     background-color: white;
     border: var(--border);
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
 }
 
 .box {
@@ -296,7 +297,7 @@ button, input[type="submit"], input[type="reset"] {
     font-weight: bold;
 }
 
-.flex-axis-center, .flex-axis-center div a , .flex-axis-center div {
+.flex-axis-center, .flex-axis-center div a, .flex-axis-center div {
     align-items: center;
 }
 
@@ -304,10 +305,9 @@ button, input[type="submit"], input[type="reset"] {
     justify-content: safe center;
 } */
 
-.flex-crossaxis-center::before,
-.flex-crossaxis-center::after {
-  content: '';
-  flex: 1;
+.flex-crossaxis-center::before, .flex-crossaxis-center::after {
+    content: '';
+    flex: 1;
 }
 
 .flex-crossaxis-end {
@@ -368,7 +368,7 @@ button, input[type="submit"], input[type="reset"] {
     padding-left: 15px;
 }
 
-.ul-center li{
+.ul-center li {
     justify-content: center;
     align-items: center;
 }
@@ -386,7 +386,7 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .inherit-width {
-    width: inherit; 
+    width: inherit;
 }
 
 .icon-tertiary path {
@@ -489,7 +489,7 @@ button, input[type="submit"], input[type="reset"] {
     color: var(--secondary-color);
 }
 
-.nav-button-secondary-active button{
+.nav-button-secondary-active button {
     color: var(--secondary-color);
 }
 
@@ -562,14 +562,46 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .wrapword {
-    white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
-    white-space: -webkit-pre-wrap;          /* Chrome & Safari */ 
-    white-space: -pre-wrap;                 /* Opera 4-6 */
-    white-space: -o-pre-wrap;               /* Opera 7 */
-    white-space: pre-wrap;                  /* CSS3 */
-    word-wrap: break-word;                  /* Internet Explorer 5.5+ */
+    white-space: -moz-pre-wrap !important;
+    /* Mozilla, since 1999 */
+    white-space: -webkit-pre-wrap;
+    /* Chrome & Safari */
+    white-space: -pre-wrap;
+    /* Opera 4-6 */
+    white-space: -o-pre-wrap;
+    /* Opera 7 */
+    white-space: pre-wrap;
+    /* CSS3 */
+    word-wrap: break-word;
+    /* Internet Explorer 5.5+ */
     word-break: break-all;
     white-space: normal;
+}
+
+.form-edit-description {
+    display: flex;
+}
+
+.form-edit-description textarea {
+    border: 0;
+    color: var(--primary-color);
+    width: 100%;
+    height: 800px;
+    overflow: hidden;
+}
+
+.form-edit-name, .form-edit-name button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.form-edit-name input, .form-edit-name button {
+    height: 48px;
+    padding: 10px;
+    border: 0;
+    background-color: var(--secondary-color-light);
+    color: var(--tertiary-color);
 }
 
 .search-form-secondary, .search-form-secondary button {
@@ -713,11 +745,11 @@ button, input[type="submit"], input[type="reset"] {
     text-align: center
 }
 
-.max-height-50 {    
+.max-height-50 {
     max-height: 50px;
 }
 
-.max-height-70vh {    
+.max-height-70vh {
     max-height: 70vh;
 }
 
@@ -777,45 +809,45 @@ button, input[type="submit"], input[type="reset"] {
 
 .font-courier {
     font-family: "Courier New", Courier, monospace;
-  }
-
+}
 
 /* Notifications */
+
 @font-face {
-  font-family: 'Notification';
-  src: url("./fonts/notification.eot?s3g3t9");
-  src: url("./fonts/notification.eot?#iefixs3g3t9") format("embedded-opentype"), url("./fonts/notification.woff?s3g3t9") format("woff"), url("./fonts/notification.ttf?s3g3t9") format("truetype"), url("./fonts/notification.svg?s3g3t9#notification") format("svg");
-  font-weight: normal;
-  font-style: normal;
+    font-family: 'Notification';
+    src: url("./fonts/notification.eot?s3g3t9");
+    src: url("./fonts/notification.eot?#iefixs3g3t9") format("embedded-opentype"), url("./fonts/notification.woff?s3g3t9") format("woff"), url("./fonts/notification.ttf?s3g3t9") format("truetype"), url("./fonts/notification.svg?s3g3t9#notification") format("svg");
+    font-weight: normal;
+    font-style: normal;
 }
 
 .notification-container {
-  box-sizing: border-box;
-  position: fixed;
-  top: 0;
-  right: 0;
-  z-index: 999999;
-  width: 320px;
-  padding: 0px 15px;
-  max-height: calc(100% - 30px);
-  overflow-x: hidden;
-  overflow-y: auto;
-  margin-top: 80px;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 999999;
+    width: 320px;
+    padding: 0px 15px;
+    max-height: calc(100% - 30px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    margin-top: 80px;
 }
 
 .notification {
-  box-sizing: border-box;
-  padding: 15px 15px 15px 58px;
-  border-radius: 2px;
-  color: #fff;
-  background-color: #ccc;
-  box-shadow: 0 0 12px #999;
-  cursor: pointer;
-  font-size: 1em;
-  line-height: 1.2em;
-  position: relative;
-  opacity: 0.9;
-  margin-top: 15px;
+    box-sizing: border-box;
+    padding: 15px 15px 15px 58px;
+    border-radius: 2px;
+    color: #fff;
+    background-color: #ccc;
+    box-shadow: 0 0 12px #999;
+    cursor: pointer;
+    font-size: 1em;
+    line-height: 1.2em;
+    position: relative;
+    opacity: 0.9;
+    margin-top: 15px;
 }
 
 .notification .message {
@@ -823,85 +855,84 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .notification .title {
-  font-size: 1em;
-  line-height: 1.2em;
-  font-weight: bold;
-  margin: 0 0 5px 0;
-  color: white;
+    font-size: 1em;
+    line-height: 1.2em;
+    font-weight: bold;
+    margin: 0 0 5px 0;
+    color: white;
 }
 
 .notification:hover, .notification:focus {
-  opacity: 1;
+    opacity: 1;
 }
 
 .notification-enter {
-  visibility: hidden;
-  transform: translate3d(100%, 0, 0);
+    visibility: hidden;
+    transform: translate3d(100%, 0, 0);
 }
 
 .notification-enter.notification-enter-active {
-  visibility: visible;
-  transform: translate3d(0, 0, 0);
-  transition: all 0.4s;
+    visibility: visible;
+    transform: translate3d(0, 0, 0);
+    transition: all 0.4s;
 }
 
 .notification-leave {
-  visibility: visible;
-  transform: translate3d(0, 0, 0);
+    visibility: visible;
+    transform: translate3d(0, 0, 0);
 }
 
 .notification-leave.notification-leave-active {
-  visibility: hidden;
-  transform: translate3d(100%, 0, 0);
-  transition: all 0.4s;
+    visibility: hidden;
+    transform: translate3d(100%, 0, 0);
+    transition: all 0.4s;
 }
 
 .notification:before {
-  position: absolute;
-  top: 50%;
-  left: 15px;
-  margin-top: -14px;
-  display: block;
-  font-family: 'Notification';
-  width: 28px;
-  height: 28px;
-  font-size: 28px;
-  text-align: center;
-  line-height: 28px;
+    position: absolute;
+    top: 50%;
+    left: 15px;
+    margin-top: -14px;
+    display: block;
+    font-family: 'Notification';
+    width: 28px;
+    height: 28px;
+    font-size: 28px;
+    text-align: center;
+    line-height: 28px;
 }
 
 .notification-info {
-  background-color: #2f96b4;
+    background-color: #2f96b4;
 }
 
 .notification-info:before {
-  content: "";
+    content: "";
 }
 
 .notification-success {
-  background-color: #51a351;
+    background-color: #51a351;
 }
 
 .notification-success:before {
-  content: "";
+    content: "";
 }
 
 .notification-warning {
-  background-color: #f89406;
+    background-color: #f89406;
 }
 
 .notification-warning:before {
-  content: "";
+    content: "";
 }
 
 .notification-error {
-  background-color: var(--error-color);
+    background-color: var(--error-color);
 }
 
 .notification-error:before {
-  content: "";
+    content: "";
 }
-
 
 #small-show {
     display: none;
@@ -911,7 +942,6 @@ button, input[type="submit"], input[type="reset"] {
     #small-hide {
         display: none;
     }
-
     #small-show {
         display: block;
     }

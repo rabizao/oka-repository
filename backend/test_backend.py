@@ -283,8 +283,11 @@ class ApiCase(unittest.TestCase):
         post = Post.query.get(post_id)
 
         for i in range(50):
-            self.tatu.fetch(data_uuid, lazy=False)
+            data = self.tatu.fetch(data_uuid, lazy=False)
+            attrs = data.Xd
+            print("ATTRS>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", attrs)
             response = self.client.get(f"/api/posts/{post_id}")
+            print(i, response.json['attrs'])
         # 5
         new_name = "new name"
         new_description = "new description"
