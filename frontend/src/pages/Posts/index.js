@@ -133,9 +133,11 @@ export default function Posts(props) {
                                 </form>
                             </div> :
                             <div className="flex-column">
-                                <div className="flex-row">
-                                    <button className="icon-normal" onClick={() => setEditDescription(true)}><Edit className="icon-secondary" /></button>
-                                </div>
+                                {!post.public &&
+                                    <div className="flex-row">
+                                        <button className="icon-normal" onClick={() => setEditDescription(true)}><Edit className="icon-secondary" /></button>
+                                    </div>
+                                }
                                 <>{text}</>
                             </div>
                         }
@@ -608,7 +610,9 @@ export default function Posts(props) {
                                 </> :
                                 <>
                                     <h1 className="color-tertiary ellipsis">{name}</h1>
-                                    <button className="icon-normal" onClick={() => setEditName(true)}><Edit className="icon-secondary" /></button>
+                                    {!post.public &&
+                                        <button className="icon-normal" onClick={() => setEditName(true)}><Edit className="icon-secondary" /></button>
+                                    }
                                 </>
                             }
                         </div>
