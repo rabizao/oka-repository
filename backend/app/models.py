@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from sqlalchemy import and_, asc, or_
+from sqlalchemy import and_, or_
 from werkzeug.security import check_password_hash
 
 from . import celery, db
@@ -66,7 +66,8 @@ class User(PaginateMixin, db.Model):
                          unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
     email = db.Column(db.String(120), index=True,
-                      unique=True, nullable=False)
+                      nullable=False)
+    email_confirmation = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(128), nullable=False)
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
@@ -77,7 +78,6 @@ class User(PaginateMixin, db.Model):
 
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     comments = db.relationship('Comment', backref='author', lazy='dynamic')
-    tags = db.relationship('Tag', backref='author', lazy='dynamic')
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
     tokens = db.relationship('Token', backref='owner', lazy='dynamic')
     messages_sent = db.relationship('Message',
@@ -217,6 +217,11 @@ class User(PaginateMixin, db.Model):
         return can_see.union(own)
         # return self.accessible.filter(access.c.post_id == post.id).all() and self.posts
 
+    def accessible_twin_posts(self, post):
+        can_see = self.accessible.filter(Post.active)
+        own = Post.query.filter_by(user_id=self.id, active=True)
+        return can_see.union(own).filter_by(data_uuid=post.data_uuid).filter(Post.id != post.id)
+
     def launch_task(self, name, description, *args, **kwargs):
         job = celery.send_task('app.api.tasks.' + name, *args, **kwargs)
         task = Task(id=job.id, name=name, description=description,
@@ -234,30 +239,18 @@ class User(PaginateMixin, db.Model):
 
     @staticmethod
     def get_by_email(email):
-        return User.query.filter_by(email=email).first()
+        return User.query.filter_by(email=email).all()
+
+    @staticmethod
+    def get_by_confirmed_email(email):
+        return User.query.filter_by(email=email, email_confirmation=True).first()
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
 
 
-class Transformation(db.Model):
-    # "label" "name" "help" "stored" "avatar"
-    id = db.Column(db.Integer, primary_key=True)
-    label = db.Column(db.String(999))  # Visible text describind Data object.
-    name = db.Column(db.String(999))  # Name of the Transformer object.
-    # Complete description of the Transformer object.
-    help = db.Column(db.Text)
-    # Whether the Data object is already stored in tatu.
-    stored = db.Column(db.Boolean)
-    # Filename of the icon representing the Data object.
-    avatar = db.Column(db.String(999))
-    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
-
-
 class Post(PaginateMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-
-    # Unique
     data_uuid = db.Column(db.String(120), index=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     __table_args__ = (db.UniqueConstraint(
@@ -266,13 +259,10 @@ class Post(PaginateMixin, db.Model):
     name = db.Column(db.String(120), default="No name")
     description = db.Column(db.Text, default="No description")
 
-    downloads = db.Column(db.Integer(), default=0)
+    downloads = db.relationship('Download', backref='post', lazy='dynamic')
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     publish_timestamp = db.Column(db.DateTime, index=True)
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
-    history = db.relationship(
-        'Transformation', backref='post', lazy='dynamic', order_by=asc(Transformation.id))
-    tags = db.relationship('Tag', backref='post', lazy='dynamic')
     public = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
     # Data attributes
@@ -313,18 +303,19 @@ class Post(PaginateMixin, db.Model):
         db.session.commit()
         return comment
 
-    # def add_tag(self, text, author):
-    #     tag = Tag(text=text, post=self, author=author)
-    #     db.session.commit()
-    #     return tag
-
-    # def show_tags(self):
-    #     return self.tags.all()
+    def add_download(self, ip):
+        download = Download(post=self, ip=ip)
+        db.session.add(download)
+        return download
 
     def update(self, args):
         for key, value in args.items():
             setattr(self, key, value)
         return self
+
+    def get_unique_download_count(self):
+        return Download.query.group_by(
+            Download.ip).filter_by(post_id=self.id).count()
 
     @staticmethod
     def get_by_uuid(uuid, active=False):
@@ -353,18 +344,11 @@ class Comment(db.Model):
         return reply
 
 
-class Tag(db.Model):
+class Download(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    ip = db.Column(db.String(140))
+    timestamp = db.Column(db.DateTime(), default=datetime.utcnow, index=True)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
-    text = db.Column(db.String(140))
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-    @staticmethod
-    def list_datasets_by_tag(search_term):
-        tags = Tag.query.filter(Tag.text.like(
-            "%{}%".format(search_term))).all()
-        datasets = [p.post.get_data_object() for p in tags]
-        return datasets
 
 
 class Message(db.Model, PaginateMixin):

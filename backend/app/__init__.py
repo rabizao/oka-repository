@@ -3,6 +3,8 @@ import os
 from logging.handlers import SMTPHandler, RotatingFileHandler
 
 from celery import Celery
+
+from tatu import Tatu
 from .config import Config
 from flask import Flask
 from flask_cors import CORS
@@ -23,6 +25,8 @@ def create_app(config_class=Config):
     app = Flask(__name__, static_url_path="/media", static_folder='media')
 
     app.config.from_object(config_class)
+    app.config['TATU_SERVER'] = Tatu(url=app.config['TATU_URL'], threaded=False)
+
     db.init_app(app)
     migrate.init_app(app, db)
     CORS(app, expose_headers=["X-Pagination"])

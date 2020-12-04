@@ -1,13 +1,11 @@
 from app import jwt
 from . import bp
 from app.models import User, Token
-from app.schemas import UserLoginSchema, LoginResponseSchema, RefreshTokenSchema, ApiTokenSchema
+from app.schemas import UserLoginSchema, LoginResponseSchema, ApiTokenSchema
 from flask import jsonify
 from flask.views import MethodView
 from flask_jwt_extended import (
-    jwt_required, create_access_token, get_jti,
-    create_refresh_token, jwt_refresh_token_required, get_raw_jwt,
-    get_jwt_identity
+    jwt_required, create_access_token, get_jti, get_raw_jwt, get_jwt_identity
 )
 
 
@@ -40,35 +38,14 @@ class Login(MethodView):
         """Login the user"""
         user = User.get_by_username(args['username'])
         access_token = create_access_token(identity=args['username'])
-        refresh_token = create_refresh_token(identity=args['username'])
         access_jti = get_jti(encoded_token=access_token)
-        refresh_jti = get_jti(encoded_token=refresh_token)
         user.set_revoked_jti_store(access_jti, False)
-        user.set_revoked_jti_store(refresh_jti, False)
         response = {
             'access_token': access_token,
-            'refresh_token': refresh_token,
             'id': user.id,
             'username': args['username'],
             'name': user.name
         }
-
-        return response
-
-
-@bp.route('/auth/refresh')
-class Refresh(MethodView):
-    @jwt_refresh_token_required
-    @bp.arguments(RefreshTokenSchema)
-    @bp.response(RefreshTokenSchema)
-    def post(self, args):
-        """Refresh access token"""
-        current_user = get_jwt_identity()
-        user = User.get_by_username(current_user)
-        access_token = create_access_token(identity=current_user)
-        access_jti = get_jti(encoded_token=access_token)
-        user.set_revoked_jti_store(access_jti, False)
-        response = {'access_token': access_token}
 
         return response
 
@@ -79,18 +56,6 @@ class Logout(MethodView):
     @bp.response(code=200)
     def delete(self):
         """Revoke access token"""
-        jti = get_raw_jwt()['jti']
-        current_user = get_jwt_identity()
-        user = User.get_by_username(current_user)
-        user.set_revoked_jti_store(jti, True)
-
-
-@bp.route('/auth/logout2')
-class Logout2(MethodView):
-    @jwt_refresh_token_required
-    @bp.response(code=200)
-    def delete(self):
-        """Revoke refresh token"""
         jti = get_raw_jwt()['jti']
         current_user = get_jwt_identity()
         user = User.get_by_username(current_user)

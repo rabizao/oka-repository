@@ -1,6 +1,6 @@
+import json
 import uuid as u
 from datetime import datetime
-import json
 
 from flask import current_app
 from flask.views import MethodView
@@ -12,9 +12,17 @@ from app.models import Comment, Post, User
 from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
                          PostEditSchema, PostFilesSchema, PostQuerySchema,
                          RunSchema, TaskBaseSchema, UserBaseSchema, StatsQuerySchema)
-
 from . import bp
-from tatu import Tatu
+
+
+def save_files(input_files):
+    files = []
+    for file in input_files:
+        full_path = current_app.config['TMP_FOLDER'] + \
+            str(u.uuid4()) + file.filename[-10:]
+        file.save(full_path)
+        files.append({"path": full_path, "original_name": file.filename})
+    return files
 
 
 # noinspection PyArgumentList
@@ -46,18 +54,10 @@ class Posts(MethodView):
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
 
-        original_names = []
-        files = []
-
-        for file in argsFiles['files']:
-            full_path = current_app.config['TMP_FOLDER'] + \
-                str(u.uuid4()) + file.filename[-10:]
-            file.save(full_path)
-            files.append({"path": full_path, "original_name": file.filename})
-            original_names.append(file.filename)
+        files = save_files(argsFiles['files'])
 
         task = logged_user.launch_task('process_data',
-                                       f"Processing your uploaded files: {', '.join(original_names)}",
+                                       "Processing your uploaded files",
                                        [files, username])
         db.session.commit()
         return task
@@ -97,12 +97,39 @@ class PostsById(MethodView):
             abort(422, errors={
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
+        if post.public:
+            abort(422, errors={
+                "json": {"id": ["Public posts can not be edited. [" + self.__class__.__name__ + "]"]}})
+
         if not logged_user.is_admin():
             if logged_user != post.author:
                 abort(422, errors={
                     "json": {"id": ["You can only edit your own datasets."]}})
 
         post.update(args)
+        db.session.commit()
+
+    @jwt_required
+    @bp.response(code=200)
+    def delete(self, id):
+        """
+        Delete post with id {id}
+        """
+        post = Post.query.get(id)
+        if not post or not post.active:
+            abort(422, errors={
+                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+
+        if post.public:
+            abort(422, errors={
+                "json": {"id": ["Public posts can not be deleted. [" + self.__class__.__name__ + "]"]}})
+
+        logged_user = User.get_by_username(get_jwt_identity())
+        if post.author != logged_user:
+            abort(422, errors={
+                "json": {"id": ["Only the author can delete the post. [" + self.__class__.__name__ + "]"]}})
+
+        post.active = False
         db.session.commit()
 
 
@@ -178,6 +205,10 @@ class PostsPublishById(MethodView):
             abort(422, errors={
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
+        if post.public:
+            abort(422, errors={
+                "json": {"id": ["The post is already published. [" + self.__class__.__name__ + "]"]}})
+
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
         if post.author != logged_user:
@@ -244,7 +275,7 @@ class PostsStatsById(MethodView):
             abort(422, errors={
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
-        tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+        tatu = current_app.config['TATU_SERVER']
         data = tatu.fetch(post.data_uuid, lazy=False)
 
         datas = []
@@ -281,10 +312,12 @@ class PostsTwinsById(MethodView):
             abort(422, errors={
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
-        filter_by = {"data_uuid": post.data_uuid, "id": not id}
-        data, pagination_parameters.item_count = Post.get(
-            args, pagination_parameters.page, pagination_parameters.page_size, filter_by=filter_by
-        )
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
+
+        data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
+                                                          pagination_parameters.page_size,
+                                                          query=logged_user.accessible_twin_posts(post))
         return data
 
 
@@ -308,60 +341,3 @@ class PostsTransformById(MethodView):
                                        [post.id, args["step"], username])
         db.session.commit()
         return task
-
-
-# @bp.route("/posts/<string:uuid>")
-# class PostsOnDemand(MethodView):
-#     @jwt_required
-#     @bp.response(PostBaseSchema)
-#     def post(self, uuid):
-#     """
-#     Create a new Post on demand.
-#     """
-#     tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
-#     data = tatu.fetch(uuid)
-#     if data is None:
-#         abort(
-#             422, errors={"json": {"OnDemand": [f"Data {uuid} was not cached nor uploaded,
-# so it does not exist!"]}}
-#         )
-
-#     username = get_jwt_identity()
-#     logged_user = User.get_by_username(username)
-#     if logged_user.posts.filter_by(data_uuid=uuid).first():
-#         abort(422, errors={
-#             "json": {"OnDemand": ["Dataset already exists!"]}})
-
-#     # TODO: refactor duplicate code
-
-#     name = "←".join([step["desc"]["name"]
-#                      for step in reversed(data.history) or "No Name"])
-
-#     # noinspection PyArgumentList
-#     post = Post(author=logged_user,
-#                 data_uuid=uuid,
-#                 name=name,
-#                 description="Title and description automatically generated."
-#                 )
-#     duuid = Root.uuid
-#     for step in data.history:
-#         dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(
-#             step), "stored": True}  # TODO: stored is useless
-#         db.session.add(Transformation(**dic, post=post))
-#         duuid *= UUID(step["id"])
-
-#     db.session.add(post)
-#     db.session.commit()
-
-#     return post
-
-#     @jwt_required
-#     @bp.response(PostBaseSchema)
-#     def get(self, uuid):
-#     username = get_jwt_identity()
-#     logged_user = User.get_by_username(username)
-#     post = logged_user.posts.filter_by(data_uuid=uuid).first()
-#     if not post:
-#         abort(422, errors={
-#             "json": {"OnDemand": ["Dataset does not exist!"]}})
-#     return post

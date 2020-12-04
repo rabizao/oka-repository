@@ -1,28 +1,29 @@
+from datetime import datetime
+
 from flask import current_app
 from flask_smorest.fields import Upload
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
 from marshmallow_sqlalchemy.fields import Nested
 from werkzeug.security import generate_password_hash
-from datetime import datetime
 
-from app import db
-from app.models import User, Post, Comment, Transformation, Contact, Notification, Task, Message
-from cruipto.avatar23 import colors
 from aiuna.content.root import Root
-from tatu import Tatu
+from app import db
+from app.models import User, Post, Comment, Contact, Notification, Task, Message
+from cruipto.avatar23 import colors
 
 
 def get_attrs(uuid):
-    tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
+    tatu = current_app.config['TATU_SERVER']
     data = tatu.fetch(uuid, lazy=False)
-    return data.Xd
+    return data.Xd if data else {}
 
 
 def past(uuid):
-    tatu = Tatu(url=current_app.config['TATU_URL'], threaded=False)
-    print(111111111111111, current_app.config['TATU_URL'])
+    tatu = current_app.config['TATU_SERVER']
     data = tatu.fetch(uuid, lazy=False)
+    if not data:
+        return {}
     duuid = Root.uuid
     history = []
     for step in data.history:
@@ -157,7 +158,7 @@ class UserRegisterSchema(UserBaseSchema):
 
     @post_load
     def check_unique_email(self, data, **kwargs):
-        if User.get_by_email(data["email"]):
+        if User.get_by_confirmed_email(data["email"]):
             raise ValidationError(field_name='email',
                                   message="Already in use.")
         return data
@@ -220,20 +221,13 @@ class UserEditSchema(SQLAlchemySchema):
     @post_load
     def check(self, data, **kwargs):
         if 'email' in data:
-            if User.get_by_email(data["email"]):
+            if User.get_by_confirmed_email(data["email"]):
                 raise ValidationError(field_name='email',
                                       message="Already in use.")
         if 'password' in data:
             data["password"] = generate_password_hash(data["password"])
 
         return data
-
-
-class TransformationBaseSchema(SQLAlchemyAutoSchema):
-    class Meta:
-        model = Transformation
-
-    id = auto_field(dump_only=True)
 
 
 class MessageBaseSchema(SQLAlchemyAutoSchema):
@@ -264,11 +258,10 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     favorites = auto_field(dump_only=True)
     data_uuid_colors = fields.Function(
         lambda obj: colors(obj.data_uuid), dump_only=True)
-    # attrs = fields.Dict(dump_only=True)
     attrs = fields.Function(
         lambda obj: get_attrs(obj.data_uuid), dump_only=True)
     history = fields.Function(lambda obj: past(obj.data_uuid), dump_only=True)
-    # history = Nested(TransformationBaseSchema, many=True, dump_only=True)
+    downloads = fields.Function(lambda obj: obj.get_unique_download_count(), dump_only=True)
 
 
 class PostEditSchema(SQLAlchemySchema):
@@ -282,19 +275,7 @@ class PostEditSchema(SQLAlchemySchema):
 
 
 class PostFilesSchema(SQLAlchemySchema):
-    files = fields.List(Upload())
-    sid = fields.String()
-
-
-class TatuUploadSchema(SQLAlchemySchema):
-    # @pre_load  # Diferentes estágios de tratamento dos dados: pre/pos load/dump
-    # def test(self, data, **kwargs):
-    #     print("test, TatuUploadSchema", data, "----------", kwargs)
-    #
-    #     return data
-
-    file = Upload()
-    json = Upload()
+    files = fields.List(Upload(), required=True)
 
 
 class SyncCheckBaseSchema(SQLAlchemySchema):
@@ -325,7 +306,16 @@ class SyncContentFileSchema(SQLAlchemySchema):
 
 
 class SyncFieldsSchema(SQLAlchemySchema):
-    cols = fields.Dict(required=0, NotImplemented=0)
+    rows = fields.List(fields.Dict(), required=True)
+    ignoredup = fields.Bool(missing=False)
+
+
+class SyncFieldsQuerySchema(SQLAlchemySchema):
+    ignoredup = fields.Bool(missing=False)
+
+
+class SuccessResponseSchema(SQLAlchemySchema):
+    success = fields.Bool()
 
 
 class SyncContentSchema(SQLAlchemySchema):
@@ -337,7 +327,7 @@ class DownloadQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
-    uuids = fields.List(fields.String())
+    pids = fields.List(fields.String(), required=True)
 
 
 class StatsQuerySchema(SQLAlchemySchema):

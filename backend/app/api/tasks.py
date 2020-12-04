@@ -4,28 +4,25 @@ import uuid as u
 from os import sys
 from zipfile import ZipFile
 
+from celery.signals import worker_init
+from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from flask_mail import Message
-from celery.signals import worker_init
 
 from aiuna.content.root import Root
 from aiuna.step.file import File
-from app import celery, create_app, db, mail
-from app.models import Post, Task, Transformation, User
+from app import celery, db, mail
+from app.models import Post, Task, User
 from app.schemas import TaskStatusBaseSchema
-
-from tatu import Tatu
 from . import bp
-
-app = create_app()
-app.app_context().push()
 
 
 class BaseTask(celery.Task):
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
-        app.logger.error('Unhandled exception', exc_info=sys.exc_info())
+        current_app.logger.error(
+            'Unhandled exception', exc_info=sys.exc_info())
         task = Task.query.get(task_id)
         if task:
             task.complete = True
@@ -45,7 +42,7 @@ def configure(sender=None, conf=None, **kwargs):
     conn = celery.connection(transport_options={'visibility_timeout': 0})
     qos = conn.channel().qos
     qos.restore_visible()
-    app.logger.info('Unacknowledged messages restored')
+    current_app.logger.info('Unacknowledged messages restored')
 
 
 def _set_job_progress(job, progress, failure=False, result={}):
@@ -82,11 +79,11 @@ def send_async_email(message):
     '''
     Background task to send an email
     '''
-    msg = Message('[Oka - Contato]', sender=app.config['ADMINS'][0],
-                  recipients=[*app.config['ADMINS']])
+    msg = Message('[Oka - Contato]', sender=current_app.config['ADMINS'][0],
+                  recipients=[*current_app.config['ADMINS']])
     msg.html = message
 
-    with app.app_context():
+    with current_app.app_context():
         mail.send(msg)
 
 
@@ -102,32 +99,44 @@ def run_step(self, post_id, step, username):
     size = 10
     for i in range(size):
         _set_job_progress(self, i / size * 100)
-        time.sleep(5)
+        time.sleep(1)
     print(post.id, step, logged_user.username)
-    result = 'UUID?'
+    result = {'uuid': "UUID",
+              'message': 'Successfully run', 'code': 'success'}
     return _set_job_progress(self, 100, result=result)
 
 
 @celery.task(bind=True, base=BaseTask)
-def download_data(self, uuids):
+def download_data(self, pids, username, ip):
     '''
     Background task to run async download process
     '''
     # TODO: Check if user has access to files
-    tatu = Tatu(url=app.config['TATU_URL'], threaded=False)
+    logged_user = User.get_by_username(username)
+    if not logged_user:
+        raise Exception(f'Username {username} not found!')
+    tatu = current_app.config['TATU_SERVER']
     filename_server_zip = str(u.uuid4())
-    path_server_zip = app.static_folder + '/' + filename_server_zip + '.zip'
+    path_server_zip = f'{current_app.static_folder}/{filename_server_zip}.zip'
     with ZipFile(path_server_zip, 'w') as zipped_file:
-        for uuid in uuids:
-            actual_index = uuids.index(uuid)
-            _set_job_progress(self, actual_index / len(uuids) * 100)
-            data = tatu.fetch(uuid, lazy=False)
+        for pid in pids:
+            actual_index = pids.index(pid)
+            _set_job_progress(self, actual_index / len(pids) * 100)
+            post = Post.query.get(pid)
+            if not post:
+                raise Exception(f'Download failed: post {pid} not found!')
+            if not logged_user.has_access(post):
+                raise Exception(
+                    f'Download failed. You do not have access to post {pid}!')
+            data = tatu.fetch(post.data_uuid, lazy=False)
             if data is None:
-                raise Exception('Download failed: ' + uuid + ' not found!')
-            zipped_file.writestr(
-                uuid + '.arff', data.arff('No name', 'No description'))
-    result = filename_server_zip + '.zip'
-    return _set_job_progress(self, 100, result=result)
+                raise Exception(
+                    f'Download failed: data {post.data_uuid} not found!')
+            post.add_download(ip)
+            db.session.commit()
+            zipped_file.writestr(f'{pid}.arff', data.arff(
+                'No name', 'No description'))
+    return _set_job_progress(self, 100, result=f'{filename_server_zip}.zip')
 
 
 @celery.task(bind=True, base=BaseTask)
@@ -136,8 +145,10 @@ def process_data(self, files, username):
     Background task to run async post process
     '''
     logged_user = User.get_by_username(username)
+    if not logged_user:
+        raise Exception(f'Username {username} not found!')
     result = []
-    tatu = Tatu(url=app.config['TATU_URL'], threaded=False)
+    tatu = current_app.config['TATU_SERVER']
 
     for file in files:
         actual_index = files.index(file)
@@ -152,8 +163,14 @@ def process_data(self, files, username):
 
         existing_post = logged_user.posts.filter_by(data_uuid=data.id).first()
         if existing_post:
-            obj = {'original_name': file['original_name'],
-                   'message': 'Error! Dataset already uploaded', 'code': 'error', 'id': existing_post.id}
+            if existing_post.active:
+                obj = {'original_name': file['original_name'],
+                       'message': 'Error! Dataset already uploaded', 'code': 'error', 'id': existing_post.id}
+            else:
+                obj = {'original_name': file['original_name'],
+                       'message': 'Dataset successfully restored', 'code': 'success', 'id': existing_post.id}
+                existing_post.active = True
+                db.session.commit()
             result.append(obj)
             logged_user.add_notification(
                 name='data_uploaded', data=obj, overwrite=False)
@@ -161,25 +178,21 @@ def process_data(self, files, username):
                 name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True)
             continue
 
-        tatu.store(data, lazy=False)
-        post = Post(author=logged_user, data_uuid=data.id, name=name, description=description,
-                    number_of_instances=len(data.X), number_of_features=len(data.Y))
-        # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
-        # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
-        duuid = Root.uuid
-        for step in data.history:
-            # TODO: stored is useless
-            dic = {"label": duuid.id, "name": step.name,
-                   "help": str(step), "stored": True}
-            db.session.add(Transformation(**dic, post=post))
-            duuid *= step.uuid
-        # for uid, step in data.history.items():
-        #     # TODO: stored is useless
-        #     dic = {"label": duuid.id, "name": step["desc"]["name"], "help": str(step), "stored": True}
+        tatu.store(data, lazy=False, ignoredup=True)
 
-        #     db.session.add(Transformation(**dic, post=post))
-        #     duuid *= UUID(step["id"])
-        db.session.add(post)
+        # History.
+        datauuid = Root.uuid
+        name0, description0 = "No name", "No description"
+        for step in list(data.history):
+            datauuid = datauuid * step.uuid
+            if datauuid.id == data.id:
+                name0, description0 = name, description
+            post = Post(author=logged_user, data_uuid=datauuid.id, name=name0, description=description0,
+                        number_of_instances=len(data.X), number_of_features=len(data.Y))
+            # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
+            # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
+            db.session.add(post)
+
         db.session.commit()
         obj = {'original_name': file['original_name'],
                'message': 'Dataset successfully uploaded', 'code': 'success', 'id': post.id}

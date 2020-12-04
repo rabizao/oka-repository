@@ -17,11 +17,12 @@ import { LoginContext } from '../../contexts/LoginContext';
 import queryString from 'query-string';
 import { notifyError } from '../../utils';
 import { NotificationManager } from 'react-notifications';
+import OkaProfileBox from '../../components/OkaProfileBox';
 
 export default function Users(props) {
     const location = useLocation()
     const username = props.match.params.username;
-    const section = props.match.params.section;
+    const section = props.match.params.section ? props.match.params.section : "empty";
     const [parsedQueries, setParsedQueries] = useState({});
     const [loadingHero, setLoadingHero] = useState(true);
     const [user, setUser] = useState({});
@@ -50,6 +51,12 @@ export default function Users(props) {
     }
 
     const navItems = {
+        empty: {
+            "name": "empty",
+            "url": "/users/" + username,
+            "content": <></>,
+            "hide": true
+        },
         uploads: {
             "name": "Uploads",
             "url": "/users/" + username + "/uploads",
@@ -66,6 +73,16 @@ export default function Users(props) {
             "private": true,
             "url": "/users/" + username + "/messages",
             "content": <OkaMessagesBox />
+        },
+        following: {
+            "name": "Following",
+            "url": "/users/" + username + "/following",
+            "content": <OkaProfileBox fetch_url={"/users/" + username + "/following?" + queryString.stringify(parsedQueries)} />
+        },
+        followers: {
+            "name": "Followers",
+            "url": "/users/" + username + "/followers",
+            "content": <OkaProfileBox fetch_url={"/users/" + username + "/followers?" + queryString.stringify(parsedQueries)} />
         },
         conversation: {
             "name": "Convesation",
@@ -147,15 +164,11 @@ export default function Users(props) {
         setAbout_meEdit(about_me);
     }
 
-    function handleCloseMessage() {
-        setOpenMessage(false);
-    }
-
     return (
         <>
             <Modal
                 open={openEdit}
-                onClose={()=>setOpenMessage(false)}
+                onClose={()=>setOpenEdit(false)}
             >
                 <div className="modal padding-big">
                     <h3 className="margin-top-small">Update your data</h3>
@@ -182,7 +195,7 @@ export default function Users(props) {
             </Modal>
             <Modal
                 open={openMessage}
-                onClose={handleCloseMessage}
+                onClose={() => setOpenMessage(false)}
             >
                 <div className="modal padding-big">
                     <h3 className="margin-top-small">{`Send a message to ${user.name}`}</h3>

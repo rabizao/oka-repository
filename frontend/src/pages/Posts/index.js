@@ -48,11 +48,12 @@ const runData = [
 
 export default function Posts(props) {
     const id = props.match.params.id;
-    const section = props.match.params.section;
+    const section = props.match.params.section ? props.match.params.section : "empty";
     const [loadingHero, setLoadingHero] = useState(true);
     const [post, setPost] = useState({});
     const [openEdit, setOpenEdit] = useState(false);
     const [openCite, setOpenCite] = useState(false);
+    const [openDeletePost, setOpenDeletePost] = useState(false);
     const [openShare, setOpenShare] = useState(false);
     const [collaboratorUsername, setCollaboratorUsername] = useState('');
     const [openPublish, setOpenPublish] = useState(false);
@@ -111,6 +112,12 @@ export default function Posts(props) {
     }
 
     const navItems = {
+        empty: {
+            "name": "empty",
+            "url": "/posts/" + id,
+            "content": <></>,
+            "hide": true
+        },
         description: {
             "name": "Description",
             "url": "/posts/" + id + "/description",
@@ -159,7 +166,7 @@ export default function Posts(props) {
 
     async function handleDownload() {
         try {
-            const resp = await api.get(`downloads/data?uuids=${post.data_uuid}`);
+            const resp = await api.get(`downloads/data?pids=${post.id}`);
             var newTasks = { ...runningTasksBar.tasks };
             newTasks[resp.data.id] = {
                 description: "Starting..."
@@ -214,6 +221,8 @@ export default function Posts(props) {
         try {
             await api.post(`posts/${id}/publish`);
             NotificationManager.success("Post was successfully published. Now it is available to everyone.", "Publish", 8000)
+            const response = await api.get(`posts/${id}`);
+            setPost(response.data);
             setOpenPublish(false);
         } catch (error) {
             notifyError(error);
@@ -228,29 +237,16 @@ export default function Posts(props) {
 
     async function handleCreatePost(e, uuid) {
         e.preventDefault();
-        if (uuid === "00000000000001") {
+        if (uuid === "00000000000000000000001") {
             NotificationManager.info("All histories begin here!", "NoData");
             return
         }
 
         try {
-            // first, try to get.
             const response = await api.get(`/posts/${uuid}`);
             history.push(`/posts/${response.data.id}/description`);
-            return
         } catch (error) {
-            if (error.response) {
-
-                // now, try to create
-                try {
-                    const response = await api.post(`posts/${uuid}`);
-                    history.push(`/posts/${response.data.id}/description`);
-                } catch (error) {
-                    notifyError(error);
-                }
-            } else {
-                NotificationManager.error("Network error", "Error", 4000)
-            }
+            notifyError(error);
         }
     }
 
@@ -329,8 +325,29 @@ export default function Posts(props) {
         }
     }
 
+    async function handleDeletePost() {
+        try {
+            await api.delete(`posts/${id}`);
+            NotificationManager.success("Post was successfully deleted.", "Delete", 8000);
+            setOpenDeletePost(false);
+            history.push("/home");
+        } catch (error) {
+            notifyError(error);
+        }
+    }
+
     return (
         <>
+            <Modal
+                open={openDeletePost}
+                onClose={() => setOpenDeletePost(false)}
+            >
+                <div className="modal padding-big">
+                    <h3>Delete post</h3>
+                    <h5 className="margin-top-small">You can not undo this action. This dataset will be lost forever.</h5>
+                    <button onClick={handleDeletePost} className="button-negative margin-top-small">I want to delete {post.name} forever!</button>
+                </div>
+            </Modal>
             <Modal
                 open={openEdit}
                 onClose={() => setOpenEdit(false)}
@@ -392,24 +409,26 @@ export default function Posts(props) {
                             </button>
                         )
                     }
-                    <h4 className="margin-top-small bold">Include a new collaborator</h4>
                     {
                         post.public ?
                             <>
                                 <h5>You can share this dataset using the following link</h5>
                                 <h5 className="padding-small background-secondary-color-light">{postUrl}</h5>
                             </> :
-                            <form className="form flex-column" onSubmit={e => handleSubmitCollaborator(e, collaboratorUsername)}>
-                                <label>
-                                    Username
+                            <>
+                                <h4 className="margin-top-small bold">Include a new collaborator</h4>
+                                <form className="form flex-column" onSubmit={e => handleSubmitCollaborator(e, collaboratorUsername)}>
+                                    <label>
+                                        Username
                                     <input
-                                        placeholder="Username"
-                                        value={collaboratorUsername}
-                                        onChange={e => setCollaboratorUsername(e.target.value)}
-                                    />
-                                </label>
-                                <button className="button-primary" type="submit">Invite</button>
-                            </form>
+                                            placeholder="Username"
+                                            value={collaboratorUsername}
+                                            onChange={e => setCollaboratorUsername(e.target.value)}
+                                        />
+                                    </label>
+                                    <button className="button-primary" type="submit">Invite</button>
+                                </form>
+                            </>
                     }
                 </div>
             </Modal>
@@ -498,6 +517,7 @@ export default function Posts(props) {
                             <div className="flex-row flex-crossaxis-center">
                                 <button onClick={handleOpenEdit} className="button-secondary margin-very-small">Edit</button>
                                 <button onClick={() => setOpenPublish(true)} className="button-secondary margin-very-small">Publish</button>
+                                <button onClick={() => setOpenDeletePost(true)} className="button-negative margin-very-small">Remove</button>
                             </div>
                         }
 
@@ -513,7 +533,7 @@ export default function Posts(props) {
                                                     {
                                                         post.history.map((transformation) =>
                                                             transformation.name &&
-                                                            <div key={transformation.id} className="flex-row">
+                                                            <div key={transformation.label} className="flex-row">
                                                                 <button
                                                                     title="Show Dataset" alt="Show Dataset"
                                                                     onClick={(e) => handleCreatePost(e, transformation.label)}
@@ -541,6 +561,7 @@ export default function Posts(props) {
                             </div>
                             <button
                                 onClick={(e) => copyToClipboard(e, post.data_uuid)}
+                                title="Click to copy to clipboard"
                                 className="box-uuid"
                                 style={{ backgroundColor: `rgb(${post.data_uuid_colors[0][0]}, ${post.data_uuid_colors[0][1]}, ${post.data_uuid_colors[0][2]})`, border: `var(--border)` }}>
                                 <span>&nbsp;</span>

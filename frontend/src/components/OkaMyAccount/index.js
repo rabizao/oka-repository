@@ -5,19 +5,24 @@ import Avatar from 'react-avatar';
 import { ExpandMore } from '@material-ui/icons';
 
 import { LoginContext } from '../../contexts/LoginContext';
-import { logout } from '../../services/auth';
+import { logout, timeStart } from '../../services/auth';
 import PopOver from '../PopOver';
 import api from '../../services/api';
 import { notifyError } from '../../utils';
+import { NotificationsContext } from '../../contexts/NotificationsContext';
 
 
 export default function OkaMyAccount() {
     const loggedUser = useContext(LoginContext);
+    const notificationsContext = useContext(NotificationsContext);
     const history = useHistory();
 
     function handleLogout() {
         logout();
         loggedUser.setLogged(false);
+        notificationsContext.setNotifications([]);
+        notificationsContext.setSince(timeStart);
+        notificationsContext.setFirst(true);
         history.push('/');
     }
 

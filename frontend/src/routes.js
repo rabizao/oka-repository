@@ -10,6 +10,7 @@ import Posts from './pages/Posts';
 import Users from './pages/Users';
 import Register from './pages/Register';
 import Login from './pages/Login';
+import NotFound from './pages/NotFound';
 
 export default function Routes() {
     return (
@@ -20,9 +21,12 @@ export default function Routes() {
                 <Route path="/login" component={Login} />
                 <PrivateRoute path="/home" component={Home} />
                 <PrivateRoute path="/client" component={OkaClient} />
+                <PrivateRoute path="/users/:username" exact component={Users} />
                 <PrivateRoute path="/users/:username/:section" component={Users} />
                 <PrivateRoute path="/search/:section/" component={Search} />
+                <PrivateRoute path="/posts/:id" exact component={Posts} />
                 <PrivateRoute path="/posts/:id/:section/" component={Posts} />
+                <Route component={NotFound} />
             </Switch>
         </BrowserRouter>
     );

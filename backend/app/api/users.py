@@ -77,8 +77,9 @@ class UsersById(MethodView):
         Delete an existing user. Available only for that user
         """
         logged_user = User.get_by_username(get_jwt_identity())
+        user = User.get_by_username(username)
 
-        if not User.query.get(username):
+        if not user:
             abort(422, errors={"json": {"username": [
                   "Does not exist. [" + self.__class__.__name__ + "]"]}})
 
@@ -87,7 +88,6 @@ class UsersById(MethodView):
                 abort(422, errors={
                     "json": {"username": ["You can only edit your own user."]}})
 
-        user = User.get_by_username(username)
         user.revoke_all_tokens()
         user.active = False
         db.session.commit()
@@ -173,8 +173,43 @@ class UsersFollow(MethodView):
         if not user:
             abort(422, errors={"json": {"username": [
                   "Does not exist. [" + self.__class__.__name__ + "]"]}})
+        if user == logged_user:
+            abort(422, errors={"json": {"username": [
+                  "You can not follow yourself. [" + self.__class__.__name__ + "]"]}})
         if logged_user.is_following(user):
             logged_user.unfollow(user)
         else:
             logged_user.follow(user)
         db.session.commit()
+
+
+@bp.route('/users/<string:username>/following')
+class UsersFollowingByUsername(MethodView):
+    @jwt_required
+    @bp.arguments(UserQuerySchema, location="query")
+    @bp.response(UserBaseSchema(many=True))
+    @bp.paginate()
+    def get(self, args, pagination_parameters, username):
+        """List users who username is following"""
+        user = User.get_by_username(username)
+        query = user.followed
+        data, pagination_parameters.item_count = User.get(args, pagination_parameters.page,
+                                                          pagination_parameters.page_size,
+                                                          query=query)
+        return data
+
+
+@bp.route('/users/<string:username>/followers')
+class UsersFollowersByUsername(MethodView):
+    @jwt_required
+    @bp.arguments(UserQuerySchema, location="query")
+    @bp.response(UserBaseSchema(many=True))
+    @bp.paginate()
+    def get(self, args, pagination_parameters, username):
+        """List users who follow username"""
+        user = User.get_by_username(username)
+        query = user.followers
+        data, pagination_parameters.item_count = User.get(args, pagination_parameters.page,
+                                                          pagination_parameters.page_size,
+                                                          query=query)
+        return data
