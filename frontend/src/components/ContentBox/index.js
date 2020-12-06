@@ -15,15 +15,21 @@ export default function ContentBox(props) {
     const [posts, setPosts] = useState([]);
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState();
+    const [lastPage, setLastPage] = useState();
     const user = useContext(LoginContext);
+    const page_size = 20;
 
     const history = useHistory();
 
     useEffect(() => {
         async function fetchData() {
             try {
-                const response = await api.get(props.fetchUrl);
+                const response = await api.get(`${props.fetchUrl}?page_size=${page_size}`);
+                const pagination = JSON.parse(response.headers['x-pagination']);
                 setPosts(response.data);
+                setPage(pagination.page);
+                setLastPage(pagination.last_page);
                 setLoading(false);
             } catch (error) {
                 notifyError(error);
@@ -53,18 +59,29 @@ export default function ContentBox(props) {
 
     function handleShowCommentsBox(e, post) {
         e.preventDefault();
-
         var newComments = [...comments];
-
         if (comments[post.id] != null) {
             newComments[post.id] = null;
         } else {
             newComments[post.id] = post.comments;
         }
-
-        history.push(`/posts/${post.id}/comments`)
-
+        history.push(`/posts/${post.id}/comments`);
         setComments(newComments);
+    }
+
+    async function handleNextPage() {
+        var newPosts = [...posts];
+        try {
+            const response = await api.get(`${props.fetchUrl}?page=${page + 1}&page_size=${page_size}`);
+            const pagination = JSON.parse(response.headers['x-pagination']);
+            Array.prototype.push.apply(newPosts, response.data);
+            console.log(posts, newPosts)
+            setPosts(newPosts);
+            setPage(pagination.page);
+            setLastPage(pagination.last_page);
+        } catch (error) {
+            notifyError(error);
+        }
     }
 
     return (
@@ -109,6 +126,13 @@ export default function ContentBox(props) {
                                     </div>
                                 </li>
                             )}
+                            {posts.length > 0 && (
+                                page < lastPage ?
+                                    <li className="flex-row flex-crossaxis-center margin-top-small">
+                                        <button className="button-primary" onClick={handleNextPage}>Load more</button>
+                                    </li> :
+                                    <li className="flex-row flex-crossaxis-center margin-top-small">Nothing more to show</li>)
+                            }
                         </ul>
                     }
                 </>

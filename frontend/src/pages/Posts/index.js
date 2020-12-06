@@ -4,7 +4,7 @@ import { Link, useHistory } from 'react-router-dom';
 import './styles.css';
 
 import { NotificationManager } from 'react-notifications';
-import { CloudDownload, Favorite, FavoriteBorder, ChevronLeft, ChevronRight, FormatQuote, Share, PlayArrow } from '@material-ui/icons';
+import { CloudDownload, Favorite, FavoriteBorder, ChevronLeft, ChevronRight, FormatQuote, Share, PlayArrow, Edit, Clear, Save } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 import Modal from '@material-ui/core/Modal';
 
@@ -51,7 +51,8 @@ export default function Posts(props) {
     const section = props.match.params.section ? props.match.params.section : "empty";
     const [loadingHero, setLoadingHero] = useState(true);
     const [post, setPost] = useState({});
-    const [openEdit, setOpenEdit] = useState(false);
+    const [editName, setEditName] = useState(false);
+    const [editDescription, setEditDescription] = useState(false);
     const [openCite, setOpenCite] = useState(false);
     const [openDeletePost, setOpenDeletePost] = useState(false);
     const [openShare, setOpenShare] = useState(false);
@@ -81,7 +82,9 @@ export default function Posts(props) {
                 const response = await api.get(`posts/${id}`);
                 setPost(response.data);
                 setName(response.data.name);
+                setNameEdit(response.data.name);
                 setDescription(response.data.description ? response.data.description : '');
+                setDescriptionEdit(response.data.description ? response.data.description : '');
                 setLoadingHero(false);
             } catch (error) {
                 notifyError(error);
@@ -95,8 +98,49 @@ export default function Posts(props) {
             <div className="content-box margin-very-small">
                 {loadingHero ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
-                    <div className="flex-row flex-space-between padding-sides-small padding-vertical-small text-box">
+                    <div className="flex-row padding-sides-small padding-vertical-small text-box">
                         {text}
+                    </div>
+                }
+            </div>
+        )
+    }
+
+    function handleTextAreaAdjust(element) {
+        element.style.height = (element.scrollHeight) + "px";
+    }
+
+    const descriptionBox = (text) => {
+        return (
+            <div className="content-box margin-very-small">
+                {loadingHero ?
+                    <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
+                    <div className="padding-sides-small padding-vertical-small text-box">
+                        {editDescription ?
+                            <div className="flex-column">
+                                <div className="flex-row">
+                                    <button className="icon-normal" onClick={() => setEditDescription(false)}><Clear className="icon-secondary" /></button>
+                                    <button className="icon-normal" onClick={handleEditDescriptionSubmit}><Save className="icon-secondary" /></button>
+                                </div>
+                                <form className="form-edit-description">
+                                    <textarea
+                                        onKeyUp={e => handleTextAreaAdjust(e.target)}
+                                        onClick={e => handleTextAreaAdjust(e.target)}
+                                        placeholder={description}
+                                        value={descriptionEdit}
+                                        onChange={e => setDescriptionEdit(e.target.value)}
+                                    />
+                                </form>
+                            </div> :
+                            <div className="flex-column">
+                                {!post.public &&
+                                    <div className="flex-row">
+                                        <button className="icon-normal" onClick={() => setEditDescription(true)}><Edit className="icon-secondary" /></button>
+                                    </div>
+                                }
+                                <>{text}</>
+                            </div>
+                        }
                     </div>
                 }
             </div>
@@ -121,7 +165,7 @@ export default function Posts(props) {
         description: {
             "name": "Description",
             "url": "/posts/" + id + "/description",
-            "content": textBox(description)
+            "content": descriptionBox(description)
         },
         comments: {
             "name": "Comments",
@@ -195,23 +239,31 @@ export default function Posts(props) {
         setPost(newPost);
     }
 
-    function handleOpenEdit() {
-        setOpenEdit(true);
-        setNameEdit(name);
-        setDescriptionEdit(description);
-    }
-
-    async function handleEditSubmit(e) {
+    async function handleEditNameSubmit(e) {
         e.preventDefault()
         const data = {
-            name: nameEdit,
+            name: nameEdit
+        }
+        try {
+            await api.put(`posts/${id}`, data);
+            setName(nameEdit);
+            setNameEdit(nameEdit);
+            setEditName(false);
+        } catch (error) {
+            notifyError(error);
+        }
+    }
+
+    async function handleEditDescriptionSubmit(e) {
+        e.preventDefault()
+        const data = {
             description: descriptionEdit
         }
         try {
             await api.put(`posts/${id}`, data);
-            setOpenEdit(false);
-            setName(nameEdit);
             setDescription(descriptionEdit);
+            setDescriptionEdit(descriptionEdit);
+            setEditDescription(false);
         } catch (error) {
             notifyError(error);
         }
@@ -346,33 +398,6 @@ export default function Posts(props) {
                     <h3>Delete post</h3>
                     <h5 className="margin-top-small">You can not undo this action. This dataset will be lost forever.</h5>
                     <button onClick={handleDeletePost} className="button-negative margin-top-small">I want to delete {post.name} forever!</button>
-                </div>
-            </Modal>
-            <Modal
-                open={openEdit}
-                onClose={() => setOpenEdit(false)}
-            >
-                <div className="modal padding-big">
-                    <h3 className="margin-top-small">Update dataset data</h3>
-                    <form className="form flex-column margin-top-small" onSubmit={e => handleEditSubmit(e)}>
-                        <label>
-                            Name
-                            <input
-                                placeholder="Dataset name"
-                                value={nameEdit}
-                                onChange={e => setNameEdit(e.target.value)}
-                            />
-                        </label>
-                        <label>
-                            Description
-                            <input
-                                placeholder="Dataset description"
-                                value={descriptionEdit}
-                                onChange={e => setDescriptionEdit(e.target.value)}
-                            />
-                        </label>
-                        <button className="button-primary" type="submit">Save</button>
-                    </form>
                 </div>
             </Modal>
             <Modal
@@ -515,7 +540,6 @@ export default function Posts(props) {
                         {
                             !post.public && post.author && post.author.username === loggedUser.username &&
                             <div className="flex-row flex-crossaxis-center">
-                                <button onClick={handleOpenEdit} className="button-secondary margin-very-small">Edit</button>
                                 <button onClick={() => setOpenPublish(true)} className="button-secondary margin-very-small">Publish</button>
                                 <button onClick={() => setOpenDeletePost(true)} className="button-negative margin-very-small">Remove</button>
                             </div>
@@ -572,7 +596,26 @@ export default function Posts(props) {
                                 }
                             </button>
                         </div>
-                        <h1 className="color-tertiary ellipsis">{name}</h1>
+                        <div className="flex-row flex-axis-center">
+                            {editName ?
+                                <>
+                                    <form className="form-edit-name" onSubmit={handleEditNameSubmit}>
+                                        <input
+                                            placeholder={name}
+                                            value={nameEdit}
+                                            onChange={e => setNameEdit(e.target.value)}
+                                        />
+                                    </form>
+                                    <button className="icon-normal" onClick={() => setEditName(false)}><Clear className="icon-secondary" /></button>
+                                </> :
+                                <>
+                                    <h1 className="color-tertiary ellipsis">{name}</h1>
+                                    {!post.public &&
+                                        <button className="icon-normal" onClick={() => setEditName(true)}><Edit className="icon-secondary" /></button>
+                                    }
+                                </>
+                            }
+                        </div>
                         <h6 className="color-tertiary">OID: <span className="font-courier color-tertiary">{post.data_uuid}</span></h6>
                         <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
                         <h6 className="color-tertiary">{post.downloads} downloads | {post.favorites.length} favorited</h6>
