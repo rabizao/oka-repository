@@ -13,7 +13,7 @@ import OkaNavBar from '../../components/OkaNavBar';
 import OkaPostComments from '../../components/OkaPostComments';
 import OkaPostsBox from '../../components/OkaPostsBox';
 import ScatterPlot from '../../components/ScatterPlot';
-import api from '../../services/api';
+import api, { dashUrl } from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 import { RunningTasksBarContext } from '../../contexts/RunningTasksBarContext';
 import { NotificationsContext } from '../../contexts/NotificationsContext';
@@ -150,7 +150,7 @@ export default function Posts(props) {
     const visualizer = (uuid) => {
         return (
             <div className="content-box margin-very-small">
-                <iframe title="iframe-dash" className="iframe-dash" src={`http://127.0.0.1:8050/${uuid}`}></iframe>
+                <iframe title="iframe-dash" className="iframe-dash" src={`${dashUrl}/${uuid}`}></iframe>
             </div>
         )
     }
