@@ -258,6 +258,7 @@ class ApiCase(unittest.TestCase):
         username2 = self.login(user=create_user2)['username']
         username = self.login()['username']
         user = User.get_by_username(username)
+        user2 = User.get_by_username(username2)
         # 2
         arff = Dataset().data.arff("rel", "desc")
         filename = "/tmp/iris.arff"
@@ -349,6 +350,36 @@ class ApiCase(unittest.TestCase):
         # Can not publish twice
         response = self.client.post(f"/api/posts/{post_id}/publish")
         self.assertEqual(response.status_code, 422)
+        # User2 has access to post since it is public
+        self.login(create_user=False, user=create_user2)
+        response = self.client.get(f"/api/posts/{post_id}")
+        self.assertEqual(response.status_code, 200)
+        post.public = False
+        db.session.commit()
+        self.login(create_user=False)
+        # 10
+        # User can not see user2's feed
+        response = self.client.get(f"/api/users/{username2}/feed")
+        self.assertEqual(response.status_code, 422)
+        # Post should appear on user's feed and not on user2's feed
+        response = self.client.get(f"/api/users/{username}/feed")
+        self.assertEqual(len(response.json), 1)
+        self.login(create_user=False, user=create_user2)
+        response = self.client.get(f"/api/users/{username2}/feed")
+        self.assertEqual(len(response.json), 0)
+        # Public post should appear on user2's feed if user2 is following user
+        post.public = True
+        db.session.commit()
+        response = self.client.get(f"/api/users/{username2}/feed")
+        self.assertEqual(len(response.json), 0)
+        user2.follow(user)
+        db.session.commit()
+        response = self.client.get(f"/api/users/{username2}/feed")
+        self.assertEqual(len(response.json), 1)
+        post.public = False
+        user2.unfollow(user)
+        db.session.commit()
+        self.login(create_user=False)
         # 10
         response = self.client.post(
             f"/api/posts/{post_id}/comments", json={"text": "Comment 1"})
@@ -428,6 +459,8 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 422)
         # Public posts can not be deleted
         self.login(create_user=False)
+        post.public = True
+        db.session.commit()
         response = self.client.delete(f"/api/posts/{post_id}")
         self.assertEqual(response.status_code, 422)
         post.public = False

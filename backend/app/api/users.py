@@ -101,17 +101,20 @@ class UsersPosts(MethodView):
     @bp.paginate()
     def get(self, args, pagination_parameters, username):
         """
-        Show all posts that belong to user with username {username}
+        Show all posts that belong to user with username {username} and logged_user has access
         """
+        logged_user = User.get_by_username(get_jwt_identity())
         user = User.get_by_username(username)
         if not user:
             abort(422, errors={"json": {"username": [
                   "Does not exist. [" + self.__class__.__name__ + "]"]}})
         filter_by = {"author": user}
+        query = logged_user.accessible_posts()
         order_by = Post.timestamp.desc()
         data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
                                                           pagination_parameters.page_size,
-                                                          filter_by=filter_by, order_by=order_by)
+                                                          filter_by=filter_by, order_by=order_by,
+                                                          query=query)
         return data
 
 
@@ -152,6 +155,11 @@ class UsersFeed(MethodView):
         if not user or user != logged_user:
             abort(422, errors={"json": {"username": [
                   "Does not exist. [" + self.__class__.__name__ + "]"]}})
+
+        if not logged_user.is_admin():
+            if logged_user.username != user.username:
+                abort(422, errors={
+                      "json": {"username": ["You can see your own feed."]}})
 
         data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
                                                           pagination_parameters.page_size,
