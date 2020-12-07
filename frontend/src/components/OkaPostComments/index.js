@@ -99,13 +99,14 @@ export default function OkaPostComments({ postId }) {
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
                 <>
-                    <form className="margin-top-small" onSubmit={e => handleSubmitComment(e)}>
-                        <input
+                    <form className="flex-row margin-small" onSubmit={e => handleSubmitComment(e)}>
+                        <textarea
                             className="padding-small width100"
                             placeholder={`Write a new comment`}
                             value={newComment}
                             onChange={e => setNewComment(e.target.value)}
                         />
+                        <button className="button-primary margin-small" type="submit">Send</button>
                     </form>
                     <ul className="content-list">
                         {comments.map((comment, index) =>
@@ -116,7 +117,7 @@ export default function OkaPostComments({ postId }) {
                                         <div>
                                             <Link to={`/users/${comment.author.username}/uploads`} ><span className="font-size-medium bold link">{comment.author.name}</span></Link> - <span>{comment.author.username}</span> - <TimeAgo datetime={comment.timestamp + 'Z'} />
                                         </div>
-                                        <span>{comment.text}</span>
+                                        <span className="text-box">{comment.text}</span>
                                         <span className="margin-top-small">
                                             <ul className="flex-row ul-padding-sides-not-first">
                                                 <li><button onClick={e => handleShowReplies(e, comment.id)}><Message /> {comment.replies.length}</button></li>
@@ -125,13 +126,14 @@ export default function OkaPostComments({ postId }) {
                                                 {
                                                     showReplies[comment.id] &&
                                                     <>
-                                                        <form className="margin-top-small" onSubmit={e => handleSubmitReply(e, comment.id, index)}>
-                                                            <input
+                                                        <form className="flex-row margin-top-small" onSubmit={e => handleSubmitReply(e, comment.id, index)}>
+                                                            <textarea
                                                                 className="padding-small width100"
                                                                 placeholder={`Reply to ${comment.author.name}`}
                                                                 value={replies[comment.id] || ''}
                                                                 onChange={e => handleSetReplies(e, comment.id)}
                                                             />
+                                                            <button className="button-primary margin-small" type="submit">Send</button>
                                                         </form>
                                                         {comment.replies.map((reply) =>
                                                             <li key={reply.id} className="box flex-column background-hover-strong">
@@ -141,7 +143,7 @@ export default function OkaPostComments({ postId }) {
                                                                         <div>
                                                                             <Link to={`/users/${reply.author.username}/uploads`} ><span className="font-size-medium bold link">{reply.author.name}</span></Link> - <span>{reply.author.username}</span> - <TimeAgo datetime={reply.timestamp + 'Z'} />
                                                                         </div>
-                                                                        <span>{reply.text}</span>
+                                                                        <span className="text-box">{reply.text}</span>
                                                                     </div>
                                                                 </div>
                                                             </li>
