@@ -238,10 +238,12 @@ class PostsCommentsById(MethodView):
                 "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
 
         order_by = getattr(Comment.timestamp, args['order_by'])()
-        comments = post.comments.order_by(order_by)
-        pagination_parameters.item_count = comments.count()
-
-        return comments
+        query = post.comments
+        args.pop('order_by', None)
+        data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
+                                                          pagination_parameters.page_size,
+                                                          query=query, order_by=order_by)
+        return data
 
     @jwt_required
     @bp.arguments(CommentBaseSchema)

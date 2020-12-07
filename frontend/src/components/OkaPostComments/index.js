@@ -18,12 +18,17 @@ export default function OkaPostComments({ postId }) {
     const [replies, setReplies] = useState([]);
     const [showReplies, setShowReplies] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState();
+    const [lastPage, setLastPage] = useState();
 
     useEffect(() => {
         async function fetchData() {
             try {
                 const response = await api.get(`posts/${postId}/comments`);
-                setComments(response.data);
+                const pagination = JSON.parse(response.headers['x-pagination']);
+                setPage(pagination.page);
+                setLastPage(pagination.last_page);
+                setComments(response.data);                
                 setLoading(false);
             } catch (error) {
                 notifyError(error);
@@ -94,6 +99,20 @@ export default function OkaPostComments({ postId }) {
         setNewComment('');
     }
 
+    async function handleNextPage() {
+        var newComments = [...comments];
+        try {
+            const response = await api.get(`posts/${postId}/comments?page=${page + 1}`);
+            const pagination = JSON.parse(response.headers['x-pagination']);
+            Array.prototype.push.apply(newComments, response.data);
+            setComments(newComments);
+            setPage(pagination.page);
+            setLastPage(pagination.last_page);
+        } catch (error) {
+            notifyError(error);
+        }
+    }
+
     return (
         <div className="content-box margin-very-small padding-bottom-big">
             {loading ?
@@ -157,6 +176,13 @@ export default function OkaPostComments({ postId }) {
                             </li>
                         )}
                     </ul>
+                    {comments.length > 0 && (
+                        page < lastPage ?
+                            <li className="flex-row flex-crossaxis-center margin-top-small">
+                                <button className="button-primary" onClick={handleNextPage}>Load more</button>
+                            </li> :
+                            <li className="flex-row flex-crossaxis-center margin-top-small">Nothing more to show</li>)
+                    }
                 </>
             }
         </div>
