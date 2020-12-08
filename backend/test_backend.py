@@ -10,7 +10,7 @@ from werkzeug.datastructures import FileStorage
 from aiuna.step.dataset import Dataset
 from app import create_app, db
 from app.api.posts import save_files
-from app.api.tasks import process_data, download_data, run_step
+from app.api.tasks import process_file, download_data, run_step
 from app.config import Config
 from app.models import User, Token, Notification, Post
 
@@ -258,6 +258,7 @@ class ApiCase(unittest.TestCase):
         username2 = self.login(user=create_user2)['username']
         username = self.login()['username']
         user = User.get_by_username(username)
+        user2 = User.get_by_username(username2)
         # 2
         arff = Dataset().data.arff("rel", "desc")
         filename = "/tmp/iris.arff"
@@ -274,9 +275,9 @@ class ApiCase(unittest.TestCase):
             filestorage = FileStorage(
                 fr, filename="iris_send.arff", content_type="application/octet-stream")
             files = save_files([filestorage])
-        result = process_data.run(files, username)
+        result = process_file.run(files, username)
         self.assertEqual(json.loads(result['result'])[
-                         0]["code"] == "success", True)
+                             0]["code"] == "success", True)
         # 4
         post_id = json.loads(result['result'])[0]['id']
         data_uuid = Post.query.get(post_id).data_uuid
@@ -349,6 +350,36 @@ class ApiCase(unittest.TestCase):
         # Can not publish twice
         response = self.client.post(f"/api/posts/{post_id}/publish")
         self.assertEqual(response.status_code, 422)
+        # User2 has access to post since it is public
+        self.login(create_user=False, user=create_user2)
+        response = self.client.get(f"/api/posts/{post_id}")
+        self.assertEqual(response.status_code, 200)
+        post.public = False
+        db.session.commit()
+        self.login(create_user=False)
+        # 10
+        # User can not see user2's feed
+        response = self.client.get(f"/api/users/{username2}/feed")
+        self.assertEqual(response.status_code, 422)
+        # Post should appear on user's feed and not on user2's feed
+        response = self.client.get(f"/api/users/{username}/feed")
+        self.assertEqual(len(response.json), 1)
+        self.login(create_user=False, user=create_user2)
+        response = self.client.get(f"/api/users/{username2}/feed")
+        self.assertEqual(len(response.json), 0)
+        # Public post should appear on user2's feed if user2 is following user
+        post.public = True
+        db.session.commit()
+        response = self.client.get(f"/api/users/{username2}/feed")
+        self.assertEqual(len(response.json), 0)
+        user2.follow(user)
+        db.session.commit()
+        response = self.client.get(f"/api/users/{username2}/feed")
+        self.assertEqual(len(response.json), 1)
+        post.public = False
+        user2.unfollow(user)
+        db.session.commit()
+        self.login(create_user=False)
         # 10
         response = self.client.post(
             f"/api/posts/{post_id}/comments", json={"text": "Comment 1"})
@@ -391,14 +422,14 @@ class ApiCase(unittest.TestCase):
         response = self.client.get(f"/api/posts/{post_id}/stats?plt=scatter")
         self.assertEqual(response.status_code, 200)
         # 14
-        result = process_data.run(files, username2)
+        result = process_file.run(files, username2)
         self.assertEqual(result['state'], 'SUCCESS')
         self.assertEqual(json.loads(result['result'])[
-                         0]["code"] == "error", False)
-        result = process_data.run(files, username2)
+                             0]["code"] == "error", False)
+        result = process_file.run(files, username2)
         self.assertEqual(result['state'], 'SUCCESS')
         self.assertEqual(json.loads(result['result'])[
-                         0]["code"] == "error", True)
+                             0]["code"] == "error", True)
         # 15
         response = self.client.get(f"/api/posts/{post_id}/twins")
         self.assertEqual(response.status_code, 200)
@@ -421,13 +452,15 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         result = run_step.run(post_id, step, username)
         self.assertEqual(json.loads(result['result'])[
-                         "code"] == "error", False)
+                             "code"] == "error", False)
         # 17
         # User2 can not delete post_id
         response = self.client.delete(f"/api/posts/{post_id}")
         self.assertEqual(response.status_code, 422)
         # Public posts can not be deleted
         self.login(create_user=False)
+        post.public = True
+        db.session.commit()
         response = self.client.delete(f"/api/posts/{post_id}")
         self.assertEqual(response.status_code, 422)
         post.public = False
@@ -436,9 +469,9 @@ class ApiCase(unittest.TestCase):
         response = self.client.delete(f"/api/posts/{post_id}")
         self.assertEqual(response.status_code, 200)
         # Restore post uploading data again
-        result = process_data.run(files, username)
+        result = process_file.run(files, username)
         self.assertEqual(json.loads(result['result'])[
-                         0]["code"] == "success", True)
+                             0]["code"] == "success", True)
 
     def test_create_user(self):
         """
@@ -560,6 +593,25 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(len(user1.followers.all()), 0)
         self.assertEqual(len(user1.followed.all()), 0)
         self.assertEqual(len(user2.followed.all()), 0)
+
+    def test_create_post(self):
+        self.login()
+        iris = Dataset().data
+        info = {
+            "step_ids": [step.id for step in list(iris.history)],
+            "nattrs": iris.X.shape[1],
+            "ninsts": iris.X.shape[0]
+        }
+        response = self.client.put("/api/posts", json={'data_uuid': iris.id, 'info': info})
+        self.assertEqual(response.status_code, 200, msg=response.json and response.json["errors"])
+
+        self.tatu.store(iris)
+
+        response = self.client.put("/api/posts/activate", json={'data_uuid': iris.id})
+        self.assertEqual(response.status_code, 200, msg=response.json and response.json["errors"])
+
+        response = self.client.put("/api/posts", json={'data_uuid': iris.id})
+        self.assertEqual(response.status_code, 422, msg=response.json and response.json["errors"])
 
 
 if __name__ == '__main__':
