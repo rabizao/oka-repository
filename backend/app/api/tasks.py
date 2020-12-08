@@ -15,7 +15,58 @@ from aiuna.step.file import File
 from app import celery, db, mail
 from app.models import Post, Task, User
 from app.schemas import TaskStatusBaseSchema
+from cruipto.uuid import UUID
 from . import bp
+
+
+def create_data_and_post(logged_user, tatu, data, original_name, name, description, store_data=True, info={}):
+    if not info:
+        info["step_ids"] = [step.id for step in list(data.history)]
+        info["nattrs"] = data.X.shape[1]
+        info["ninsts"] = data.X.shape[0]
+    data_id = data if isinstance(data, str) else data.id
+    step_ids, nattrs, ninsts = info["step_ids"], info["nattrs"], info["ninsts"]
+    existing_post = logged_user.posts.filter_by(data_uuid=data_id).first()
+    if existing_post:
+        if existing_post.active:
+            obj = {'original_name': original_name,
+                   'message': 'Error! Dataset already uploaded', 'code': 'error', 'id': existing_post.id}
+        else:
+            obj = {'original_name': original_name,
+                   'message': 'Dataset successfully restored', 'code': 'success', 'id': existing_post.id}
+            existing_post.active = True
+            db.session.commit()
+        logged_user.add_notification(
+            name='data_uploaded', data=obj, overwrite=False)
+        logged_user.add_notification(
+            name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True)
+    else:
+        if store_data:
+            tatu.store(data, lazy=False, ignoredup=True)
+
+        # History.
+        datauuid = Root.uuid
+        name0, description0 = "No name", "No description"
+        for step_id in list(step_ids):
+            datauuid = datauuid * UUID(step_id)
+            if datauuid.id == data_id:
+                name0, description0 = name, description
+            # noinspection PyArgumentList
+            post = Post(author=logged_user, data_uuid=datauuid.id, name=name0, description=description0,
+                        number_of_instances=ninsts, number_of_features=nattrs, active=store_data)
+            # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
+            # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
+            db.session.add(post)
+
+        db.session.commit()
+        obj = {'original_name': original_name,
+               'message': 'Dataset successfully uploaded', 'code': 'success', 'id': post.id}
+        logged_user.add_notification(
+            name='data_uploaded', data=obj, overwrite=False)
+        logged_user.add_notification(
+            name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True)
+
+    return obj
 
 
 class BaseTask(celery.Task):
@@ -99,7 +150,7 @@ def run_step(self, post_id, step, username):
     size = 10
     for i in range(size):
         _set_job_progress(self, i / size * 100)
-        time.sleep(1)
+        time.sleep(0.8)
     print(post.id, step, logged_user.username)
     result = {'uuid': "UUID",
               'message': 'Successfully run', 'code': 'success'}
@@ -140,7 +191,7 @@ def download_data(self, pids, username, ip):
 
 
 @celery.task(bind=True, base=BaseTask)
-def process_data(self, files, username):
+def process_file(self, files, username):
     '''
     Background task to run async post process
     '''
@@ -159,48 +210,7 @@ def process_data(self, files, username):
         path = '/'.join(file['path'].split('/')[:-1]) + '/'
         f = File(name, path)
         name, description = f.dataset, f.description
-        data = f.data
-
-        existing_post = logged_user.posts.filter_by(data_uuid=data.id).first()
-        if existing_post:
-            if existing_post.active:
-                obj = {'original_name': file['original_name'],
-                       'message': 'Error! Dataset already uploaded', 'code': 'error', 'id': existing_post.id}
-            else:
-                obj = {'original_name': file['original_name'],
-                       'message': 'Dataset successfully restored', 'code': 'success', 'id': existing_post.id}
-                existing_post.active = True
-                db.session.commit()
-            result.append(obj)
-            logged_user.add_notification(
-                name='data_uploaded', data=obj, overwrite=False)
-            logged_user.add_notification(
-                name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True)
-            continue
-
-        tatu.store(data, lazy=False, ignoredup=True)
-
-        # History.
-        datauuid = Root.uuid
-        name0, description0 = "No name", "No description"
-        for step in list(data.history):
-            datauuid = datauuid * step.uuid
-            if datauuid.id == data.id:
-                name0, description0 = name, description
-            post = Post(author=logged_user, data_uuid=datauuid.id, name=name0, description=description0,
-                        number_of_instances=len(data.X), number_of_features=len(data.Y))
-            # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
-            # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
-            db.session.add(post)
-
-        db.session.commit()
-        obj = {'original_name': file['original_name'],
-               'message': 'Dataset successfully uploaded', 'code': 'success', 'id': post.id}
-        result.append(obj)
-        logged_user.add_notification(
-            name='data_uploaded', data=obj, overwrite=False)
-        logged_user.add_notification(
-            name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True)
+        result.append(create_data_and_post(logged_user, tatu, f.data, file['original_name'], name, description))
 
     return _set_job_progress(self, 100, result=result)
 

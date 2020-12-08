@@ -17,8 +17,8 @@ export default function ContentBox(props) {
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState();
     const [lastPage, setLastPage] = useState();
-    const user = useContext(LoginContext);
     const page_size = 20;
+    const user = useContext(LoginContext);
 
     const history = useHistory();
 
@@ -75,7 +75,6 @@ export default function ContentBox(props) {
             const response = await api.get(`${props.fetchUrl}?page=${page + 1}&page_size=${page_size}`);
             const pagination = JSON.parse(response.headers['x-pagination']);
             Array.prototype.push.apply(newPosts, response.data);
-            console.log(posts, newPosts)
             setPosts(newPosts);
             setPage(pagination.page);
             setLastPage(pagination.last_page);

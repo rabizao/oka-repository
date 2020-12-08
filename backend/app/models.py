@@ -201,7 +201,7 @@ class User(PaginateMixin, db.Model):
 
     def has_access(self, post):
         return self.accessible.filter(
-            access.c.post_id == post.id).count() > 0 or post.author == self
+            access.c.post_id == post.id).count() > 0 or post.author == self or post.public is True
 
     def grant_access(self, post):
         if not self.has_access(post):
