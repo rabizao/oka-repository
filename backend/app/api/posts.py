@@ -11,15 +11,17 @@ from app import db
 from app.models import Comment, Post, User
 from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
                          PostEditSchema, PostFilesSchema, PostQuerySchema,
-                         RunSchema, TaskBaseSchema, UserBaseSchema, StatsQuerySchema)
+                         RunSchema, TaskBaseSchema, UserBaseSchema, StatsQuerySchema, PostCreateSchema,
+                         PostActivateSchema)
 from . import bp
+from .tasks import create_data_and_post
 
 
 def save_files(input_files):
     files = []
     for file in input_files:
         full_path = current_app.config['TMP_FOLDER'] + \
-            str(u.uuid4()) + file.filename[-10:]
+                    str(u.uuid4()) + file.filename[-10:]
         file.save(full_path)
         files.append({"path": full_path, "original_name": file.filename})
     return files
@@ -56,11 +58,47 @@ class Posts(MethodView):
 
         files = save_files(argsFiles['files'])
 
-        task = logged_user.launch_task('process_data',
+        task = logged_user.launch_task('process_file',
                                        "Processing your uploaded files",
                                        [files, username])
         db.session.commit()
         return task
+
+    @jwt_required
+    @bp.arguments(PostCreateSchema)
+    @bp.response(code=200)
+    def put(self, args):
+        """
+
+        """
+        logged_user = User.get_by_username(get_jwt_identity())
+        tatu = current_app.config['TATU_SERVER']
+        obj = create_data_and_post(
+            logged_user, tatu, args["data_uuid"], f"Pushed data [{args['name']}]", args["name"], args["description"],
+            store_data=False, info=args["info"]
+        )
+        if obj["code"] != "success":
+            abort(422, errors={
+                "json": {"data_uuid": ["Cannot create post. [" + self.__class__.__name__ + "]"]}})
+
+
+# noinspection PyArgumentList
+@bp.route("/posts/activate")
+class PostsActivate(MethodView):
+    @jwt_required
+    @bp.arguments(PostActivateSchema)
+    @bp.response(code=200)
+    def put(self, args):
+        """
+        Activate post with id {id}
+        """
+        logged_user = User.get_by_username(get_jwt_identity())
+        post = Post.query.filter_by(data_uuid=args["data_uuid"], user_id=logged_user.id, active=False).first()
+        if not post:
+            abort(422, errors={
+                "json": {"data_uuid": ["Post not found. [" + self.__class__.__name__ + "]"]}})
+        post.active = True
+        db.session.commit()
 
 
 @bp.route('/posts/<int:id>')
@@ -162,7 +200,8 @@ class PostsCollaboratorsById(MethodView):
         if not post.author == logged_user:
             abort(422, errors={
                 "json": {"username":
-                         ["Only the author can invite collaborators to the post. [" + self.__class__.__name__ + "]"]}})
+                    [
+                        "Only the author can invite collaborators to the post. [" + self.__class__.__name__ + "]"]}})
 
         if collaborator.has_access(post):
             collaborator.deny_access(post)

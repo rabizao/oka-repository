@@ -11,13 +11,14 @@ import simplejson as json2
 from . import bp
 
 
-@bp.route("/sync/<string:uuid>")
+@bp.route("/sync")
 class SyncCheck(MethodView):
     @jwt_required
     @bp.arguments(SyncCheckBaseSchema, location="query")
     @bp.response(SyncCheckResponseSchema)
-    def get(self, args, uuid):  # return None or a row from one of the tables ("cat"s): data, step
+    def get(self, args):  # return None or a row from one of the tables ("cat"s): data, step
         tatu = current_app.config['TATU_SERVER']
+        uuid = args["uuids"][0]  # TODO: Implement get/has multiple data and multiple steps.
         if args['cat'] == "data":
             f = tatu.getdata if args['fetch'] else tatu.hasdata
             # jsonify allows to return None or a dict, which is compatible with the posterior SQL usage of this result
@@ -25,15 +26,21 @@ class SyncCheck(MethodView):
         if args['cat'] == "step":
             return jsonify(tatu.getstep(uuid) if args['fetch'] else {"has": tatu.hasstep(uuid)})
         if args['cat'] == "content":
-            print("WARNING: cannot handle more than one content yet")
-            return jsonify(tatu.getcontent(uuid) if args['fetch'] else {"has": tatu.hascontent([uuid])})
+            return jsonify(tatu.getcontent(uuid) if args['fetch'] else {"has": tatu.hascontent(args["uuids"])})
 
     @jwt_required
     @bp.arguments(SyncPostQuerySchema, location="query")
     @bp.arguments(SyncPostSchema)
-    @bp.response(code=201)
-    def post(self, args, argsQuery, uuid):  # insert a dict in one of the tables ("cat"s): data, step
-        print(args['cat'], argsQuery['cols'])
+    @bp.response(SuccessResponseSchema)
+    def post(self, args, argsQuery):  # insert a dict in one of the tables ("cat"s): data, step
+        tatu = current_app.config['TATU_SERVER']
+        kwargs = argsQuery['kwargs']
+        if args['cat'] == "data":
+            return {"success": tatu.putdata(**kwargs)}
+        if args['cat'] == "step":
+            return {"success": tatu.putstep(**kwargs)}
+        if args['cat'] == "content":
+            return {"success": tatu.putcontent(**kwargs)}
 
 
 @bp.route("/sync/<string:uuid>/lock")
@@ -60,7 +67,8 @@ class SyncUnlock(MethodView):
         return response
 
 
-@bp.route("/sync")
+# for migration and general Storage identification
+@bp.route("/sync_uuid")
 class Sync(MethodView):
     @jwt_required
     @bp.response(SyncResponseSchema)
@@ -115,7 +123,6 @@ class SyncContentByUuid(MethodView):
     @bp.arguments(SyncFieldsQuerySchema, location="query")
     @bp.response(SuccessResponseSchema)
     def post(self, argFiles, argsQuery, uuid):  # ok
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", argFiles['bina'])
         tatu = current_app.config['TATU_SERVER']
         response = {
             "success": tatu.putcontent(uuid, argFiles['bina'].read(), argsQuery['ignoredup'])

@@ -274,11 +274,23 @@ class PostEditSchema(SQLAlchemySchema):
         validate.Length(min=1, max=100000)])
 
 
+class PostCreateSchema(SQLAlchemySchema):
+    data_uuid = fields.String(required=True)
+    info = fields.Dict(required=True)
+    name = fields.String(missing="No name")
+    description = fields.String(missing="No description")
+
+
 class PostFilesSchema(SQLAlchemySchema):
     files = fields.List(Upload(), required=True)
 
 
+class PostActivateSchema(SQLAlchemySchema):
+    data_uuid = fields.String(required=True)
+
+
 class SyncCheckBaseSchema(SQLAlchemySchema):
+    uuids = fields.List(fields.String(), required=True)
     cat = fields.String(required=True)
     empty = fields.Boolean(missing=True)
     names = fields.List(fields.String())
@@ -290,7 +302,7 @@ class SyncCheckResponseSchema(SQLAlchemySchema):
 
 
 class SyncPostSchema(SQLAlchemySchema):
-    cols = fields.Dict(required=True)
+    kwargs = fields.Dict(required=True)
 
 
 class SyncPostQuerySchema(SQLAlchemySchema):
@@ -306,7 +318,7 @@ class SyncContentFileSchema(SQLAlchemySchema):
 
 
 class SyncFieldsSchema(SQLAlchemySchema):
-    rows = fields.List(fields.Dict(), required=True)
+    rows = fields.List(fields.Tuple((fields.String(), fields.String(), fields.String())), required=True)
     ignoredup = fields.Bool(missing=False)
 
 
