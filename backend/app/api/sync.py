@@ -1,7 +1,7 @@
 # noinspection PyArgumentList
 from app.schemas import (SyncCheckBaseSchema, SyncCheckResponseSchema, SyncPostSchema, SyncPostQuerySchema,
                          SyncResponseSchema, SyncContentFileSchema, SyncFieldsSchema, SyncFieldsQuerySchema,
-                         SuccessResponseSchema)
+                         SuccessResponseSchema, NumberResponseSchema)
 from flask import make_response, current_app, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
@@ -101,11 +101,11 @@ class SyncFields(MethodView):
     @jwt_required
     @bp.arguments(SyncFieldsSchema)
     @bp.arguments(SyncFieldsQuerySchema, location="query")
-    @bp.response(SuccessResponseSchema)
+    @bp.response(NumberResponseSchema)
     def post(self, args, argsQuery):
         tatu = current_app.config['TATU_SERVER']
         response = {
-            "success": tatu.putfields(args['rows'], argsQuery['ignoredup'])
+            "n": tatu.putfields(args['rows'], argsQuery['ignoredup'])
         }
         return response
 

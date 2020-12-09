@@ -287,19 +287,32 @@ export default function Posts(props) {
         NotificationManager.info("OID copied to clipboard");
     }
 
-    async function handleCreatePost(e, uuid) {
+    async function handleIconClick(e, postId, data_uuid) {
         e.preventDefault();
-        if (uuid === "00000000000000000000001") {
+        if (postId === null) {
             NotificationManager.info("All histories begin here!", "NoData");
             return
         }
 
         try {
-            const response = await api.get(`/posts/${uuid}`);
-            history.push(`/posts/${response.data.id}/description`);
+            await api.put(`posts/activate`, {"data_uuid":data_uuid});
+            const r = await api.get(`sync?cat=data&fetch=true&uuids=${data_uuid}`);
+            if (!r.data["has"]) {
+                NotificationManager.info("This Data has not being stored yet!", "NoData");
+            } else {
+                const response = await api.get(`posts/${postId}`);
+                setPost(response.data);
+                setName(response.data.name);
+                setNameEdit(response.data.name);
+                setDescription(response.data.description ? response.data.description : '');
+                setDescriptionEdit(response.data.description ? response.data.description : '');
+                setLoadingHero(false);
+                history.push(`/posts/${postId}/description`);
+            }
         } catch (error) {
             notifyError(error);
         }
+
     }
 
     async function handleSubmitCollaborator(e, username) {
@@ -560,7 +573,7 @@ export default function Posts(props) {
                                                             <div key={transformation.label} className="flex-row">
                                                                 <button
                                                                     title="Show Dataset" alt="Show Dataset"
-                                                                    onClick={(e) => handleCreatePost(e, transformation.label)}
+                                                                    onClick={(e) => handleIconClick(e, transformation.post, transformation.label)}
                                                                     className="box-uuid-history"
                                                                     style={{ backgroundColor: `rgb(${transformation.data_uuid_colors[0][0]}, ${transformation.data_uuid_colors[0][1]}, ${transformation.data_uuid_colors[0][2]})`, border: `var(--border)` }}>
                                                                     <span>&nbsp;</span>

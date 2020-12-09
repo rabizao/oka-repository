@@ -23,12 +23,14 @@ def past(uuid):
     tatu = current_app.config['TATU_SERVER']
     data = tatu.fetch(uuid, lazy=False)
     if not data:
-        return {}
+        return []  # REMINDER: The history exists, but is not accessible through data.fetch()
     duuid = Root.uuid
     history = []
     for step in data.history:
+        post = Post.query.filter_by(data_uuid=duuid.id).first()
         history.append({"label": duuid.id, "name": step.name,
-                        "help": str(step), "data_uuid_colors": colors(duuid.id)})
+                        "help": str(step), "data_uuid_colors": colors(duuid.id),
+                        "post": post and post.id})
         duuid *= step.uuid
     return history
 
@@ -178,7 +180,7 @@ class UserLoginSchema(UserBaseSchema):
         user = User.get_by_username(data["username"])
         if not user:
             raise ValidationError(field_name="username",
-                                  message="Does not exist. [" + self.__class__.__name__ + "]")
+                                  message="Does not exist.")
         if not user.active:
             raise ValidationError(field_name="username",
                                   message="Your account was deleted.")
@@ -328,6 +330,10 @@ class SyncFieldsQuerySchema(SQLAlchemySchema):
 
 class SuccessResponseSchema(SQLAlchemySchema):
     success = fields.Bool()
+
+
+class NumberResponseSchema(SQLAlchemySchema):
+    n = fields.Integer()
 
 
 class SyncContentSchema(SQLAlchemySchema):
