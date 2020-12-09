@@ -27,10 +27,12 @@ def past(uuid):
     duuid = Root.uuid
     history = []
     for step in data.history:
-        post = Post.query.filter_by(data_uuid=duuid.id).first()
-        history.append({"label": duuid.id, "name": step.name,
-                        "help": str(step), "data_uuid_colors": colors(duuid.id),
-                        "post": post and post.id})
+        if step.name[:3] not in ["B", "Rev", "In", "Aut", "E"]:
+            name = step.name[:-1] if step.name[-1] == "o" or step.name[-1] == "1" else step.name
+            post = Post.query.filter_by(data_uuid=duuid.id).first()
+            history.append({"label": duuid.id, "name": name,
+                            "help": str(step), "data_uuid_colors": colors(duuid.id),
+                            "post": post and post.id})
         duuid *= step.uuid
     return history
 
