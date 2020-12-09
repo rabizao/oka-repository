@@ -78,8 +78,7 @@ class Posts(MethodView):
             store_data=False, info=args["info"]
         )
         if obj["code"] != "success":
-            abort(422, errors={
-                "json": {"data_uuid": ["Cannot create post. [" + self.__class__.__name__ + "]"]}})
+            abort(422, errors={"json": {"data_uuid": obj["message"]}})
 
 
 # noinspection PyArgumentList
@@ -93,10 +92,10 @@ class PostsActivate(MethodView):
         Activate post with id {id}
         """
         logged_user = User.get_by_username(get_jwt_identity())
-        post = Post.query.filter_by(data_uuid=args["data_uuid"], user_id=logged_user.id, active=False).first()
+        post = Post.query.filter_by(data_uuid=args["data_uuid"], user_id=logged_user.id).first()
         if not post:
             abort(422, errors={
-                "json": {"data_uuid": ["Post not found. [" + self.__class__.__name__ + "]"]}})
+                "json": {"data_uuid": ["Post not found."]}})
         post.active = True
         db.session.commit()
 
@@ -115,10 +114,10 @@ class PostsById(MethodView):
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={
-                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist."]}})
         if not logged_user.has_access(post):
             abort(422, errors={
-                "json": {"id": ["You dont have access to this post. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["You dont have access to this post."]}})
         return post
 
     @jwt_required
@@ -133,11 +132,11 @@ class PostsById(MethodView):
 
         if not post or not post.active:
             abort(422, errors={
-                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist."]}})
 
         if post.public:
             abort(422, errors={
-                "json": {"id": ["Public posts can not be edited. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Public posts can not be edited."]}})
 
         if not logged_user.is_admin():
             if logged_user != post.author:
@@ -156,16 +155,16 @@ class PostsById(MethodView):
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={
-                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist."]}})
 
         if post.public:
             abort(422, errors={
-                "json": {"id": ["Public posts can not be deleted. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Public posts can not be deleted."]}})
 
         logged_user = User.get_by_username(get_jwt_identity())
         if post.author != logged_user:
             abort(422, errors={
-                "json": {"id": ["Only the author can delete the post. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Only the author can delete the post."]}})
 
         post.active = False
         db.session.commit()
@@ -183,25 +182,25 @@ class PostsCollaboratorsById(MethodView):
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={
-                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist."]}})
 
         collaborator = User.get_by_username(args["username"])
         if not collaborator:
             abort(422, errors={
-                "json": {"username": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"username": ["Does not exist."]}})
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
 
         if post.author == collaborator:
             abort(422, errors={
-                "json": {"username": ["You can not invite yourself. [" + self.__class__.__name__ + "]"]}})
+                "json": {"username": ["You can not invite yourself."]}})
 
         if not post.author == logged_user:
             abort(422, errors={
                 "json": {"username":
                     [
-                        "Only the author can invite collaborators to the post. [" + self.__class__.__name__ + "]"]}})
+                        "Only the author can invite collaborators to the post."]}})
 
         if collaborator.has_access(post):
             collaborator.deny_access(post)
@@ -221,7 +220,7 @@ class PostsFavoriteById(MethodView):
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={
-                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist."]}})
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
@@ -242,17 +241,17 @@ class PostsPublishById(MethodView):
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={
-                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist."]}})
 
         if post.public:
             abort(422, errors={
-                "json": {"id": ["The post is already published. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["The post is already published."]}})
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
         if post.author != logged_user:
             abort(422, errors={
-                "json": {"id": ["Only the author can publish the post. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Only the author can publish the post."]}})
 
         # TODO: Verify if the post has all classification variables before next steps
 
@@ -274,7 +273,7 @@ class PostsCommentsById(MethodView):
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={
-                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist."]}})
 
         order_by = getattr(Comment.timestamp, args['order_by'])()
         query = post.comments
@@ -294,7 +293,7 @@ class PostsCommentsById(MethodView):
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={
-                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist."]}})
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
@@ -314,7 +313,7 @@ class PostsStatsById(MethodView):
         post = Post.query.get(id)
         if not post or not post.active:
             abort(422, errors={
-                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist."]}})
 
         tatu = current_app.config['TATU_SERVER']
         data = tatu.fetch(post.data_uuid, lazy=False)
@@ -351,7 +350,7 @@ class PostsTwinsById(MethodView):
         post = Post.query.get(id)
         if not post:
             abort(422, errors={
-                "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                "json": {"id": ["Does not exist."]}})
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)

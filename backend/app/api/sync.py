@@ -1,12 +1,11 @@
 # noinspection PyArgumentList
+import simplejson as json2
 from app.schemas import (SyncCheckBaseSchema, SyncCheckResponseSchema, SyncPostSchema, SyncPostQuerySchema,
                          SyncResponseSchema, SyncContentFileSchema, SyncFieldsSchema, SyncFieldsQuerySchema,
-                         SuccessResponseSchema)
+                         SuccessResponseSchema, NumberResponseSchema)
 from flask import make_response, current_app, jsonify
 from flask.views import MethodView
 from flask_jwt_extended import jwt_required
-
-import simplejson as json2
 
 from . import bp
 
@@ -20,9 +19,10 @@ class SyncCheck(MethodView):
         tatu = current_app.config['TATU_SERVER']
         uuid = args["uuids"][0]  # TODO: Implement get/has multiple data and multiple steps.
         if args['cat'] == "data":
-            f = tatu.getdata if args['fetch'] else tatu.hasdata
             # jsonify allows to return None or a dict, which is compatible with the posterior SQL usage of this result
-            return jsonify(f(uuid, args['empty']) if args['fetch'] else {"has": f(uuid, args['empty'])})
+            return jsonify(
+                tatu.getdata(uuid, args['empty']) if args['fetch'] else {"has": tatu.hasdata(uuid, args['empty'])}
+            )
         if args['cat'] == "step":
             return jsonify(tatu.getstep(uuid) if args['fetch'] else {"has": tatu.hasstep(uuid)})
         if args['cat'] == "content":
@@ -101,11 +101,11 @@ class SyncFields(MethodView):
     @jwt_required
     @bp.arguments(SyncFieldsSchema)
     @bp.arguments(SyncFieldsQuerySchema, location="query")
-    @bp.response(SuccessResponseSchema)
+    @bp.response(NumberResponseSchema)
     def post(self, args, argsQuery):
         tatu = current_app.config['TATU_SERVER']
         response = {
-            "success": tatu.putfields(args['rows'], argsQuery['ignoredup'])
+            "n": tatu.putfields(args['rows'], argsQuery['ignoredup'])
         }
         return response
 

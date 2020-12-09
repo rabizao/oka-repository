@@ -23,7 +23,7 @@ class MessagesByUsername(MethodView):
         user = User.get_by_username(username)
         if not user:
             abort(422, errors={"json": {"username": [
-                  "Does not exist. [" + self.__class__.__name__ + "]"]}})
+                  "Does not exist."]}})
         logged_user = User.get_by_username(get_jwt_identity())
 
         filter_by = {"recipient": logged_user, "author": user}
@@ -43,11 +43,11 @@ class MessagesByUsername(MethodView):
         user = User.get_by_username(username)
         if not user:
             abort(422, errors={"json": {"username": [
-                  "Does not exist. [" + self.__class__.__name__ + "]"]}})
+                  "Does not exist."]}})
         logged_user = User.get_by_username(get_jwt_identity())
         if user == logged_user:
             abort(422, errors={"json": {"username": [
-                  "You can not send a message to yourself. [" + self.__class__.__name__ + "]"]}})
+                  "You can not send a message to yourself."]}})
         message = Message(body=args['body'],
                           author=logged_user, recipient=user)
         db.session.add(message)
@@ -71,7 +71,7 @@ class MessagesConversationByUsername(MethodView):
         user = User.get_by_username(username)
         if not user:
             abort(422, errors={"json": {"username": [
-                  "Does not exist. [" + self.__class__.__name__ + "]"]}})
+                  "Does not exist."]}})
         logged_user = User.get_by_username(get_jwt_identity())
 
         logged_user_messages = Message.query.filter_by(
@@ -100,11 +100,11 @@ class MessagesLastsByUsername(MethodView):
         user = User.get_by_username(username)
         if not user:
             abort(422, errors={"json": {"username": [
-                  "Does not exist. [" + self.__class__.__name__ + "]"]}})
+                  "Does not exist."]}})
         logged_user = User.get_by_username(get_jwt_identity())
         if user != logged_user:
             abort(422, errors={"json": {"username": [
-                  "You can only check your messages. [" + self.__class__.__name__ + "]"]}})
+                  "You can only check your messages."]}})
 
         xpr = case(
             [
@@ -144,12 +144,12 @@ class MessagesById(MethodView):
         message = Message.query.get(id)
         if not message or not message.active:
             abort(422, errors={
-                  "json": {"id": ["Does not exist. [" + self.__class__.__name__ + "]"]}})
+                  "json": {"id": ["Does not exist."]}})
         if not message.author == logged_user and not message.recipient == logged_user:
             abort(422, errors={
                   "json":
                   {"id":
-                   ["Only the sender and the recipient have access to this message. [" + self.__class__.__name__ + "]"
+                   ["Only the sender and the recipient have access to this message."
                     ]
                    }})
         return message

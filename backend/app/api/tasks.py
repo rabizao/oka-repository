@@ -52,11 +52,15 @@ def create_data_and_post(logged_user, tatu, data, original_name, name, descripti
             if datauuid.id == data_id:
                 name0, description0 = name, description
             # noinspection PyArgumentList
-            post = Post(author=logged_user, data_uuid=datauuid.id, name=name0, description=description0,
+            # print(">>>>>>>>>>>>>>>>>>>", datauuid.id, step_id)
+
+            existing_post = logged_user.posts.filter_by(data_uuid=datauuid.id).first()
+            if not existing_post:
+                post = Post(author=logged_user, data_uuid=datauuid.id, name=name0, description=description0,
                         number_of_instances=ninsts, number_of_features=nattrs, active=store_data)
-            # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
-            # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
-            db.session.add(post)
+                # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
+                # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
+                db.session.add(post)
 
         db.session.commit()
         obj = {'original_name': original_name,
