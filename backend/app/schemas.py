@@ -295,7 +295,7 @@ class SyncCheckBaseSchema(SQLAlchemySchema):
     uuids = fields.List(fields.String(), required=True)
     cat = fields.String(required=True)
     empty = fields.Boolean(missing=True)
-    names = fields.List(fields.String())
+    # names = fields.List(fields.String())
     fetch = fields.Boolean(missing=False)
 
 
