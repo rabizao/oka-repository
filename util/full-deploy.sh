@@ -1,6 +1,6 @@
 echo "Reseting mysql..."
-mysql -e 'drop database oka; create database oka'
-mysql -e 'drop database tatu; create database tatu'
+mysql -e 'drop database IF EXISTS oka; create database oka;'
+mysql -e 'drop database IF EXISTS tatu; create database tatu;'
 
 echo "Running oka user commands..."
 sudo -i -u oka /home/oka/oka-repository/util/full-deploy-okauser-part.sh
