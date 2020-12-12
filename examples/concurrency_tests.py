@@ -1,12 +1,14 @@
+import multiprocessing
+import operator
+import time
+
 import requests
 from simplejson import JSONDecodeError
 
 from aiuna.step.dataset import Dataset
 from tatu.sql.mysql import MySQL
 
-# Only tatu
 tatu = MySQL(db='tatu:kururu@localhost/tatu', threaded=False)
-
 tatu.store(Dataset().data, ignoredup=True)
 tatu.close()
 
@@ -36,25 +38,43 @@ headers = {'Authorization': 'Bearer ' + access_token}
 
 import pathos.multiprocessing as mp
 
+run = True
 
-def f(l):
-    resps = []
-    status = []
+
+def f(conn):
+    global run
     try:
-        for i in range(5):
-            # response = get_data().id
+        i = 0
+        print("s", end='')
+        while i < 40 and run:
             requests.get('http://localhost:5000/api/posts/1', headers=headers).json()
-            status.append(True)
-    except JSONDecodeError:
-        resps.append(None)
-        status.append(False)
-    return all(status), resps
+            print(".", end='')
+            i += 1
+    except JSONDecodeError as e:
+        conn.send(False)
+        print("X", end='')
+        return str(e)
+    return False
 
 
-n_processes = 20
-pool = mp.Pool(n_processes)
-sts_rs_s = pool.map(f, [1] * n_processes)
+parent_conn, child_conn = multiprocessing.Pipe()
+n_processes = 4
+pool = mp.ProcessPool(n_processes)
+results = pool.amap(f, [child_conn] * n_processes)
+error = False
+while not (results.ready() or error):
+    time.sleep(0.1)
+    error = parent_conn.poll()
+print("End")
 pool.close()
-pool.join()
+# pool.join()
+parent_conn.close()
+child_conn.close()
+pool.terminate()
 
-print("OK" if all(x[0] for x in sts_rs_s) else list(filter(lambda a: not bool(a[0]), sts_rs_s))[:1])
+print()
+
+if error:
+    print("ERROR")
+else:
+    print("OK")
