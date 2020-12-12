@@ -57,12 +57,19 @@ def create_data_and_post(logged_user, tatu, data, original_name, name, descripti
             existing_post = logged_user.posts.filter_by(data_uuid=datauuid.id).first()
             if not existing_post:
                 post = Post(author=logged_user, data_uuid=datauuid.id, name=name0, description=description0,
-                        number_of_instances=ninsts, number_of_features=nattrs, active=store_data)
+                            number_of_instances=ninsts, number_of_features=nattrs, active=store_data)
                 # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
                 # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
                 db.session.add(post)
 
         db.session.commit()
+
+        # Almost redundant recovering of post, just for the case when it already existed (?)
+        post = Post.query.filter_by(
+            data_uuid=data_id,
+            user_id=logged_user.id
+        ).first()
+
         obj = {'original_name': original_name,
                'message': 'Dataset successfully uploaded', 'code': 'success', 'id': post.id}
         logged_user.add_notification(

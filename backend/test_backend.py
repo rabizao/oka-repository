@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
 import json
 import unittest
 import warnings
@@ -62,6 +62,7 @@ class ApiCase(unittest.TestCase):
         db.session.remove()
         db.drop_all()
         self.app_context.pop()
+        self.tatu.close()
 
     def login(self, create_user=True, user=create_user1, long_term=False, admin=False):
         # 1 - Create
@@ -278,17 +279,36 @@ class ApiCase(unittest.TestCase):
         result = process_file.run(files, username)
         self.assertEqual(json.loads(result['result'])[
                              0]["code"] == "success", True)
-        # 4
+
+        # # 4       teste de concorrencia  ######################
+        # from tatu.sql.mysql import MySQL
+        # está em concurrency_tests.py ##########################
         post_id = json.loads(result['result'])[0]['id']
         data_uuid = Post.query.get(post_id).data_uuid
         post = Post.query.get(post_id)
+        # tatu = SQLite("/dev/shm/test.db")
+        # tatu.store()
+        #
+        # def f(l):
+        #     try:
+        #         rs = []
+        #         for i in range(10000):
+        #             # response = get_data().id
+        #             response = self.client.get(f"/api/posts/{post_id}").json
+        #             print(str(i) + " " + response)
+        #             rs.append(True)
+        #     except JSONDecodeError:
+        #         return False
+        #     return rs
+        #
+        # pool = mp.Pool()
+        # rs = pool.map(f, [1, 2])
+        # pool.close()
+        # pool.join()
+        #
+        # self.assertTrue(all(rs))
+        ####################################################
 
-        for i in range(50):
-            data = self.tatu.fetch(data_uuid, lazy=False)
-            attrs = data.Xd
-            print("ATTRS>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", attrs)
-            response = self.client.get(f"/api/posts/{post_id}")
-            print(i, response.json['attrs'])
         # 5
         new_name = "new name"
         new_description = "new description"

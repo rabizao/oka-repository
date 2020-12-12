@@ -3,9 +3,6 @@ import os
 from logging.handlers import SMTPHandler, RotatingFileHandler
 
 from celery import Celery
-
-from tatu import Tatu
-from .config import Config
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
@@ -14,6 +11,9 @@ from flask_migrate import Migrate
 from flask_smorest import Api
 from flask_sqlalchemy import SQLAlchemy
 
+from tatu import Tatu
+from .config import Config
+
 db = SQLAlchemy()
 migrate = Migrate()
 mail = Mail()
@@ -21,11 +21,21 @@ celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
 jwt = JWTManager()
 
 
+class FlaskWrapper(Flask):
+    """https://stackoverflow.com/a/57231282/9681577"""
+
+    def run(self, host=None, port=None, debug=None, load_dotenv=True, **options):
+        if not self.debug or os.getenv('WERKZEUG_RUN_MAIN') == 'true':
+            with self.app_context():
+                self.config['TATU_SERVER'].open()
+        super(FlaskWrapper, self).run(host=host, port=port, debug=debug, load_dotenv=load_dotenv, **options)
+
+
 def create_app(config_class=Config):
-    app = Flask(__name__, static_url_path="/media", static_folder='media')
+    app = FlaskWrapper(__name__, static_url_path="/media", static_folder='media')
 
     app.config.from_object(config_class)
-    app.config['TATU_SERVER'] = Tatu(url=app.config['TATU_URL'], threaded=False)
+    app.config['TATU_SERVER'] = Tatu(url=app.config['TATU_URL'], threaded=True)
 
     db.init_app(app)
     migrate.init_app(app, db)
