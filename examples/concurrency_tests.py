@@ -48,10 +48,10 @@ def f(conn):
         print("s", end='')
         while i < 40 and run:
             requests.get('http://localhost:5000/api/posts/1', headers=headers).json()
-            print(".", end='')
+            print(".", end='', flush=True)
             i += 1
     except JSONDecodeError as e:
-        print("X", end='')
+        print("X", end='', flush=True)
         conn.send(False)
         return str(e)
     return False
