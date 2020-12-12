@@ -51,8 +51,8 @@ def f(conn):
             print(".", end='')
             i += 1
     except JSONDecodeError as e:
-        conn.send(False)
         print("X", end='')
+        conn.send(False)
         return str(e)
     return False
 
@@ -62,9 +62,13 @@ n_processes = 4
 pool = mp.ProcessPool(n_processes)
 results = pool.amap(f, [child_conn] * n_processes)
 error = False
-while not (results.ready() or error):
+while True:
     time.sleep(0.1)
+    finished = results.ready()
     error = parent_conn.poll()
+    if finished or error:
+        break
+
 print("End")
 pool.close()
 # pool.join()
