@@ -21,7 +21,8 @@ def get_data():
 
 # Only SQLALchemy
 response_login = requests.post(
-    'http://localhost:5000/api/auth/login', json={"username": "rabizao", "password": "rafael"})
+    'http://localhost:5000/api/auth/login', json={"username": "davips", "password": "pass123"})
+print(response_login)
 access_token = response_login.json()['access_token']
 headers = {'Authorization': 'Bearer ' + access_token}
 
@@ -37,20 +38,23 @@ import pathos.multiprocessing as mp
 
 
 def f(l):
+    resps = []
+    status = []
     try:
-        rs = []
-        for i in range(20):
+        for i in range(5):
             # response = get_data().id
-            response = requests.get('http://localhost:5000/api/posts/1', headers=headers).json()
-            rs.append(response)
+            requests.get('http://localhost:5000/api/posts/1', headers=headers).json()
+            status.append(True)
     except JSONDecodeError:
-        return False
-    return rs
+        resps.append(None)
+        status.append(False)
+    return all(status), resps
 
 
-pool = mp.Pool()
-rs = pool.map(f, [1, 2, 3])
+n_processes = 20
+pool = mp.Pool(n_processes)
+sts_rs_s = pool.map(f, [1] * n_processes)
 pool.close()
 pool.join()
 
-print("OK" if all(rs) else rs)
+print("OK" if all(x[0] for x in sts_rs_s) else list(filter(lambda a: not bool(a[0]), sts_rs_s))[:1])
