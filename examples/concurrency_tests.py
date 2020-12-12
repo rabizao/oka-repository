@@ -46,7 +46,7 @@ def f(conn):
     try:
         i = 0
         print("s", end='')
-        while i < 40 and run:
+        while i < 50 and run:
             requests.get('http://localhost:5000/api/posts/1', headers=headers).json()
             print(".", end='', flush=True)
             i += 1
@@ -56,14 +56,13 @@ def f(conn):
         return str(e)
     return False
 
-
 parent_conn, child_conn = multiprocessing.Pipe()
-n_processes = 4
+n_processes = 200
 pool = mp.ProcessPool(n_processes)
 results = pool.amap(f, [child_conn] * n_processes)
 error = False
 while True:
-    time.sleep(0.1)
+    time.sleep(1)
     finished = results.ready()
     error = parent_conn.poll()
     if finished or error:
