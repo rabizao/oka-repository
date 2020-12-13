@@ -72,6 +72,7 @@ def user(username=None, password=None, email=None, base_url="http://localhost:50
 def test_okast_id():
     url = "http://localhost:5000"
     user("davips", "pass123", base_url=url)
+    user("testes", "pass123", base_url=url)
     print("user created")
     # o = OkaSt(token=okatoken, url=url)
     # print(f"idddddd {o.id}")

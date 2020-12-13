@@ -10,72 +10,82 @@ from flask.views import MethodView
 from flask_jwt_extended import jwt_required
 from flask_mail import Message
 
-from aiuna.content.root import Root
+from aiuna.content.data import Data
 from aiuna.step.file import File
 from app import celery, db, mail
 from app.models import Post, Task, User
 from app.schemas import TaskStatusBaseSchema
-from cruipto.uuid import UUID
 from . import bp
 
 
-def create_data_and_post(logged_user, tatu, data, original_name, name, description, store_data=True, info={}):
-    if not info:
-        info["step_ids"] = [step.id for step in list(data.history)]
-        info["nattrs"] = data.X.shape[1]
-        info["ninsts"] = data.X.shape[0]
-    data_id = data if isinstance(data, str) else data.id
-    step_ids, nattrs, ninsts = info["step_ids"], info["nattrs"], info["ninsts"]
+def create_post(logged_user, data, name, description, filename=None, active=True, info=None):
+    """Create an inactive post for the given Data object or data id str."""
+    if info is None:
+        info = {"nattrs": data.X.shape[1], "ninsts": data.X.shape[0], "past": data.past.keys()}
+    data_id = data.id if isinstance(data, Data) else data
+    if filename is None:
+        filename = name
     existing_post = logged_user.posts.filter_by(data_uuid=data_id).first()
     if existing_post:
-        if existing_post.active:
-            obj = {'original_name': original_name,
-                   'message': 'Error! Dataset already uploaded', 'code': 'error', 'id': existing_post.id}
+        # Choose message when the post already exists. 
+        if existing_post.active or not active:
+            obj = {
+                'original_name': filename,
+                'message': 'Error! Dataset already uploaded',
+                'code': 'error',
+                'id': existing_post.id
+            }
         else:
-            obj = {'original_name': original_name,
-                   'message': 'Dataset successfully restored', 'code': 'success', 'id': existing_post.id}
             existing_post.active = True
             db.session.commit()
+            obj = {
+                'original_name': filename,
+                'message': 'Dataset successfully restored',
+                'code': 'success',
+                'id': existing_post.id
+            }
+        logged_user.add_notification(name='data_uploaded', data=obj, overwrite=False)
         logged_user.add_notification(
-            name='data_uploaded', data=obj, overwrite=False)
-        logged_user.add_notification(
-            name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True)
+            name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True
+        )
     else:
-        if store_data:
-            tatu.store(data, lazy=False, ignoredup=True)
+        # Defaults for ancestors.
+        name_, description_, ninsts_, nattrs_ = "No name", "No description", -1, -1
 
-        # History.
-        datauuid = Root.uuid
-        name0, description0 = "No name", "No description"
-        for step_id in list(step_ids):
-            datauuid = datauuid * UUID(step_id)
-            if datauuid.id == data_id:
-                name0, description0 = name, description
-            # noinspection PyArgumentList
-            # print(">>>>>>>>>>>>>>>>>>>", datauuid.id, step_id)
-
-            existing_post = logged_user.posts.filter_by(data_uuid=datauuid.id).first()
+        # Create post and needed ancestors.
+        for did in info["past"]:
+            if did == data_id:
+                # Only the last Data object has metainfo.
+                name_, description_, ninsts_, nattrs_ = name, description, info["ninsts"], info["nattrs"]
+            existing_post = logged_user.posts.filter_by(data_uuid=did).first()
             if not existing_post:
-                post = Post(author=logged_user, data_uuid=datauuid.id, name=name0, description=description0,
-                            number_of_instances=ninsts, number_of_features=nattrs, active=store_data)
+                # noinspection PyArgumentList
+                post = Post(
+                    author=logged_user,
+                    data_uuid=did,
+                    name=name_,
+                    description=description_,
+                    number_of_instances=ninsts_,
+                    number_of_features=nattrs_,
+                    active=active
+                )
                 # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
                 # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
                 db.session.add(post)
-
         db.session.commit()
 
-        # Almost redundant recovering of post, just for the case when it already existed (?)
-        post = Post.query.filter_by(
-            data_uuid=data_id,
-            user_id=logged_user.id
-        ).first()
-
-        obj = {'original_name': original_name,
-               'message': 'Dataset successfully uploaded', 'code': 'success', 'id': post.id}
+        obj = {
+            'original_name': filename,
+            'message': 'Dataset successfully uploaded',
+            'code': 'success',
+            'id': post.id
+        }
+        logged_user.add_notification(name='data_uploaded', data=obj, overwrite=False)
         logged_user.add_notification(
-            name='data_uploaded', data=obj, overwrite=False)
-        logged_user.add_notification(
-            name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True)
+            name='unread_notification_count',
+            data=logged_user.new_notifications(),
+            overwrite=True
+        )
 
     return obj
 
@@ -221,7 +231,8 @@ def process_file(self, files, username):
         path = '/'.join(file['path'].split('/')[:-1]) + '/'
         f = File(name, path)
         name, description = f.dataset, f.description
-        result.append(create_data_and_post(logged_user, tatu, f.data, file['original_name'], name, description))
+        tatu.store(f.data, lazy=False, ignoredup=True)
+        result.append(create_post(logged_user, f.data, name, description, file['original_name']))
 
     return _set_job_progress(self, 100, result=result)
 
