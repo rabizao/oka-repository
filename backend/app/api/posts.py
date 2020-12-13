@@ -14,7 +14,7 @@ from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
                          RunSchema, TaskBaseSchema, UserBaseSchema, StatsQuerySchema, PostCreateSchema,
                          PostActivateSchema)
 from . import bp
-from .tasks import create_data_and_post
+from .tasks import create_post
 
 
 def save_files(input_files):
@@ -69,14 +69,11 @@ class Posts(MethodView):
     @bp.response(code=200)
     def put(self, args):
         """
-
+        Create inactive post (and without Data for a while), and parents.
         """
         logged_user = User.get_by_username(get_jwt_identity())
-        tatu = current_app.config['TATU_SERVER']
-        obj = create_data_and_post(
-            logged_user, tatu, args["data_uuid"], f"Pushed data [{args['name']}]", args["name"], args["description"],
-            store_data=False, info=args["info"]
-        )
+        did = args["data_uuid"]
+        obj = create_post(logged_user, did, args["name"], args["description"], active=False, info=args["info"])
         if obj["code"] != "success":
             abort(422, errors={"json": {"data_uuid": obj["message"]}})
 

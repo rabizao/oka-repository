@@ -3,7 +3,7 @@ rm /home/oka/oka-repository/backend/venv -rf
 
 echo "Deleting media and tatu-* ..."
 cd /home/oka/
-rm -rf $(find . -name "tatu-*") /home/oka/oka-repository/backend/app/media/*
+rm -rf $(find . -name "tatu-*") /home/oka/oka-repository/backend/app/media/* /home/oka/oka-repository/backend/migrations
 
 echo "Creating venv..."
 cd /home/oka/oka-repository/backend/

@@ -273,12 +273,10 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         # 3
         with open(filename, 'rb') as fr:
-            filestorage = FileStorage(
-                fr, filename="iris_send.arff", content_type="application/octet-stream")
+            filestorage = FileStorage(fr, filename="iris_send.arff", content_type="application/octet-stream")
             files = save_files([filestorage])
         result = process_file.run(files, username)
-        self.assertEqual(json.loads(result['result'])[
-                             0]["code"] == "success", True)
+        self.assertEqual(json.loads(result['result'])[0]["code"] == "success", True)
 
         # # 4       teste de concorrencia  ######################
         # from tatu.sql.mysql import MySQL
@@ -618,7 +616,7 @@ class ApiCase(unittest.TestCase):
         self.login()
         iris = Dataset().data
         info = {
-            "step_ids": [step.id for step in list(iris.history)],
+            "past": iris.past,
             "nattrs": iris.X.shape[1],
             "ninsts": iris.X.shape[0]
         }
