@@ -1,4 +1,4 @@
-# !/usr/bin/env python
+#!/usr/bin/env python
 import json
 import unittest
 import warnings
@@ -273,17 +273,19 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         # 3
         with open(filename, 'rb') as fr:
-            filestorage = FileStorage(fr, filename="iris_send.arff", content_type="application/octet-stream")
+            filestorage = FileStorage(
+                fr, filename="iris_send.arff", content_type="application/octet-stream")
             files = save_files([filestorage])
         result = process_file.run(files, username)
-        self.assertEqual(json.loads(result['result'])[0]["code"] == "success", True)
+        self.assertEqual(json.loads(result['result'])[
+                         0]["code"] == "success", True)
+        post_id = json.loads(result['result'])[0]['id']
+        post = Post.query.get(post_id)
+        # data_uuid = Post.query.get(post_id).data_uuid
 
         # # 4       teste de concorrencia  ######################
         # from tatu.sql.mysql import MySQL
         # está em concurrency_tests.py ##########################
-        post_id = json.loads(result['result'])[0]['id']
-        data_uuid = Post.query.get(post_id).data_uuid
-        post = Post.query.get(post_id)
         # tatu = SQLite("/dev/shm/test.db")
         # tatu.store()
         #
@@ -443,11 +445,11 @@ class ApiCase(unittest.TestCase):
         result = process_file.run(files, username2)
         self.assertEqual(result['state'], 'SUCCESS')
         self.assertEqual(json.loads(result['result'])[
-                             0]["code"] == "error", False)
+            0]["code"] == "error", False)
         result = process_file.run(files, username2)
         self.assertEqual(result['state'], 'SUCCESS')
         self.assertEqual(json.loads(result['result'])[
-                             0]["code"] == "error", True)
+            0]["code"] == "error", True)
         # 15
         response = self.client.get(f"/api/posts/{post_id}/twins")
         self.assertEqual(response.status_code, 200)
@@ -470,7 +472,7 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         result = run_step.run(post_id, step, username)
         self.assertEqual(json.loads(result['result'])[
-                             "code"] == "error", False)
+            "code"] == "error", False)
         # 17
         # User2 can not delete post_id
         response = self.client.delete(f"/api/posts/{post_id}")
@@ -489,7 +491,7 @@ class ApiCase(unittest.TestCase):
         # Restore post uploading data again
         result = process_file.run(files, username)
         self.assertEqual(json.loads(result['result'])[
-                             0]["code"] == "success", True)
+            0]["code"] == "success", True)
 
     def test_create_user(self):
         """
@@ -620,16 +622,21 @@ class ApiCase(unittest.TestCase):
             "nattrs": iris.X.shape[1],
             "ninsts": iris.X.shape[0]
         }
-        response = self.client.put("/api/posts", json={'data_uuid': iris.id, 'info': info})
-        self.assertEqual(response.status_code, 200, msg=response.json and response.json["errors"])
+        response = self.client.put(
+            "/api/posts", json={'data_uuid': iris.id, 'info': info})
+        self.assertEqual(response.status_code, 200,
+                         msg=response.json and response.json["errors"])
 
         self.tatu.store(iris)
 
-        response = self.client.put("/api/posts/activate", json={'data_uuid': iris.id})
-        self.assertEqual(response.status_code, 200, msg=response.json and response.json["errors"])
+        response = self.client.put(
+            "/api/posts/activate", json={'data_uuid': iris.id})
+        self.assertEqual(response.status_code, 200,
+                         msg=response.json and response.json["errors"])
 
         response = self.client.put("/api/posts", json={'data_uuid': iris.id})
-        self.assertEqual(response.status_code, 422, msg=response.json and response.json["errors"])
+        self.assertEqual(response.status_code, 422,
+                         msg=response.json and response.json["errors"])
 
 
 if __name__ == '__main__':
