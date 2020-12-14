@@ -239,12 +239,12 @@ class ApiCase(unittest.TestCase):
             1 - Create user2 and create/login with user1
             2 - Create a new post uploading a dataset
             3 - Run celery task to create the post
-            4 - Concurrency test
-            5 - Edit post's description and name
-            6 - List the post
-            7 - Download the dataset
-            8 - Favorite/Unfavorite post
-            9 - Publish post
+            4 - Edit post's description and name
+            5 - List the post
+            6 - Download the dataset
+            7 - Favorite/Unfavorite post
+            8 - Publish post
+            9 - Feed
             10 - Comment post
             11 - Reply to comment
             12 - Add user2 as collaborator, check, remove and check again
@@ -280,35 +280,7 @@ class ApiCase(unittest.TestCase):
                          0]["code"] == "success", True)
         post_id = json.loads(result['result'])[0]['id']
         post = Post.query.get(post_id)
-        # data_uuid = Post.query.get(post_id).data_uuid
-
-        # # 4       teste de concorrencia  ######################
-        # from tatu.sql.mysql import MySQL
-        # está em concurrency_tests.py ##########################
-        # tatu = SQLite("/dev/shm/test.db")
-        # tatu.store()
-        #
-        # def f(l):
-        #     try:
-        #         rs = []
-        #         for i in range(10000):
-        #             # response = get_data().id
-        #             response = self.client.get(f"/api/posts/{post_id}").json
-        #             print(str(i) + " " + response)
-        #             rs.append(True)
-        #     except JSONDecodeError:
-        #         return False
-        #     return rs
-        #
-        # pool = mp.Pool()
-        # rs = pool.map(f, [1, 2])
-        # pool.close()
-        # pool.join()
-        #
-        # self.assertTrue(all(rs))
-        ####################################################
-
-        # 5
+        # 4
         new_name = "new name"
         new_description = "new description"
         # User2 can not edit post
@@ -329,7 +301,7 @@ class ApiCase(unittest.TestCase):
         response = self.client.put(
             f"/api/posts/{post_id}", json={"name": new_name, "description": new_description})
         self.assertEqual(response.status_code, 200)
-        # 6
+        # 5
         # User2 can not list the post
         self.login(create_user=False, user=create_user2)
         response = self.client.get(f"/api/posts/{post_id}")
@@ -340,7 +312,7 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json['name'], new_name)
         self.assertEqual(response.json['description'], new_description)
-        # 7
+        # 6
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.get(f"/api/downloads/data?pids={post_id}")
         self.assertEqual(response.status_code, 200)
@@ -353,14 +325,14 @@ class ApiCase(unittest.TestCase):
         result = download_data.run([post_id], username, "127.0.0.2")
         self.assertEqual(result['state'], 'SUCCESS')
         self.assertEqual(post.get_unique_download_count(), 2)
-        # 8
+        # 7
         response = self.client.post(f"/api/posts/{post_id}/favorite")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(user.has_favorited(post), True)
         response = self.client.post(f"/api/posts/{post_id}/favorite")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(user.has_favorited(post), False)
-        # 9
+        # 8
         # Publish
         self.assertEqual(post.public, False)
         response = self.client.post(f"/api/posts/{post_id}/publish")
@@ -376,7 +348,7 @@ class ApiCase(unittest.TestCase):
         post.public = False
         db.session.commit()
         self.login(create_user=False)
-        # 10
+        # 9
         # User can not see user2's feed
         response = self.client.get(f"/api/users/{username2}/feed")
         self.assertEqual(response.status_code, 422)
