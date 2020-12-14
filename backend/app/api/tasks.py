@@ -21,13 +21,14 @@ from . import bp
 def create_post(logged_user, data, name, description, filename=None, active=True, info=None):
     """Create an inactive post for the given Data object or data id str."""
     if info is None:
-        info = {"nattrs": data.X.shape[1], "ninsts": data.X.shape[0], "past": data.past.keys()}
+        info = {
+            "nattrs": data.X.shape[1], "ninsts": data.X.shape[0], "past": data.past.keys()}
     data_id = data.id if isinstance(data, Data) else data
     if filename is None:
         filename = name
     existing_post = logged_user.posts.filter_by(data_uuid=data_id).first()
     if existing_post:
-        # Choose message when the post already exists. 
+        # Choose message when the post already exists.
         if existing_post.active or not active:
             obj = {
                 'original_name': filename,
@@ -44,7 +45,8 @@ def create_post(logged_user, data, name, description, filename=None, active=True
                 'code': 'success',
                 'id': existing_post.id
             }
-        logged_user.add_notification(name='data_uploaded', data=obj, overwrite=False)
+        logged_user.add_notification(
+            name='data_uploaded', data=obj, overwrite=False)
         logged_user.add_notification(
             name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True
         )
@@ -56,7 +58,8 @@ def create_post(logged_user, data, name, description, filename=None, active=True
         for did in info["past"]:
             if did == data_id:
                 # Only the last Data object has metainfo.
-                name_, description_, ninsts_, nattrs_ = name, description, info["ninsts"], info["nattrs"]
+                name_, description_, ninsts_, nattrs_ = name, description, info[
+                    "ninsts"], info["nattrs"]
             existing_post = logged_user.posts.filter_by(data_uuid=did).first()
             if not existing_post:
                 # noinspection PyArgumentList
@@ -80,7 +83,8 @@ def create_post(logged_user, data, name, description, filename=None, active=True
             'code': 'success',
             'id': post.id
         }
-        logged_user.add_notification(name='data_uploaded', data=obj, overwrite=False)
+        logged_user.add_notification(
+            name='data_uploaded', data=obj, overwrite=False)
         logged_user.add_notification(
             name='unread_notification_count',
             data=logged_user.new_notifications(),
@@ -189,7 +193,7 @@ def download_data(self, pids, username, ip):
         raise Exception(f'Username {username} not found!')
     tatu = current_app.config['TATU_SERVER']
     filename_server_zip = str(u.uuid4())
-    path_server_zip = f'{current_app.static_folder}/{filename_server_zip}.zip'
+    path_server_zip = f'{current_app.config["TMP_FOLDER"]}/{filename_server_zip}.zip'
     with ZipFile(path_server_zip, 'w') as zipped_file:
         for pid in pids:
             actual_index = pids.index(pid)
@@ -232,7 +236,8 @@ def process_file(self, files, username):
         f = File(name, path)
         name, description = f.dataset, f.description
         tatu.store(f.data, lazy=False, ignoredup=True)
-        result.append(create_post(logged_user, f.data, name, description, file['original_name']))
+        result.append(create_post(logged_user, f.data, name,
+                                  description, file['original_name']))
 
     return _set_job_progress(self, 100, result=result)
 
