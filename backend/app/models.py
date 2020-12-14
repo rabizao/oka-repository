@@ -314,8 +314,7 @@ class Post(PaginateMixin, db.Model):
         return self
 
     def get_unique_download_count(self):
-        return Download.query.group_by(
-            Download.ip).filter_by(post_id=self.id).count()
+        return db.session.query(Download.ip).distinct().filter_by(post_id=self.id).count()
 
     @staticmethod
     def get_by_uuid(uuid, active=False):
