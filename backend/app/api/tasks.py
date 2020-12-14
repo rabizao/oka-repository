@@ -132,21 +132,23 @@ def _set_job_progress(job, progress, failure=False, result={}):
         'status': status,
     }
     job.update_state(state=state, meta=meta)
-    task = Task.query.get(job.request.id)
-    if task:
-        task.user.add_notification(f'task_progress|{task.id}',
-                                   {'task_id': task.id,
-                                    'task_name': task.name,
-                                    'description': task.description,
-                                    'progress': progress,
-                                    'state': state,
-                                    'status': status,
-                                    'result': report
-                                    }, overwrite=True)
-        if done:
-            task.complete = True
 
-        db.session.commit()
+    if job.request.id:
+        task = Task.query.get(job.request.id)
+        if task:
+            task.user.add_notification(f'task_progress|{task.id}',
+                                       {'task_id': task.id,
+                                        'task_name': task.name,
+                                        'description': task.description,
+                                        'progress': progress,
+                                        'state': state,
+                                        'status': status,
+                                        'result': report
+                                        }, overwrite=True)
+            if done:
+                task.complete = True
+
+            db.session.commit()
     return {'progress': progress, 'status': status, 'state': state, 'result': report}
 
 
