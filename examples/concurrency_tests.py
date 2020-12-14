@@ -21,8 +21,9 @@ import pathos.multiprocessing as mp
 run = True
 
 
+last_error = None
 def f(conn):
-    global run
+    global run, last_error
     try:
         i = 0
         print("s", end='')
@@ -32,9 +33,7 @@ def f(conn):
             i += 1
     except JSONDecodeError as e:
         print("X", end='', flush=True)
-        conn.send(False)
-        return str(e)
-    return False
+        conn.send(str(e))
 
 
 parent_conn, child_conn = multiprocessing.Pipe()
@@ -46,6 +45,7 @@ while True:
     time.sleep(1)
     finished = results.ready()
     error = parent_conn.poll()
+    last_error = error and parent_conn.recv()
     if finished or error:
         break
 
@@ -59,6 +59,7 @@ pool.terminate()
 print()
 
 if error:
+    print(last_error)
     print("ERROR")
 else:
     print("OK")
