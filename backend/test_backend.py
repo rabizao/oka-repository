@@ -331,7 +331,8 @@ class ApiCase(unittest.TestCase):
                 fr, filename="iris_send.arff", content_type="application/octet-stream")
             files = save_files([filestorage])
         result = process_file.run(files, username)
-        self.assertEqual(json.loads(result['result'])[0]["code"] == "success", True)
+        self.assertEqual(json.loads(result['result'])[
+                         0]["code"] == "success", True)
         post_id = json.loads(result['result'])[0]['id']
         post = Post.query.get(post_id)
         # 4
@@ -474,10 +475,12 @@ class ApiCase(unittest.TestCase):
         # 14
         result = process_file.run(files, username2)
         self.assertEqual(result['state'], 'SUCCESS')
-        self.assertEqual(json.loads(result['result'])[0]["code"] == "error", False)
+        self.assertEqual(json.loads(result['result'])[
+                         0]["code"] == "error", False)
         result = process_file.run(files, username2)
         self.assertEqual(result['state'], 'SUCCESS')
-        self.assertEqual(json.loads(result['result'])[0]["code"] == "error", True)
+        self.assertEqual(json.loads(result['result'])[
+                         0]["code"] == "error", True)
         # 15
         response = self.client.get(f"/api/posts/{post_id}/twins")
         self.assertEqual(response.status_code, 200)
@@ -499,7 +502,8 @@ class ApiCase(unittest.TestCase):
                 f"/api/posts/{post_id}/run", json={"step": step})
         self.assertEqual(response.status_code, 200)
         result = run_step.run(post_id, step, username)
-        self.assertEqual(json.loads(result['result'])["code"] == "error", False)
+        self.assertEqual(json.loads(result['result'])[
+                         "code"] == "error", False)
         # 17
         # User2 can not delete post_id
         response = self.client.delete(f"/api/posts/{post_id}")
@@ -517,7 +521,8 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         # Restore post uploading data again
         result = process_file.run(files, username)
-        self.assertEqual(json.loads(result['result'])[0]["code"] == "success", True)
+        self.assertEqual(json.loads(result['result'])[
+                         0]["code"] == "success", True)
 
     def test_sync(self):
         """
@@ -557,17 +562,20 @@ class ApiCase(unittest.TestCase):
         file = dict(
             bina=(BytesIO(pack(data2.F)), "bina"),
         )
-        response = self.client.post(f"/api/sync/{data.id}/content?ignoredup=true", data=file)
+        response = self.client.post(
+            f"/api/sync/{data.id}/content?ignoredup=true", data=file)
         self.assertTrue('success' in response.json)
 
         # 7
         info = {"rows": [(data.id, "A", data.uuids["X"].id)]}
-        response = self.client.post("/api/sync/fields?ignoredup=true", json=info)
-        msg = ("errors" in response.json and response.json["errors"]) or response.json
+        response = self.client.post(
+            "/api/sync/fields?ignoredup=true", json=info)
+        msg = (
+            "errors" in response.json and response.json["errors"]) or response.json
         self.assertEqual(1, response.json["n"], msg=msg)
 
         # 8
-        data3 = data >> Let("Q", [1,2])
+        data3 = data >> Let("Q", [1, 2])
         print("3NbxyiMgS8dTkWRob4gbVtJ", data.id, data3.id)
         dic = {'kwargs': {
             "id": data3.id,
@@ -578,8 +586,9 @@ class ApiCase(unittest.TestCase):
             "locked": False,
             "ignoredup": False
         }}
-        response = self.client.post(f"/api/sync?uuids={data3.id}&cat=data", json=dic)
-        msg = ("errors" in response.json and response.json["errors"]) or response.json
+        response = self.client.post("/api/sync?cat=data", json=dic)
+        msg = (
+            "errors" in response.json and response.json["errors"]) or response.json
         self.assertTrue('success' in response.json, msg)
 
         # 9
