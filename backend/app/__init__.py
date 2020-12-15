@@ -28,11 +28,13 @@ class FlaskWrapper(Flask):
         if not self.debug or os.getenv('WERKZEUG_RUN_MAIN') == 'true':
             with self.app_context():
                 self.config['TATU_SERVER'].open()
-        super(FlaskWrapper, self).run(host=host, port=port, debug=debug, load_dotenv=load_dotenv, **options)
+        super(FlaskWrapper, self).run(host=host, port=port,
+                                      debug=debug, load_dotenv=load_dotenv, **options)
 
 
 def create_app(config_class=Config):
-    app = FlaskWrapper(__name__, static_url_path="/media", static_folder='media')
+    app = FlaskWrapper(__name__, static_url_path="/media",
+                       static_folder='media')
 
     app.config.from_object(config_class)
     app.config['TATU_SERVER'] = Tatu(url=app.config['TATU_URL'], threaded=True)
@@ -84,7 +86,7 @@ def create_app(config_class=Config):
             file_handler = RotatingFileHandler('logs/oka.log',
                                                maxBytes=10240, backupCount=10)
             file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s '
-                '[in %(pathname)s:%(lineno)d]'))
+                                                        '[in %(pathname)s:%(lineno)d]'))
             file_handler.setLevel(logging.INFO)
             app.logger.addHandler(file_handler)
 

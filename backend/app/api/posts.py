@@ -21,7 +21,7 @@ def save_files(input_files):
     files = []
     for file in input_files:
         full_path = current_app.config['TMP_FOLDER'] + \
-                    str(u.uuid4()) + file.filename[-10:]
+            str(u.uuid4()) + file.filename[-10:]
         file.save(full_path)
         files.append({"path": full_path, "original_name": file.filename})
     return files
@@ -73,7 +73,8 @@ class Posts(MethodView):
         """
         logged_user = User.get_by_username(get_jwt_identity())
         did = args["data_uuid"]
-        obj = create_post(logged_user, did, args["name"], args["description"], active=False, info=args["info"])
+        obj = create_post(
+            logged_user, did, args["name"], args["description"], active=False, info=args["info"])
         if obj["code"] != "success":
             abort(422, errors={"json": {"data_uuid": obj["message"]}})
 
@@ -89,7 +90,8 @@ class PostsActivate(MethodView):
         Activate post with id {id}
         """
         logged_user = User.get_by_username(get_jwt_identity())
-        post = Post.query.filter_by(data_uuid=args["data_uuid"], user_id=logged_user.id).first()
+        post = Post.query.filter_by(
+            data_uuid=args["data_uuid"], user_id=logged_user.id).first()
         if not post:
             abort(422, errors={
                 "json": {"data_uuid": ["Post not found."]}})
@@ -196,8 +198,8 @@ class PostsCollaboratorsById(MethodView):
         if not post.author == logged_user:
             abort(422, errors={
                 "json": {"username":
-                    [
-                        "Only the author can invite collaborators to the post."]}})
+                         [
+                             "Only the author can invite collaborators to the post."]}})
 
         if collaborator.has_access(post):
             collaborator.deny_access(post)

@@ -106,7 +106,23 @@ class ApiCase(unittest.TestCase):
         user = User(**create_user1)
         db.session.add(user)
         db.session.commit()
-        self.assertTrue(user.username == create_user1['username'])
+        u = User.query.get(1)
+        self.assertTrue(u.username == create_user1['username'])
+
+    def test_rollback(self):
+        user = User(**create_user1)
+        db.session.add(user)
+        db.session.rollback()
+        u = User.query.get(1)
+        self.assertTrue(u is None)
+
+    def test_main(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_notfound(self):
+        response = self.client.get("/nothing")
+        self.assertEqual(response.status_code, 404)
 
     def test_login(self):
         """
@@ -147,24 +163,35 @@ class ApiCase(unittest.TestCase):
     def test_contacts(self):
         """
             1 - Send contact form
-            2 - Login with normal user
-            3 - Try to get contact info
-            4 - Login with admin
-            5 - Get contact info
+            2 - Login with admin
+            3 - Get contact info
+            4 - Try to get inexistent contact
+            5 - Login with normal user
+            6 - Try to get contact info
         """
+        # 1
         with patch('app.api.tasks.send_async_email.delay'):
             response = self.client.post(
                 "/api/contacts", json={"name": "Test", "email": "test@test.com"})
         self.assertEqual(response.status_code, 201)
-        self.login()
-        response = self.client.get("/api/contacts")
-        self.assertEqual(response.status_code, 422)
-        self.login(admin=True, create_user=False)
+        # 2
+        self.login(admin=True)
+        # 3
         response = self.client.get("/api/contacts")
         data = response.json
         self.assertEqual(len(data), 1)
         response = self.client.get(f"/api/contacts/{data[0]['id']}")
         self.assertEqual(response.status_code, 200)
+        # 4
+        response = self.client.get("/api/contacts/100")
+        self.assertEqual(response.status_code, 422)
+        # 5
+        self.login(user=create_user2)
+        # 6
+        response = self.client.get("/api/contacts")
+        self.assertEqual(response.status_code, 422)
+        response = self.client.get(f"/api/contacts/{data[0]['id']}")
+        self.assertEqual(response.status_code, 422)
 
     def test_messages(self):
         """
@@ -177,6 +204,12 @@ class ApiCase(unittest.TestCase):
             7 - User1 can list the message
             8 - Login user3
             9 - User3 can not list the message
+            10 - Can not send a message to an inexistent user
+            11 - Can not list a message of an inexistent user
+            12 - Can not list conversation with an inexistent user
+            13 - Can not list last messages of an inexistent user
+            14 - Can not list last messages of another user
+            15 - Can not list an inexistent message id
         """
         # 1
         username1 = self.login()['username']
@@ -194,9 +227,9 @@ class ApiCase(unittest.TestCase):
         # 5
         response = self.client.get(f"/api/messages/{messageid}")
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(f"/messages/{username1}/conversation")
+        response = self.client.get(f"api/messages/{username1}/conversation")
         self.assertEqual(len(response.json), 1)
-        response = self.client.get(f"/messages/{username1}/lasts")
+        response = self.client.get(f"api/messages/{username2}/lasts")
         self.assertEqual(len(response.json), 1)
         # 6
         self.login(create_user=False)
@@ -205,14 +238,33 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(len(response.json), 1)
         response = self.client.get(f"/api/messages/{messageid}")
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(f"/messages/{username2}/conversation")
+        response = self.client.get(f"api/messages/{username2}/conversation")
         self.assertEqual(len(response.json), 1)
-        response = self.client.get(f"/messages/{username1}/lasts")
+        response = self.client.get(f"api/messages/{username1}/lasts")
         self.assertEqual(len(response.json), 1)
         # 8
         self.login(user=create_user3)['username']
         # 9
         response = self.client.get(f"/api/messages/{messageid}")
+        self.assertNotEqual(response.status_code, 200)
+        # 10
+        response = self.client.post(
+            "/api/messages/inexistent", json={'body': "Message test"})
+        self.assertNotEqual(response.status_code, 200)
+        # 11
+        response = self.client.get("/api/messages/inexistent")
+        self.assertNotEqual(response.status_code, 200)
+        # 12
+        response = self.client.get("/api/messages/inexistent/conversation")
+        self.assertNotEqual(response.status_code, 200)
+        # 13
+        response = self.client.get(f"/api/messages/{username2}/lasts")
+        self.assertNotEqual(response.status_code, 200)
+        # 14
+        response = self.client.get("/api/messages/inexistent/lasts")
+        self.assertNotEqual(response.status_code, 200)
+        # 15
+        response = self.client.get("/api/messages/100")
         self.assertNotEqual(response.status_code, 200)
 
     def test_notifications(self):
@@ -385,8 +437,13 @@ class ApiCase(unittest.TestCase):
         response = self.client.post(
             f"/api/comments/{comment_id}/replies", json={"text": "Reply to comment 1"})
         self.assertEqual(response.status_code, 200)
+        response = self.client.post(
+            "/api/comments/100/replies", json={"text": "Reply to comment 1"})
+        self.assertEqual(response.status_code, 422)
         response = self.client.get(f"/api/comments/{comment_id}/replies")
         self.assertEqual(len(response.json), 1)
+        response = self.client.get("/api/comments/100/replies")
+        self.assertEqual(response.status_code, 422)
         # 12
         # Can not invite himself
         response = self.client.post(
