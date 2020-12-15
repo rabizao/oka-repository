@@ -1,5 +1,5 @@
 import json
-import time
+# import time
 import uuid as u
 from os import sys
 from zipfile import ZipFile
@@ -177,7 +177,7 @@ def run_step(self, post_id, step, username):
     size = 10
     for i in range(size):
         _set_job_progress(self, i / size * 100)
-        time.sleep(0.8)
+        # time.sleep(0.8)
     print(post.id, step, logged_user.username)
     result = {'uuid': "UUID",
               'message': 'Successfully run', 'code': 'success'}

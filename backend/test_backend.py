@@ -2,11 +2,14 @@ import json
 import unittest
 import warnings
 from unittest.mock import patch
+from io import BytesIO
 
 # import os
 from werkzeug.datastructures import FileStorage
 
 from aiuna.step.dataset import Dataset
+from aiuna.step.let import Let
+from aiuna.compression import pack
 from app import create_app, db
 from app.api.posts import save_files
 from app.api.tasks import process_file, download_data, run_step
@@ -463,6 +466,65 @@ class ApiCase(unittest.TestCase):
         result = process_file.run(files, username)
         self.assertEqual(json.loads(result['result'])[
             0]["code"] == "success", True)
+
+    def test_sync(self):
+        """
+            1 - Login
+            2 - Upload a dataset
+            3 - Lock/unlock dataset
+            4 - sync_uuid
+            5 - Get content
+            6 - Put content
+            7 - Put fields
+            8 - Put data
+            9 - Get data
+        """
+        # 1
+        self.login()
+        # 2
+        data = Dataset().data
+        self.tatu.store(data, lazy=False, ignoredup=True)
+        # 3
+        response = self.client.put("/api/sync/randomuuid/lock")
+        self.assertEqual(response.json['success'], True)
+        response = self.client.put("/api/sync/randomuuid/unlock")
+        self.assertEqual(response.json['success'], True)
+        # 4
+        response = self.client.get("/api/sync_uuid")
+        self.assertEqual(response.json['uuid'], self.tatu.id)
+        # 5
+        response = self.client.get(f"/api/sync/{data.id}/content")
+        self.assertEqual(response.status_code, 200)
+        # 6
+        data2 = Dataset().data >> Let("F", [1, 2, 3])
+        file = dict(
+            bina=(BytesIO(pack(data2.F)), "bina"),
+        )
+        response = self.client.post(
+            f"/api/sync/{data.id}/content?ignoredup=true", data=file)
+        self.assertEqual(response.json['success'], True)
+        # 7
+        # TODO: Send correct data
+        # rows = {"rows": [
+        #     {"data": data2.id, "name": "X", "content": data2.uuids["X"].id}
+        # ]}
+        # response = self.client.post(
+        #     "/api/sync/fields?ignoredup=true", json=rows)
+        # print(response.json)
+        # self.assertEqual(response.json['success'], True)
+
+        # 8
+        # TODO: Send correct data
+        # response = self.client.post(
+        #     f"/api/sync?cat=data", data={'kwargs': {id, step, inn, stream, parent, locked, ignoredup}})
+        # self.assertEqual(response.json['success'], True)
+
+        # 9
+        # TODO: Get data just sent
+        response = self.client.get(f"/api/sync?cat=data&uuids={data.id}")
+        self.assertEqual(response.json['has'], True)
+        response = self.client.get("/api/sync?cat=data&uuids=notexistentuuid")
+        self.assertEqual(response.json['has'], False)
 
     def test_create_user(self):
         """
