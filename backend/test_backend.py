@@ -3,6 +3,8 @@ import unittest
 import warnings
 from unittest.mock import patch
 from io import BytesIO
+from datetime import timedelta
+from time import sleep
 
 # import os
 from werkzeug.datastructures import FileStorage
@@ -66,7 +68,7 @@ class ApiCase(unittest.TestCase):
         self.app_context.pop()
         self.tatu.close()
 
-    def login(self, create_user=True, user=create_user1, long_term=False, admin=False):
+    def login(self, create_user=True, user=create_user1, long_term=False, admin=False, token=None):
         # 1 - Create
         if create_user:
             response = self.client.post("/api/users", json=user)
@@ -80,8 +82,8 @@ class ApiCase(unittest.TestCase):
         response = self.client.post("/api/auth/login", json=login)
         self.assertEqual(response.status_code, 200)
         data = response.json
-        self.client.environ_base["HTTP_AUTHORIZATION"] = "Bearer " + \
-                                                         data["access_token"]
+        token = token if token else data["access_token"]
+        self.client.environ_base["HTTP_AUTHORIZATION"] = "Bearer " + token
 
         if admin:
             user = User.query.get(data['id'])
@@ -123,6 +125,35 @@ class ApiCase(unittest.TestCase):
     def test_notfound(self):
         response = self.client.get("/nothing")
         self.assertEqual(response.status_code, 404)
+
+    def test_auth(self):
+        """
+            1 - Login
+            2 - Revoke token
+            3 - Try to access feed route
+            4 - Generate invalid token and try to access feed route
+            5 - Create an expired token and try to access feed route
+        """
+        # 1
+        username = self.login()['username']
+        user = User.get_by_username(username)
+        # 2
+        user.revoke_all_tokens()
+        # 3
+        response = self.client.get(f"/api/users/{username}/feed")
+        self.assertEqual(response.status_code, 401)
+        # 4
+        username2 = self.login(user=create_user2, token="inexistenttoken")[
+            'username']
+        response = self.client.get(f"/api/users/{username2}/feed")
+        self.assertEqual(response.status_code, 401)
+        # 5
+        self.app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(
+            microseconds=10)
+        username = self.login(user=create_user3)['username']
+        sleep(1)
+        response = self.client.get(f"/api/users/{username}/feed")
+        self.assertEqual(response.status_code, 401)
 
     def test_login(self):
         """
@@ -356,6 +387,10 @@ class ApiCase(unittest.TestCase):
         response = self.client.put(
             f"/api/posts/{post_id}", json={"name": new_name, "description": new_description})
         self.assertEqual(response.status_code, 200)
+        # Can not edit inexistent post
+        response = self.client.put(
+            "/api/posts/100", json={"name": new_name, "description": new_description})
+        self.assertEqual(response.status_code, 422)
         # 5
         # User2 can not list the post
         self.login(create_user=False, user=create_user2)
@@ -367,6 +402,12 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json['name'], new_name)
         self.assertEqual(response.json['description'], new_description)
+        response = self.client.get("/api/posts/100")
+        self.assertEqual(response.status_code, 422)
+        # List all posts
+        response = self.client.get("/api/posts")
+        self.assertEqual(len(response.json), 1)
+        self.assertEqual(response.status_code, 200)
         # 6
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.get(f"/api/downloads/data?pids={post_id}")
@@ -387,7 +428,18 @@ class ApiCase(unittest.TestCase):
         response = self.client.post(f"/api/posts/{post_id}/favorite")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(user.has_favorited(post), False)
+        # Can not favorite an inexistent post
+        response = self.client.post("/api/posts/100/favorite")
+        self.assertEqual(response.status_code, 422)
         # 8
+        # Can not publish inexistent post
+        response = self.client.post("/api/posts/100/publish")
+        self.assertEqual(response.status_code, 422)
+        # User2 can not publish the post
+        self.login(create_user=False, user=create_user2)
+        response = self.client.post(f"/api/posts/{post_id}/publish")
+        self.assertEqual(response.status_code, 422)
+        self.login(create_user=False)
         # Publish
         self.assertEqual(post.public, False)
         response = self.client.post(f"/api/posts/{post_id}/publish")
@@ -427,13 +479,22 @@ class ApiCase(unittest.TestCase):
         db.session.commit()
         self.login(create_user=False)
         # 10
+        # Can not comment an inexistent post
+        response = self.client.post(
+            "/api/posts/100/comments", json={"text": "Comment 1"})
+        self.assertEqual(response.status_code, 422)
+        # Comment
         response = self.client.post(
             f"/api/posts/{post_id}/comments", json={"text": "Comment 1"})
         self.assertEqual(response.status_code, 200)
+        # List post
         response = self.client.get(f"/api/posts/{post_id}/comments")
         self.assertEqual(len(response.json), 1)
-        # 11
         comment_id = response.json[0]['id']
+        # Can not list inexistent post comments
+        response = self.client.get("/api/posts/100/comments")
+        self.assertEqual(response.status_code, 422)
+        # 11
         response = self.client.post(
             f"/api/comments/{comment_id}/replies", json={"text": "Reply to comment 1"})
         self.assertEqual(response.status_code, 200)
@@ -457,6 +518,14 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(User.get_by_username(
             username2).has_access(post), True)
+        # Can not invite user2 to an inexistent post
+        response = self.client.post(
+            "/api/posts/100/collaborators", json={"username": username2})
+        self.assertEqual(response.status_code, 422)
+        # Can not invite an inexistent user
+        response = self.client.post(
+            f"/api/posts/{post_id}/collaborators", json={"username": "inexistent"})
+        self.assertEqual(response.status_code, 422)
         # User2 can not invite collaborators
         self.login(create_user=False, user=create_user2)
         response = self.client.post(
@@ -470,6 +539,9 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(User.get_by_username(
             username2).has_access(post), False)
         # 13
+        # Can not get stats of inexistent post
+        response = self.client.get("/api/posts/100/stats?plt=scatter")
+        self.assertEqual(response.status_code, 422)
         response = self.client.get(f"/api/posts/{post_id}/stats?plt=scatter")
         self.assertEqual(response.status_code, 200)
         # 14
@@ -482,6 +554,10 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(json.loads(result['result'])[
                          0]["code"] == "error", True)
         # 15
+        # Can not list twins of inexistent post
+        response = self.client.get("/api/posts/100/twins")
+        self.assertEqual(response.status_code, 422)
+        # List twins
         response = self.client.get(f"/api/posts/{post_id}/twins")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json), 0)
@@ -497,6 +573,11 @@ class ApiCase(unittest.TestCase):
             "algorithm": "runAlgorithm",
             "parameters": "runParameter"
         }
+        # Can not run step on inexistent post
+        with patch('app.api.tasks.User.launch_task'):
+            response = self.client.post(
+                "/api/posts/100/run", json={"step": step})
+        self.assertEqual(response.status_code, 422)
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(
                 f"/api/posts/{post_id}/run", json={"step": step})
@@ -519,6 +600,9 @@ class ApiCase(unittest.TestCase):
         # Delete post
         response = self.client.delete(f"/api/posts/{post_id}")
         self.assertEqual(response.status_code, 200)
+        # Can not delete inexistent post
+        response = self.client.delete("/api/posts/100")
+        self.assertEqual(response.status_code, 422)
         # Restore post uploading data again
         result = process_file.run(files, username)
         self.assertEqual(json.loads(result['result'])[
@@ -737,6 +821,10 @@ class ApiCase(unittest.TestCase):
             "/api/posts/activate", json={'data_uuid': iris.id})
         self.assertEqual(response.status_code, 200,
                          msg=response.json and response.json["errors"])
+
+        response = self.client.put(
+            "/api/posts/activate", json={'data_uuid': "inexistent"})
+        self.assertEqual(response.status_code, 422)
 
         response = self.client.put("/api/posts", json={'data_uuid': iris.id})
         self.assertEqual(response.status_code, 422,
