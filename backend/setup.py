@@ -35,8 +35,8 @@ setup(
 
     install_requires=['celery', 'flask', 'flask-cors',
                       'flask-jwt-extended', 'flask-mail', 'flask-migrate',
-                      'flask-smorest', 'tatu', 'python-dotenv',
-                      'marshmallow-sqlalchemy', 'cruipto', 'simplejson',
+                      'flask-smorest', 'kururu', 'python-dotenv',
+                      'marshmallow-sqlalchemy', 'simplejson',
                       'flask-sqlalchemy', 'marshmallow', 'redis', 'autopep8'],   # Optional
 
     # List additional groups of dependencies here (e.g. development
