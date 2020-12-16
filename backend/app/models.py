@@ -387,9 +387,9 @@ class Token(db.Model):
     revoked = db.Column(db.Boolean)
     long_term = db.Column(db.Boolean)
 
-    @classmethod
-    def is_jti_blacklisted(cls, jti):
-        token = cls.query.filter_by(jti=jti).first()
+    @staticmethod
+    def is_jti_blacklisted(jti):
+        token = Token.query.filter_by(jti=jti).first()
         if token is None or token.revoked is True:
             return True
         return False
