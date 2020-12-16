@@ -10,7 +10,7 @@ from werkzeug.security import generate_password_hash
 from aiuna.content.root import Root
 from app import db
 from app.models import User, Post, Comment, Contact, Notification, Task, Message
-from cruipto.avatar23 import colors
+from garoupa.avatar23 import colors
 
 
 def get_attrs(uuid):
