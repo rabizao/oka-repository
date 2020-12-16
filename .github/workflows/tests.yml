@@ -22,7 +22,7 @@ jobs:
         pip install flake8 pytest
         if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
         pip install -e backend
-        pip install -e git+git://github.com/davips/cruipto.git@dev#egg=cruipto
+        pip install -e git+git://github.com/davips/garoupa.git@dev#egg=garoupa
         pip install -e git+git://github.com/davips/aiuna.git@dev#egg=aiuna
         pip install -e git+git://github.com/davips/transf.git@dev#egg=transf
         pip install -e git+git://github.com/davips/tatu.git@dev#egg=tatu

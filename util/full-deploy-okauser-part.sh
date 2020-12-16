@@ -14,7 +14,7 @@ pip install wheel
 
 echo "pipping..."
 pip install -r requirements.txt
-pip install -e ~/cruipto
+pip install -e ~/garoupa
 pip install -e ~/transf
 pip install -e ~/aiuna
 pip install -e ~/tatu
@@ -30,7 +30,7 @@ cd /home/oka/akangatu/ && git pull; cd -
 cd /home/oka/transf/ && git pull; cd -
 cd /home/oka/aiuna/ && git pull; cd -
 cd /home/oka/kururu/ && git pull; cd -
-cd /home/oka/cruipto/ && git pull; cd -
+cd /home/oka/garoupa/ && git pull; cd -
 cd /home/oka/oka-repository/frontend && npm run-script build; cd -
 cd /home/oka/oka-repository/backend
 
