@@ -1,4 +1,5 @@
 ![test](https://github.com/rabizao/oka-repository/workflows/test/badge.svg)
+[![codecov](https://codecov.io/gh/rabizao/oka-repository/branch/master/graph/badge.svg)](https://codecov.io/gh/rabizao/oka-repository)
 
 ## OKA Repository
 
