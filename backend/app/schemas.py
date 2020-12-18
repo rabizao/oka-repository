@@ -312,10 +312,14 @@ class SyncContentFileSchema(SQLAlchemySchema):
 
 class SyncFieldsSchema(SQLAlchemySchema):
     rows = fields.List(fields.Tuple((fields.String(), fields.String(), fields.String())), required=True)
-    ignoredup = fields.Bool(missing=False)
 
 
 class SyncFieldsQuerySchema(SQLAlchemySchema):
+    ignoredup = fields.Bool(missing=False)
+    cat = fields.String(required=True)
+
+
+class SyncContentQuerySchema(SQLAlchemySchema):
     ignoredup = fields.Bool(missing=False)
 
 

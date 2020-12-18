@@ -653,7 +653,7 @@ class ApiCase(unittest.TestCase):
         # 7
         info = {"rows": [(data.id, "A", data.uuids["X"].id)]}
         response = self.client.post(
-            "/api/sync/fields?ignoredup=true", json=info)
+            "/api/sync/many?cat=fields&ignoredup=true", json=info)
         msg = (
             "errors" in response.json and response.json["errors"]) or response.json
         self.assertEqual(1, response.json["n"], msg=msg)
