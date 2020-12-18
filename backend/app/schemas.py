@@ -7,7 +7,6 @@ from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_
 from marshmallow_sqlalchemy.fields import Nested
 from werkzeug.security import generate_password_hash
 
-from aiuna.content.root import Root
 from app import db
 from app.models import User, Post, Comment, Contact, Notification, Task, Message
 from garoupa.avatar23 import colors
@@ -24,17 +23,10 @@ def past(uuid):
     data = tatu.fetch(uuid, lazy=False)
     if not data:
         return []  # REMINDER: The history exists, but is not accessible through data.fetch()
-    duuid = Root.uuid
-    history = []
-    for step in data.history:
-        if step.name[:3] not in ["B", "Rev", "In", "Aut", "E"]:
-            name = step.name[:-1] if step.name[-1] == "o" or step.name[-1] == "1" else step.name
-            post = Post.query.filter_by(data_uuid=duuid.id).first()
-            history.append({"label": duuid.id, "name": name,
-                            "help": str(step), "data_uuid_colors": colors(duuid.id),
-                            "post": post and post.id})
-        duuid *= step.uuid
-    return history
+    return [
+        {"data": v, "post": Post.query.filter_by(data_uuid=k).first().id}
+        for k, v in data.past.items() if v["step"]["desc"]["name"][:3] not in ["B", "Rev", "In", "Aut", "E"]
+    ]
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):

@@ -12,6 +12,7 @@ from flask_mail import Message
 
 from aiuna.content.data import Data
 from aiuna.step.file import File
+from akangatu.transf.step import Step
 from app import celery, db, mail
 from app.models import Post, Task, User
 from app.schemas import TaskStatusBaseSchema
@@ -166,14 +167,28 @@ def send_async_email(message):
 
 
 @celery.task(bind=True, base=BaseTask)
-def run_step(self, post_id, step, username):
+def run_step(self, post_id, step_asdict, username):
     '''
     Background task to perform simulations based on step
     '''
     post = Post.query.get(post_id)
     logged_user = User.get_by_username(username)
 
-    # TODO: Perform calculations and update the status using something like
+    # TODO: update the status (?)
+    real_step_asdict = {
+        'id': '03WENr7Y3kkGQL6prsFZp7u',
+        'desc': {
+            'name': 'Partition',
+            'path': 'kururu.tool.evaluation.partition',
+            'config': {'mode': 'cv', 'splits': 10, 'seed': 0, 'fields': 'X,Y'}
+        }
+    }
+    step = Step.fromdict(real_step_asdict)
+
+    tatu = current_app.config['TATU_SERVER']
+    data = tatu.fetch(post.data_uuid, lazy=False) >> step
+    # TOOD: finish from here
+
     size = 10
     for i in range(size):
         _set_job_progress(self, i / size * 100)

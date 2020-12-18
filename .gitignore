@@ -50,3 +50,5 @@ package-lock.json
 token.txt
 .branch_before_stashed
 .commit_before_stashed
+*.out
+backend/.myenv
