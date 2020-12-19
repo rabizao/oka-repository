@@ -572,16 +572,16 @@ export default function Posts(props) {
                                                     {
                                                         post.history.map((item) =>
                                                             item.data.step.desc.name &&
-                                                            <div key={item.data.id} className="flex-row">
+                                                            <div key={item.id} className="flex-row">
                                                                 <button
-                                                                    title="Show itemset" alt="Show itemset"
-                                                                    onClick={(e) => handleIconClick(e, item.post, item.data.step.desc.name)}
+                                                                    title="Show Dataset" alt="Show Dataset"
+                                                                    onClick={(e) => handleIconClick(e, item.post, item.id)}
                                                                     className="box-uuid-history"
                                                                     style={{ backgroundColor: `rgb(${item.data.colors[0][0]}, ${item.data.colors[0][1]}, ${item.data.colors[0][2]})`, border: `var(--border)` }}>
                                                                     <span>&nbsp;</span>
                                                                     {
                                                                         item.data.colors.slice(1).map((color, index) =>
-                                                                            <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{item.data.step.desc.name[index]}</span>
+                                                                            <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{item.id[index]}</span>
                                                                         )
                                                                     }
                                                                 </button>

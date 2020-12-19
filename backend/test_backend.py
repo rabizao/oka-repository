@@ -806,7 +806,7 @@ class ApiCase(unittest.TestCase):
         self.login()
         iris = Dataset().data
         info = {
-            "past": iris.past,
+            "past": list(iris.past),
             "nattrs": iris.X.shape[1],
             "ninsts": iris.X.shape[0]
         }

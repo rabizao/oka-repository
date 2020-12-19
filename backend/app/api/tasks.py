@@ -19,11 +19,11 @@ from app.schemas import TaskStatusBaseSchema
 from . import bp
 
 
-def create_post(logged_user, data, name, description, filename=None, active=True, info=None):
+def create_post(logged_user, data, name="No name", description="No description", filename=None, active=True, info=None):
     """Create an inactive post for the given Data object or data id str."""
     if info is None:
         info = {
-            "nattrs": data.X.shape[1], "ninsts": data.X.shape[0], "past": data.past.keys()}
+            "nattrs": data.X.shape[1], "ninsts": data.X.shape[0], "past": list(data.past)}
     data_id = data.id if isinstance(data, Data) else data
     if filename is None:
         filename = name
@@ -56,7 +56,7 @@ def create_post(logged_user, data, name, description, filename=None, active=True
         name_, description_, ninsts_, nattrs_ = "No name", "No description", -1, -1
 
         # Create post and needed ancestors.
-        for did in info["past"]:
+        for did in info["past"][1:]:
             if did == data_id:
                 # Only the last Data object has metainfo.
                 name_, description_, ninsts_, nattrs_ = name, description, info[
@@ -173,6 +173,7 @@ def run_step(self, post_id, step_asdict, username):
     '''
     post = Post.query.get(post_id)
     logged_user = User.get_by_username(username)
+    tatu = current_app.config['TATU_SERVER']
 
     # TODO: update the status (?)
     real_step_asdict = {
@@ -185,17 +186,10 @@ def run_step(self, post_id, step_asdict, username):
     }
     step = Step.fromdict(real_step_asdict)
 
-    tatu = current_app.config['TATU_SERVER']
+    _set_job_progress(self, 0)
     data = tatu.fetch(post.data_uuid, lazy=False) >> step
-    # TOOD: finish from here
-
-    size = 10
-    for i in range(size):
-        _set_job_progress(self, i / size * 100)
-        # time.sleep(0.8)
-    print(post.id, step, logged_user.username)
-    result = {'uuid': "UUID",
-              'message': 'Successfully run', 'code': 'success'}
+    tatu.store(data, lazy=False, ignoredup=True)
+    result = create_post(logged_user, data)    #TODO: vai precisar criar post pras partições? (nessa função?)
     return _set_job_progress(self, 100, result=result)
 
 

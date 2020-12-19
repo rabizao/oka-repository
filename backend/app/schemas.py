@@ -23,10 +23,12 @@ def past(uuid):
     data = tatu.fetch(uuid, lazy=False)
     if not data:
         return []  # REMINDER: The history exists, but is not accessible through data.fetch()
-    return [
-        {"data": v, "post": Post.query.filter_by(data_uuid=k).first().id}
-        for k, v in data.past.items() if v["step"]["desc"]["name"][:3] not in ["B", "Rev", "In", "Aut", "E"]
-    ]
+    lst = []
+    for k, d in list(data.past.items())[:-1]:
+        if d["step"]["desc"]["name"][:3] not in ["B", "Rev", "In", "Aut", "E"]:
+            post = Post.query.filter_by(data_uuid=k).first()
+            lst.append({"id": k, "data": d, "post": post and post.id})
+    return lst
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
