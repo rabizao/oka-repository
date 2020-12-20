@@ -75,6 +75,7 @@ class User(PaginateMixin, db.Model):
     last_notification_read_time = db.Column(db.DateTime)
     active = db.Column(db.Boolean, default=True)
     role = db.Column(db.Integer, default=0)
+    files = db.relationship('File', backref='owner', lazy='dynamic')
 
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     comments = db.relationship('Comment', backref='author', lazy='dynamic')
@@ -203,6 +204,9 @@ class User(PaginateMixin, db.Model):
         return self.accessible.filter(
             access.c.post_id == post.id).count() > 0 or post.author == self or post.public is True
 
+    def can_download(self, file):
+        return self.files.filter(file.owner == self).count() > 0
+
     def grant_access(self, post):
         if not self.has_access(post):
             self.accessible.append(post)
@@ -228,6 +232,14 @@ class User(PaginateMixin, db.Model):
                     user=self)
         db.session.add(task)
         return task
+    
+    def add_file(self, name):
+        file = File(owner=self, name=name)
+        db.session.add(file)
+        return file
+    
+    def get_file_by_name(self, name):
+        return File.query.filter(File.name == name, File.owner_id == self.id).first()
 
     @staticmethod
     def list_by_name(search_term):
@@ -380,6 +392,12 @@ class Task(db.Model):
     complete = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
 
+
+class File(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), index=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
 
 class Token(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -188,8 +188,8 @@ def download_data(self, pids, username, ip):
     if not logged_user:
         raise Exception(f'Username {username} not found!')
     tatu = current_app.config['TATU_SERVER']
-    filename_server_zip = str(u.uuid4())
-    path_server_zip = f'{current_app.static_folder}/{filename_server_zip}.zip'
+    filename_server_zip = str(u.uuid4()) + ".zip"
+    path_server_zip = f'{current_app.config["TMP_FOLDER"]}/{filename_server_zip}'
     with ZipFile(path_server_zip, 'w') as zipped_file:
         for pid in pids:
             actual_index = pids.index(pid)
@@ -205,10 +205,11 @@ def download_data(self, pids, username, ip):
                 raise Exception(
                     f'Download failed: data {post.data_uuid} not found!')
             post.add_download(ip)
+            logged_user.add_file(filename_server_zip)
             db.session.commit()
             zipped_file.writestr(f'{pid}.arff', data.arff(
                 'No name', 'No description'))
-    return _set_job_progress(self, 100, result=f'{filename_server_zip}.zip')
+    return _set_job_progress(self, 100, result=f'{filename_server_zip}')
 
 
 @celery.task(bind=True, base=BaseTask)
