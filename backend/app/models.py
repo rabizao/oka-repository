@@ -1,10 +1,12 @@
 import json
+import uuid as u
 from datetime import datetime
 
 from sqlalchemy import and_, or_
 from werkzeug.security import check_password_hash
 
 from . import celery, db
+from app.utils import consts
 
 
 followers = db.Table('followers',
@@ -67,7 +69,8 @@ class User(PaginateMixin, db.Model):
     password = db.Column(db.String(128), nullable=False)
     email = db.Column(db.String(120), index=True,
                       nullable=False)
-    email_confirmation = db.Column(db.Boolean, default=False)
+    email_confirmation_key = db.Column(db.String(120), unique=True)
+    email_confirmed = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(128), nullable=False)
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
@@ -110,6 +113,11 @@ class User(PaginateMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
+    def add_confirmation_key(self):
+        key = str(u.uuid4())
+        self.email_confirmation_key = key
+        return key
+
     def set_revoked_jti_store(self, jti, state, long_term=False):
         if long_term is True:
             self.revoke_longterm_token()
@@ -137,7 +145,7 @@ class User(PaginateMixin, db.Model):
         return
 
     def is_admin(self):
-        return self.role == 10
+        return self.role == consts.get("ROLE_ADMIN")
 
     def update(self, args):
         for key, value in args.items():
@@ -255,7 +263,7 @@ class User(PaginateMixin, db.Model):
 
     @staticmethod
     def get_by_confirmed_email(email):
-        return User.query.filter_by(email=email, email_confirmation=True).first()
+        return User.query.filter_by(email=email, email_confirmed=True).first()
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -326,8 +334,7 @@ class Post(PaginateMixin, db.Model):
         return self
 
     def get_unique_download_count(self):
-        return Download.query.group_by(
-            Download.ip).filter_by(post_id=self.id).count()
+        return db.session.query(Download.ip).distinct().filter_by(post_id=self.id).count()
 
     @staticmethod
     def get_by_uuid(uuid, active=False):
@@ -406,9 +413,9 @@ class Token(db.Model):
     revoked = db.Column(db.Boolean)
     long_term = db.Column(db.Boolean)
 
-    @classmethod
-    def is_jti_blacklisted(cls, jti):
-        token = cls.query.filter_by(jti=jti).first()
+    @staticmethod
+    def is_jti_blacklisted(jti):
+        token = Token.query.filter_by(jti=jti).first()
         if token is None or token.revoked is True:
             return True
         return False

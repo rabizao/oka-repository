@@ -39,9 +39,9 @@ class Config(object):
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['okarepository@gmail.com']
-    POSTS_PER_PAGE = 25
     TMP_FOLDER = '/tmp/oka/'
 
+    WEB_TITLE = 'OKA Knowledge Repository'
     API_TITLE = 'oka API'
     API_VERSION = ''
     OPENAPI_VERSION = '3.0.2'
@@ -57,10 +57,8 @@ class Config(object):
     CELERY_ACKS_LATE = True
     FRONTEND_HOST = os.environ.get('FRONTEND_HOST') or "http://localhost:3000"
 
-    ACCESS_EXPIRES = timedelta(days=15)
-    REFRESH_EXPIRES = timedelta(days=30)
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY') or 'testpass'
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
-    JWT_ACCESS_TOKEN_EXPIRES = ACCESS_EXPIRES
-    JWT_REFRESH_TOKEN_EXPIRES = REFRESH_EXPIRES
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=15)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=15)

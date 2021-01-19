@@ -570,23 +570,23 @@ export default function Posts(props) {
                                                 <>
                                                     <button className="margin-very-small icon-medium" title="Hide History" onClick={() => setShowHistory(!showHistory)}><ChevronLeft className="icon-tertiary" /></button>
                                                     {
-                                                        post.history.map((transformation) =>
-                                                            transformation.name &&
-                                                            <div key={transformation.label} className="flex-row">
+                                                        post.history.map((item) =>
+                                                            item.data.step.desc.name &&
+                                                            <div key={item.data.id} className="flex-row">
                                                                 <button
-                                                                    title="Show Dataset" alt="Show Dataset"
-                                                                    onClick={(e) => handleIconClick(e, transformation.post, transformation.label)}
+                                                                    title="Show itemset" alt="Show itemset"
+                                                                    onClick={(e) => handleIconClick(e, item.post, item.data.step.desc.name)}
                                                                     className="box-uuid-history"
-                                                                    style={{ backgroundColor: `rgb(${transformation.data_uuid_colors[0][0]}, ${transformation.data_uuid_colors[0][1]}, ${transformation.data_uuid_colors[0][2]})`, border: `var(--border)` }}>
+                                                                    style={{ backgroundColor: `rgb(${item.data.colors[0][0]}, ${item.data.colors[0][1]}, ${item.data.colors[0][2]})`, border: `var(--border)` }}>
                                                                     <span>&nbsp;</span>
                                                                     {
-                                                                        transformation.data_uuid_colors.slice(1).map((color, index) =>
-                                                                            <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{transformation.label[index]}</span>
+                                                                        item.data.colors.slice(1).map((color, index) =>
+                                                                            <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{item.data.step.desc.name[index]}</span>
                                                                         )
                                                                     }
                                                                 </button>
                                                                 <div className="flex-column flex-axis-center padding-sides-very-small">
-                                                                    <span className="color-tertiary">{transformation.name}</span>
+                                                                    <span className="color-tertiary">{item.data.step.desc.name}</span>
                                                                     <span className="color-tertiary">→</span>
                                                                 </div>
                                                             </div>

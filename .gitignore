@@ -34,7 +34,7 @@ migrations/
 
 # Resources
 backend/app/app.db
-backend/app/tatu.db
+backend/tatu.db
 frontend/package-lock.json
 backend/app/static/
 backend/app/media/
@@ -50,3 +50,5 @@ package-lock.json
 token.txt
 .branch_before_stashed
 .commit_before_stashed
+*.out
+backend/.myenv

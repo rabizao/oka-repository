@@ -1,18 +1,23 @@
-# !/usr/bin/env python
 import json
 import unittest
 import warnings
 from unittest.mock import patch
+from io import BytesIO
+from datetime import timedelta
+from time import sleep
 
 # import os
 from werkzeug.datastructures import FileStorage
 
 from aiuna.step.dataset import Dataset
+from aiuna.step.let import Let
+from aiuna.compression import pack
 from app import create_app, db
 from app.api.posts import save_files
 from app.api.tasks import process_file, download_data, run_step
 from app.config import Config
 from app.models import User, Token, Notification, Post
+from app.utils import consts
 
 create_user1 = {
     "username": "user1111",
@@ -64,7 +69,7 @@ class ApiCase(unittest.TestCase):
         self.app_context.pop()
         self.tatu.close()
 
-    def login(self, create_user=True, user=create_user1, long_term=False, admin=False):
+    def login(self, create_user=True, user=create_user1, long_term=False, admin=False, token=None):
         # 1 - Create
         if create_user:
             response = self.client.post("/api/users", json=user)
@@ -78,12 +83,12 @@ class ApiCase(unittest.TestCase):
         response = self.client.post("/api/auth/login", json=login)
         self.assertEqual(response.status_code, 200)
         data = response.json
-        self.client.environ_base["HTTP_AUTHORIZATION"] = "Bearer " + \
-                                                         data["access_token"]
+        token = token if token else data["access_token"]
+        self.client.environ_base["HTTP_AUTHORIZATION"] = "Bearer " + token
 
         if admin:
             user = User.query.get(data['id'])
-            user.role = 10
+            user.role = consts.get("ROLE_ADMIN")
             db.session.commit()
 
         if long_term:
@@ -104,7 +109,52 @@ class ApiCase(unittest.TestCase):
         user = User(**create_user1)
         db.session.add(user)
         db.session.commit()
-        self.assertTrue(user.username == create_user1['username'])
+        u = User.query.get(1)
+        self.assertTrue(u.username == create_user1['username'])
+
+    def test_rollback(self):
+        user = User(**create_user1)
+        db.session.add(user)
+        db.session.rollback()
+        u = User.query.get(1)
+        self.assertTrue(u is None)
+
+    def test_main(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_notfound(self):
+        response = self.client.get("/nothing")
+        self.assertEqual(response.status_code, 404)
+
+    def test_auth(self):
+        """
+            1 - Login
+            2 - Revoke token
+            3 - Try to access feed route
+            4 - Generate invalid token and try to access feed route
+            5 - Create an expired token and try to access feed route
+        """
+        # 1
+        username = self.login()['username']
+        user = User.get_by_username(username)
+        # 2
+        user.revoke_all_tokens()
+        # 3
+        response = self.client.get(f"/api/users/{username}/feed")
+        self.assertEqual(response.status_code, 401)
+        # 4
+        username2 = self.login(user=create_user2, token="inexistenttoken")[
+            'username']
+        response = self.client.get(f"/api/users/{username2}/feed")
+        self.assertEqual(response.status_code, 401)
+        # 5
+        self.app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(
+            microseconds=10)
+        username = self.login(user=create_user3)['username']
+        sleep(1)
+        response = self.client.get(f"/api/users/{username}/feed")
+        self.assertEqual(response.status_code, 401)
 
     def test_login(self):
         """
@@ -145,24 +195,35 @@ class ApiCase(unittest.TestCase):
     def test_contacts(self):
         """
             1 - Send contact form
-            2 - Login with normal user
-            3 - Try to get contact info
-            4 - Login with admin
-            5 - Get contact info
+            2 - Login with admin
+            3 - Get contact info
+            4 - Try to get inexistent contact
+            5 - Login with normal user
+            6 - Try to get contact info
         """
+        # 1
         with patch('app.api.tasks.send_async_email.delay'):
             response = self.client.post(
                 "/api/contacts", json={"name": "Test", "email": "test@test.com"})
         self.assertEqual(response.status_code, 201)
-        self.login()
-        response = self.client.get("/api/contacts")
-        self.assertEqual(response.status_code, 422)
-        self.login(admin=True, create_user=False)
+        # 2
+        self.login(admin=True)
+        # 3
         response = self.client.get("/api/contacts")
         data = response.json
         self.assertEqual(len(data), 1)
         response = self.client.get(f"/api/contacts/{data[0]['id']}")
         self.assertEqual(response.status_code, 200)
+        # 4
+        response = self.client.get("/api/contacts/100")
+        self.assertEqual(response.status_code, 422)
+        # 5
+        self.login(user=create_user2)
+        # 6
+        response = self.client.get("/api/contacts")
+        self.assertEqual(response.status_code, 422)
+        response = self.client.get(f"/api/contacts/{data[0]['id']}")
+        self.assertEqual(response.status_code, 422)
 
     def test_messages(self):
         """
@@ -175,6 +236,12 @@ class ApiCase(unittest.TestCase):
             7 - User1 can list the message
             8 - Login user3
             9 - User3 can not list the message
+            10 - Can not send a message to an inexistent user
+            11 - Can not list a message of an inexistent user
+            12 - Can not list conversation with an inexistent user
+            13 - Can not list last messages of an inexistent user
+            14 - Can not list last messages of another user
+            15 - Can not list an inexistent message id
         """
         # 1
         username1 = self.login()['username']
@@ -192,9 +259,9 @@ class ApiCase(unittest.TestCase):
         # 5
         response = self.client.get(f"/api/messages/{messageid}")
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(f"/messages/{username1}/conversation")
+        response = self.client.get(f"api/messages/{username1}/conversation")
         self.assertEqual(len(response.json), 1)
-        response = self.client.get(f"/messages/{username1}/lasts")
+        response = self.client.get(f"api/messages/{username2}/lasts")
         self.assertEqual(len(response.json), 1)
         # 6
         self.login(create_user=False)
@@ -203,14 +270,33 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(len(response.json), 1)
         response = self.client.get(f"/api/messages/{messageid}")
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(f"/messages/{username2}/conversation")
+        response = self.client.get(f"api/messages/{username2}/conversation")
         self.assertEqual(len(response.json), 1)
-        response = self.client.get(f"/messages/{username1}/lasts")
+        response = self.client.get(f"api/messages/{username1}/lasts")
         self.assertEqual(len(response.json), 1)
         # 8
         self.login(user=create_user3)['username']
         # 9
         response = self.client.get(f"/api/messages/{messageid}")
+        self.assertNotEqual(response.status_code, 200)
+        # 10
+        response = self.client.post(
+            "/api/messages/inexistent", json={'body': "Message test"})
+        self.assertNotEqual(response.status_code, 200)
+        # 11
+        response = self.client.get("/api/messages/inexistent")
+        self.assertNotEqual(response.status_code, 200)
+        # 12
+        response = self.client.get("/api/messages/inexistent/conversation")
+        self.assertNotEqual(response.status_code, 200)
+        # 13
+        response = self.client.get(f"/api/messages/{username2}/lasts")
+        self.assertNotEqual(response.status_code, 200)
+        # 14
+        response = self.client.get("/api/messages/inexistent/lasts")
+        self.assertNotEqual(response.status_code, 200)
+        # 15
+        response = self.client.get("/api/messages/100")
         self.assertNotEqual(response.status_code, 200)
 
     def test_notifications(self):
@@ -240,12 +326,12 @@ class ApiCase(unittest.TestCase):
             1 - Create user2 and create/login with user1
             2 - Create a new post uploading a dataset
             3 - Run celery task to create the post
-            4 - Concurrency test
-            5 - Edit post's description and name
-            6 - List the post
-            7 - Download the dataset
-            8 - Favorite/Unfavorite post
-            9 - Publish post
+            4 - Edit post's description and name
+            5 - List the post
+            6 - Download the dataset
+            7 - Favorite/Unfavorite post
+            8 - Publish post
+            9 - Feed
             10 - Comment post
             11 - Reply to comment
             12 - Add user2 as collaborator, check, remove and check again
@@ -273,41 +359,15 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         # 3
         with open(filename, 'rb') as fr:
-            filestorage = FileStorage(fr, filename="iris_send.arff", content_type="application/octet-stream")
+            filestorage = FileStorage(
+                fr, filename="iris_send.arff", content_type="application/octet-stream")
             files = save_files([filestorage])
         result = process_file.run(files, username)
-        self.assertEqual(json.loads(result['result'])[0]["code"] == "success", True)
-
-        # # 4       teste de concorrencia  ######################
-        # from tatu.sql.mysql import MySQL
-        # está em concurrency_tests.py ##########################
+        self.assertEqual(json.loads(result['result'])[
+                         0]["code"] == "success", True)
         post_id = json.loads(result['result'])[0]['id']
-        data_uuid = Post.query.get(post_id).data_uuid
         post = Post.query.get(post_id)
-        # tatu = SQLite("/dev/shm/test.db")
-        # tatu.store()
-        #
-        # def f(l):
-        #     try:
-        #         rs = []
-        #         for i in range(10000):
-        #             # response = get_data().id
-        #             response = self.client.get(f"/api/posts/{post_id}").json
-        #             print(str(i) + " " + response)
-        #             rs.append(True)
-        #     except JSONDecodeError:
-        #         return False
-        #     return rs
-        #
-        # pool = mp.Pool()
-        # rs = pool.map(f, [1, 2])
-        # pool.close()
-        # pool.join()
-        #
-        # self.assertTrue(all(rs))
-        ####################################################
-
-        # 5
+        # 4
         new_name = "new name"
         new_description = "new description"
         # User2 can not edit post
@@ -328,7 +388,11 @@ class ApiCase(unittest.TestCase):
         response = self.client.put(
             f"/api/posts/{post_id}", json={"name": new_name, "description": new_description})
         self.assertEqual(response.status_code, 200)
-        # 6
+        # Can not edit inexistent post
+        response = self.client.put(
+            "/api/posts/100", json={"name": new_name, "description": new_description})
+        self.assertEqual(response.status_code, 422)
+        # 5
         # User2 can not list the post
         self.login(create_user=False, user=create_user2)
         response = self.client.get(f"/api/posts/{post_id}")
@@ -339,7 +403,13 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json['name'], new_name)
         self.assertEqual(response.json['description'], new_description)
-        # 7
+        response = self.client.get("/api/posts/100")
+        self.assertEqual(response.status_code, 422)
+        # List all posts
+        response = self.client.get("/api/posts")
+        self.assertEqual(len(response.json), 2)
+        self.assertEqual(response.status_code, 200)
+        # 6
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(f"/api/downloads/data?pids={post_id}")
         self.assertEqual(response.status_code, 200)
@@ -352,14 +422,25 @@ class ApiCase(unittest.TestCase):
         result = download_data.run([post_id], username, "127.0.0.2")
         self.assertEqual(result['state'], 'SUCCESS')
         self.assertEqual(post.get_unique_download_count(), 2)
-        # 8
+        # 7
         response = self.client.post(f"/api/posts/{post_id}/favorite")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(user.has_favorited(post), True)
         response = self.client.post(f"/api/posts/{post_id}/favorite")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(user.has_favorited(post), False)
-        # 9
+        # Can not favorite an inexistent post
+        response = self.client.post("/api/posts/100/favorite")
+        self.assertEqual(response.status_code, 422)
+        # 8
+        # Can not publish inexistent post
+        response = self.client.post("/api/posts/100/publish")
+        self.assertEqual(response.status_code, 422)
+        # User2 can not publish the post
+        self.login(create_user=False, user=create_user2)
+        response = self.client.post(f"/api/posts/{post_id}/publish")
+        self.assertEqual(response.status_code, 422)
+        self.login(create_user=False)
         # Publish
         self.assertEqual(post.public, False)
         response = self.client.post(f"/api/posts/{post_id}/publish")
@@ -375,13 +456,13 @@ class ApiCase(unittest.TestCase):
         post.public = False
         db.session.commit()
         self.login(create_user=False)
-        # 10
+        # 9
         # User can not see user2's feed
         response = self.client.get(f"/api/users/{username2}/feed")
         self.assertEqual(response.status_code, 422)
         # Post should appear on user's feed and not on user2's feed
         response = self.client.get(f"/api/users/{username}/feed")
-        self.assertEqual(len(response.json), 1)
+        self.assertEqual(len(response.json), 2)
         self.login(create_user=False, user=create_user2)
         response = self.client.get(f"/api/users/{username2}/feed")
         self.assertEqual(len(response.json), 0)
@@ -399,18 +480,32 @@ class ApiCase(unittest.TestCase):
         db.session.commit()
         self.login(create_user=False)
         # 10
+        # Can not comment an inexistent post
+        response = self.client.post(
+            "/api/posts/100/comments", json={"text": "Comment 1"})
+        self.assertEqual(response.status_code, 422)
+        # Comment
         response = self.client.post(
             f"/api/posts/{post_id}/comments", json={"text": "Comment 1"})
         self.assertEqual(response.status_code, 200)
+        # List post
         response = self.client.get(f"/api/posts/{post_id}/comments")
         self.assertEqual(len(response.json), 1)
-        # 11
         comment_id = response.json[0]['id']
+        # Can not list inexistent post comments
+        response = self.client.get("/api/posts/100/comments")
+        self.assertEqual(response.status_code, 422)
+        # 11
         response = self.client.post(
             f"/api/comments/{comment_id}/replies", json={"text": "Reply to comment 1"})
         self.assertEqual(response.status_code, 200)
+        response = self.client.post(
+            "/api/comments/100/replies", json={"text": "Reply to comment 1"})
+        self.assertEqual(response.status_code, 422)
         response = self.client.get(f"/api/comments/{comment_id}/replies")
         self.assertEqual(len(response.json), 1)
+        response = self.client.get("/api/comments/100/replies")
+        self.assertEqual(response.status_code, 422)
         # 12
         # Can not invite himself
         response = self.client.post(
@@ -424,6 +519,14 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(User.get_by_username(
             username2).has_access(post), True)
+        # Can not invite user2 to an inexistent post
+        response = self.client.post(
+            "/api/posts/100/collaborators", json={"username": username2})
+        self.assertEqual(response.status_code, 422)
+        # Can not invite an inexistent user
+        response = self.client.post(
+            f"/api/posts/{post_id}/collaborators", json={"username": "inexistent"})
+        self.assertEqual(response.status_code, 422)
         # User2 can not invite collaborators
         self.login(create_user=False, user=create_user2)
         response = self.client.post(
@@ -437,18 +540,25 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(User.get_by_username(
             username2).has_access(post), False)
         # 13
+        # Can not get stats of inexistent post
+        response = self.client.get("/api/posts/100/stats?plt=scatter")
+        self.assertEqual(response.status_code, 422)
         response = self.client.get(f"/api/posts/{post_id}/stats?plt=scatter")
         self.assertEqual(response.status_code, 200)
         # 14
         result = process_file.run(files, username2)
         self.assertEqual(result['state'], 'SUCCESS')
         self.assertEqual(json.loads(result['result'])[
-                             0]["code"] == "error", False)
+                         0]["code"] == "error", False)
         result = process_file.run(files, username2)
         self.assertEqual(result['state'], 'SUCCESS')
         self.assertEqual(json.loads(result['result'])[
-                             0]["code"] == "error", True)
+                         0]["code"] == "error", True)
         # 15
+        # Can not list twins of inexistent post
+        response = self.client.get("/api/posts/100/twins")
+        self.assertEqual(response.status_code, 422)
+        # List twins
         response = self.client.get(f"/api/posts/{post_id}/twins")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json), 0)
@@ -464,13 +574,18 @@ class ApiCase(unittest.TestCase):
             "algorithm": "runAlgorithm",
             "parameters": "runParameter"
         }
+        # Can not run step on inexistent post
+        with patch('app.api.tasks.User.launch_task'):
+            response = self.client.post(
+                "/api/posts/100/run", json={"step": step})
+        self.assertEqual(response.status_code, 422)
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(
                 f"/api/posts/{post_id}/run", json={"step": step})
         self.assertEqual(response.status_code, 200)
         result = run_step.run(post_id, step, username)
         self.assertEqual(json.loads(result['result'])[
-                             "code"] == "error", False)
+                         "code"] == "error", False)
         # 17
         # User2 can not delete post_id
         response = self.client.delete(f"/api/posts/{post_id}")
@@ -486,10 +601,85 @@ class ApiCase(unittest.TestCase):
         # Delete post
         response = self.client.delete(f"/api/posts/{post_id}")
         self.assertEqual(response.status_code, 200)
+        # Can not delete inexistent post
+        response = self.client.delete("/api/posts/100")
+        self.assertEqual(response.status_code, 422)
         # Restore post uploading data again
         result = process_file.run(files, username)
         self.assertEqual(json.loads(result['result'])[
-                             0]["code"] == "success", True)
+                         0]["code"] == "success", True)
+
+    def test_sync(self):
+        """
+            1 - Login
+            2 - Upload a dataset
+            3 - Lock/unlock dataset
+            4 - sync_uuid
+            5 - Get content
+            6 - Put content
+            7 - Put fields
+            8 - Put data
+            9 - Get data
+        """
+        # 1
+        self.login()
+
+        # 2
+        data = Dataset().data
+        self.tatu.store(data, lazy=False, ignoredup=True)
+
+        # 3
+        response = self.client.put("/api/sync/randomuuid/lock")
+        self.assertTrue('success' in response.json)
+        response = self.client.put("/api/sync/randomuuid/unlock")
+        self.assertTrue('success' in response.json)
+
+        # 4
+        response = self.client.get("/api/sync_uuid")
+        self.assertEqual(response.json['uuid'], self.tatu.id)
+
+        # 5
+        response = self.client.get(f"/api/sync/{data.id}/content")
+        self.assertEqual(response.status_code, 200)
+
+        # 6
+        data2 = Dataset().data >> Let("F", [1, 2, 3])
+        file = dict(
+            bina=(BytesIO(pack(data2.F)), "bina"),
+        )
+        response = self.client.post(
+            f"/api/sync/{data.id}/content?ignoredup=true", data=file)
+        self.assertTrue('success' in response.json)
+
+        # 7
+        info = {"rows": [(data.id, "A", data.uuids["X"].id)]}
+        response = self.client.post(
+            "/api/sync/many?cat=fields&ignoredup=true", json=info)
+        msg = (
+            "errors" in response.json and response.json["errors"]) or response.json
+        self.assertEqual(1, response.json["n"], msg=msg)
+
+        # 8
+        data3 = data >> Let("Q", [1, 2])
+        dic = {'kwargs': {
+            "id": data3.id,
+            "step": data3.step.id,
+            "inn": None,
+            "stream": False,
+            "parent": data.id,
+            "locked": False,
+            "ignoredup": False
+        }}
+        response = self.client.post("/api/sync?cat=data", json=dic)
+        msg = (
+            "errors" in response.json and response.json["errors"]) or response.json
+        self.assertTrue('success' in response.json, msg)
+
+        # 9
+        response = self.client.get(f"/api/sync?cat=data&uuids={data.id}")
+        self.assertEqual(response.json['has'], True)
+        response = self.client.get("/api/sync?cat=data&uuids=notexistentuuid")
+        self.assertEqual(response.json['has'], False)
 
     def test_create_user(self):
         """
@@ -562,7 +752,7 @@ class ApiCase(unittest.TestCase):
         response = self.client.put("api/users/" + str(username1),
                                    json={"email": user1.email})
         self.assertEqual(response.status_code, 200)
-        user2.email_confirmation = True
+        user2.email_confirmed = True
         db.session.commit()
         response = self.client.put("api/users/" + str(username1),
                                    json={"email": user2.email})
@@ -620,16 +810,25 @@ class ApiCase(unittest.TestCase):
             "nattrs": iris.X.shape[1],
             "ninsts": iris.X.shape[0]
         }
-        response = self.client.put("/api/posts", json={'data_uuid': iris.id, 'info': info})
-        self.assertEqual(response.status_code, 200, msg=response.json and response.json["errors"])
+        response = self.client.put(
+            "/api/posts", json={'data_uuid': iris.id, 'info': info})
+        self.assertEqual(response.status_code, 200,
+                         msg=response.json and response.json["errors"])
 
         self.tatu.store(iris)
 
-        response = self.client.put("/api/posts/activate", json={'data_uuid': iris.id})
-        self.assertEqual(response.status_code, 200, msg=response.json and response.json["errors"])
+        response = self.client.put(
+            "/api/posts/activate", json={'data_uuid': iris.id})
+        self.assertEqual(response.status_code, 200,
+                         msg=response.json and response.json["errors"])
+
+        response = self.client.put(
+            "/api/posts/activate", json={'data_uuid': "inexistent"})
+        self.assertEqual(response.status_code, 422)
 
         response = self.client.put("/api/posts", json={'data_uuid': iris.id})
-        self.assertEqual(response.status_code, 422, msg=response.json and response.json["errors"])
+        self.assertEqual(response.status_code, 422,
+                         msg=response.json and response.json["errors"])
 
 
 if __name__ == '__main__':

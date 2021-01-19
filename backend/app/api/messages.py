@@ -1,10 +1,11 @@
 from app import db
+from app.errors.handlers import HTTPAbort
 from . import bp
 from app.models import User, Message
 from app.schemas import MessageBaseSchema, MessageListSchema
 from flask.views import MethodView
 from flask_smorest import abort
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import get_jwt_identity
 from sqlalchemy.sql import expression
 from sqlalchemy import types, case
 from datetime import datetime
@@ -12,7 +13,7 @@ from datetime import datetime
 
 @bp.route('/messages/<string:username>')
 class MessagesByUsername(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(MessageListSchema, location="query")
     @bp.response(MessageListSchema(many=True))
     @bp.paginate()
@@ -22,10 +23,8 @@ class MessagesByUsername(MethodView):
         """
         user = User.get_by_username(username)
         if not user:
-            abort(422, errors={"json": {"username": [
-                  "Does not exist."]}})
+            HTTPAbort.not_found(field="username")
         logged_user = User.get_by_username(get_jwt_identity())
-
         filter_by = {"recipient": logged_user, "author": user}
         order_by = Message.timestamp.desc()
         data, pagination_parameters.item_count = Message.get(args, pagination_parameters.page,
@@ -33,7 +32,7 @@ class MessagesByUsername(MethodView):
                                                              filter_by=filter_by, order_by=order_by)
         return data
 
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(MessageBaseSchema)
     @bp.response(MessageBaseSchema)
     def post(self, args, username):
@@ -42,8 +41,7 @@ class MessagesByUsername(MethodView):
         """
         user = User.get_by_username(username)
         if not user:
-            abort(422, errors={"json": {"username": [
-                  "Does not exist."]}})
+            HTTPAbort.not_found(field="username")
         logged_user = User.get_by_username(get_jwt_identity())
         if user == logged_user:
             abort(422, errors={"json": {"username": [
@@ -60,7 +58,7 @@ class MessagesByUsername(MethodView):
 
 @bp.route('/messages/<string:username>/conversation')
 class MessagesConversationByUsername(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(MessageListSchema, location="query")
     @bp.response(MessageListSchema(many=True))
     @bp.paginate()
@@ -70,8 +68,7 @@ class MessagesConversationByUsername(MethodView):
         """
         user = User.get_by_username(username)
         if not user:
-            abort(422, errors={"json": {"username": [
-                  "Does not exist."]}})
+            HTTPAbort.not_found(field="username")
         logged_user = User.get_by_username(get_jwt_identity())
 
         logged_user_messages = Message.query.filter_by(
@@ -89,7 +86,7 @@ class MessagesConversationByUsername(MethodView):
 
 @bp.route('/messages/<string:username>/lasts')
 class MessagesLastsByUsername(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(MessageListSchema, location="query")
     @bp.response(MessageListSchema(many=True))
     @bp.paginate()
@@ -99,12 +96,10 @@ class MessagesLastsByUsername(MethodView):
         """
         user = User.get_by_username(username)
         if not user:
-            abort(422, errors={"json": {"username": [
-                  "Does not exist."]}})
+            HTTPAbort.not_found(field="username")
         logged_user = User.get_by_username(get_jwt_identity())
         if user != logged_user:
-            abort(422, errors={"json": {"username": [
-                  "You can only check your messages."]}})
+            HTTPAbort.not_authorized()
 
         xpr = case(
             [
@@ -132,7 +127,7 @@ class MessagesLastsByUsername(MethodView):
 
 @bp.route('/messages/<int:id>')
 class MessagesById(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.response(MessageListSchema)
     def get(self, id):
         """
@@ -140,16 +135,14 @@ class MessagesById(MethodView):
         Available only for the admins
         """
         logged_user = User.get_by_username(get_jwt_identity())
-
         message = Message.query.get(id)
         if not message or not message.active:
-            abort(422, errors={
-                  "json": {"id": ["Does not exist."]}})
+            HTTPAbort.not_found()
         if not message.author == logged_user and not message.recipient == logged_user:
             abort(422, errors={
-                  "json":
-                  {"id":
-                   ["Only the sender and the recipient have access to this message."
-                    ]
-                   }})
+                "json":
+                {"id":
+                 ["Only the sender and the recipient have access to this message."
+                  ]
+                 }})
         return message
