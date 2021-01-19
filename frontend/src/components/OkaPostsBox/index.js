@@ -79,7 +79,7 @@ export default function OkaPostsBox({ fetch_url }) {
         try {
             var serializedSelection = JSON.stringify(selection);
             serializedSelection = serializedSelection.replace(/,/g, '&pids=').replace('[', "").replace(']', "")
-            const resp = await api.get('/downloads/data?pids=' + serializedSelection);
+            const resp = await api.post('/downloads/data?pids=' + serializedSelection);
             var newTasks = { ...runningTasksBar.tasks };
             newTasks[resp.data.id] = {
                 description: "Starting..."

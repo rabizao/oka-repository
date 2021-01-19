@@ -351,6 +351,13 @@ class DownloadQuerySchema(SQLAlchemySchema):
     pids = fields.List(fields.String(), required=True)
 
 
+class DownloadFileByNameQuerySchema(SQLAlchemySchema):
+    class Meta:
+        unknown = EXCLUDE
+
+    name = fields.String(required=True)
+
+
 class StatsQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE

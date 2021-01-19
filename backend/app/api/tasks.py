@@ -225,10 +225,11 @@ def download_data(self, pids, username, ip):
                 raise Exception(
                     f'Download failed: data {post.data_uuid} not found!')
             post.add_download(ip)
+            logged_user.add_file(filename_server_zip)
             db.session.commit()
             zipped_file.writestr(f'{pid}.arff', data.arff(
                 'No name', 'No description'))
-    return _set_job_progress(self, 100, result=f'{filename_server_zip}.zip')
+    return _set_job_progress(self, 100, result=f'{filename_server_zip}')
 
 
 @celery.task(bind=True, base=BaseTask)

@@ -411,7 +411,7 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         # 6
         with patch('app.api.tasks.User.launch_task'):
-            response = self.client.get(f"/api/downloads/data?pids={post_id}")
+            response = self.client.post(f"/api/downloads/data?pids={post_id}")
         self.assertEqual(response.status_code, 200)
         result = download_data.run([post_id], username, "127.0.0.1")
         self.assertEqual(result['state'], 'SUCCESS')

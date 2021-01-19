@@ -1,8 +1,9 @@
 from app import db
 from . import bp
-from app.schemas import DownloadQuerySchema, TaskBaseSchema
+from app.schemas import DownloadQuerySchema, TaskBaseSchema, DownloadFileByNameQuerySchema
 from app.models import User
-from flask import request
+from flask import request, current_app, send_from_directory
+from flask_smorest import abort
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity
 
@@ -24,3 +25,25 @@ class Downloads(MethodView):
         db.session.commit()
 
         return task
+
+
+@bp.route('/downloads')
+class DownloadsByFid(MethodView):
+    @jwt_required
+    @bp.arguments(DownloadFileByNameQuerySchema, location="query")
+    def get(self, args):
+        """Download a file by the generated file id"""
+        logged_user = User.get_by_username(get_jwt_identity())
+        path = f"{current_app.config['TMP_FOLDER']}/{args['name']}"
+        file = logged_user.get_file_by_name(args['name'])
+
+        if not os.path.isfile(path) or not file:
+            abort(422, errors={
+                "json": {"name": ["File not found."]}})
+
+        with open(path) as f:
+            if not logged_user.can_download(file):
+                abort(422, errors={
+                    "json": {"name": ["You do not have access to this file."]}})
+
+            return send_from_directory(current_app.config['TMP_FOLDER'], args['name'], as_attachment=True)
