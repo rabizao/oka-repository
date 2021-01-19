@@ -39,9 +39,9 @@ class Config(object):
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['okarepository@gmail.com']
-    POSTS_PER_PAGE = 25
     TMP_FOLDER = '/tmp/oka/'
 
+    WEB_TITLE = 'OKA Knowledge Repository'
     API_TITLE = 'oka API'
     API_VERSION = ''
     OPENAPI_VERSION = '3.0.2'

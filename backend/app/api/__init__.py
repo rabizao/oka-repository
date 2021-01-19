@@ -1,4 +1,4 @@
-from flask_smorest import Blueprint
+from app.smorest import Blueprint
 
 bp = Blueprint('All routes', __name__)
 

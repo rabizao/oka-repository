@@ -18,11 +18,10 @@ print(response_login)
 access_token = response_login.json()['access_token']
 headers = {'Authorization': 'Bearer ' + access_token}
 
-
 run = True
-
-
 last_error = None
+
+
 def f(conn):
     global run, last_error
     try:

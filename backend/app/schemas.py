@@ -85,6 +85,14 @@ class UserQuerySchema(SQLAlchemySchema):
     username = fields.String()
 
 
+class UserConfirmationSchema(SQLAlchemySchema):
+    class Meta:
+        unknown = EXCLUDE
+
+    key = fields.String(required=True)
+    confirm = fields.Boolean(missing=True)
+
+
 class RunSchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE

@@ -15,5 +15,10 @@
     "--ignore=E402",
   ],
   "emmet.syntaxProfiles": {"javascript": "jsx"},
-  "emmet.includeLanguages": {"javascript": "javascriptreact"}
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact"
+  },
+  "python.analysis.extraPaths": [
+    "./backend"
+  ]
 }

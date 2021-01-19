@@ -7,7 +7,6 @@ from zipfile import ZipFile
 from celery.signals import worker_init
 from flask import current_app
 from flask.views import MethodView
-from flask_jwt_extended import jwt_required
 from flask_mail import Message
 
 from aiuna.content.data import Data
@@ -261,7 +260,7 @@ def process_file(self, files, username):
 
 @bp.route('tasks/<string:task_id>/status')
 class TasksStatusById(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.response(TaskStatusBaseSchema)
     def get(self, task_id):
         # TODO: Access limitations
