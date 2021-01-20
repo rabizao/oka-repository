@@ -21,24 +21,23 @@ celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
 jwt = JWTManager()
 
 
-# class FlaskWrapper(Flask):
-#     """https://stackoverflow.com/a/57231282/9681577"""
+class FlaskWrapper(Flask):
+    """https://stackoverflow.com/a/57231282/9681577"""
 
-#     def run(self, host=None, port=None, debug=None, load_dotenv=True, **options):
-#         if not self.debug or os.getenv('WERKZEUG_RUN_MAIN') == 'true':
-#             with self.app_context():
-#                 self.config['TATU_SERVER'].open()
-#         super(FlaskWrapper, self).run(host=host, port=port,
-#                                       debug=debug, load_dotenv=load_dotenv, **options)
+    def run(self, host=None, port=None, debug=None, load_dotenv=True, **options):
+        if not self.debug or os.getenv('WERKZEUG_RUN_MAIN') == 'true':
+            with self.app_context():
+                self.config['TATU_SERVER'].open()
+        super(FlaskWrapper, self).run(host=host, port=port,
+                                      debug=debug, load_dotenv=load_dotenv, **options)
 
 
 def create_app(config_class=Config):
-    app = Flask(__name__, static_url_path="/media",
-                static_folder='media')
+    app = FlaskWrapper(__name__, static_url_path="/media",
+                       static_folder='media')
 
     app.config.from_object(config_class)
     app.config['TATU_SERVER'] = Tatu(url=app.config['TATU_URL'], threaded=True)
-    app.config['TATU_SERVER'].open()
 
     db.init_app(app)
     migrate.init_app(app, db)
