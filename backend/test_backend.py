@@ -571,20 +571,31 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(len(response.json), 1)
         # 16
         step = {
-            "category": "runCategory",
-            "algorithm": "runAlgorithm",
-            "parameters": "runParameter"
+            "category": "evaluation",
+            "algorithm": "partition",
+            "parameters": {'mode': 'cv', 'splits': 10, 'seed': 0, 'fields': 'X,Y'}
         }
+
+        step_full = {
+            'id': post.data_uuid,
+            'desc': {
+                'name': 'Partition',
+                'path': 'kururu.tool.evaluation.partition',
+                'config': {'mode': 'cv', 'splits': 10, 'seed': 0, 'fields': 'X,Y'}
+            }
+        }
+
         # Can not run step on inexistent post
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(
-                "/api/posts/100/run", json={"step": step})
+                "/api/posts/100/run", json=step)
         self.assertEqual(response.status_code, 422)
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(
-                f"/api/posts/{post_id}/run", json={"step": step})
+                f"/api/posts/{post_id}/run", json=step)
+            print(response.json)
         self.assertEqual(response.status_code, 200)
-        result = run_step.run(post_id, step, username)
+        result = run_step.run(post_id, step_full, username)
         self.assertEqual(json.loads(result['result'])[
                          "code"] == "error", False)
         # 17
