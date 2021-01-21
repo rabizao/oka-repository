@@ -360,7 +360,22 @@ class PostsTransformById(MethodView):
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
 
+        for key, value in args["parameters"].items():
+            try:
+                args["parameters"][key] = int(value)
+            except ValueError:
+                pass
+
+        step_asdict = {
+            'id': post.data_uuid,
+            'desc': {
+                'name': args["algorithm"].capitalize(),
+                'path': f'kururu.tool.{args["category"]}.{args["algorithm"]}',
+                'config': args["parameters"]
+            }
+        }
+
         task = logged_user.launch_task('run_step', 'Processing your simulation',
-                                       [post.id, args["step"], username])
+                                       [post.id, step_asdict, username])
         db.session.commit()
         return task

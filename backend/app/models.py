@@ -240,12 +240,12 @@ class User(PaginateMixin, db.Model):
                     user=self)
         db.session.add(task)
         return task
-    
+
     def add_file(self, name):
         file = File(owner=self, name=name)
         db.session.add(file)
         return file
-    
+
     def get_file_by_name(self, name):
         return File.query.filter(File.name == name, File.owner_id == self.id).first()
 
@@ -404,7 +404,7 @@ class File(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), index=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    
+
 
 class Token(db.Model):
     id = db.Column(db.Integer, primary_key=True)
