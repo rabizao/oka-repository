@@ -8,7 +8,6 @@ import { useInterval } from '../hooks/useInterval';
 import { LoginContext } from './LoginContext';
 import { RunningTasksBarContext } from './RunningTasksBarContext';
 import { NotificationManager } from 'react-notifications';
-import { downloadsUrl } from '../services/api';
 import alertSound from '../assets/notification_simple-01.ogg';
 import { timeStart } from '../services/auth';
 

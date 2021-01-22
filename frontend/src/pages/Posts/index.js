@@ -304,8 +304,6 @@ export default function Posts(props) {
 
         try {
             const r = await api.get(`sync?cat=data&fetch=false&uuids=${data_uuid}&empty=false`);
-            console.log(r.data);
-            console.log(r.data["has"]);
             if (r.data["has"] === false) {
                 NotificationManager.info("This Data has not being stored yet!", "NoData");
             } else {
@@ -378,7 +376,6 @@ export default function Posts(props) {
             algorithm: runAlgorithm,
             parameters: runParameter
         }
-        console.log(data)
 
         try {
             const resp = await api.post(`posts/${id}/run`, data);

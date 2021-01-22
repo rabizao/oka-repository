@@ -259,7 +259,7 @@ class User(PaginateMixin, db.Model):
 
     @staticmethod
     def get_by_email(email):
-        return User.query.filter_by(email=email).all()
+        return User.query.filter_by(email=email).first()
 
     @staticmethod
     def get_by_confirmed_email(email):

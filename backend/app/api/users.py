@@ -4,7 +4,7 @@ from . import bp
 from app.models import User, Post
 # from app.api.tasks import send_async_email
 from app.schemas import UserBaseSchema, UserQuerySchema, UserRegisterSchema, UserEditSchema, \
-    PostQuerySchema, PostBaseSchema, UserConfirmationSchema
+    PostQuerySchema, PostBaseSchema, UserConfirmationSchema, UserResendKeySchema, UserResendKeySubmitSchema
 from flask import current_app
 from flask.views import MethodView
 from flask_smorest import abort
@@ -30,12 +30,12 @@ class Users(MethodView):
         Create a new user from a json object
         """
         key = user.add_confirmation_key()
-        confirmation_link = f"{current_app.config['FRONTEND_HOST']}/users/{user.username}/confirmations?key={key}"
+        link = f"{current_app.config['FRONTEND_HOST']}/confirmation/submit?key={key}&username={user.username}"
         message = f"Hello {user.name}. Thank you for registering in {current_app.config['WEB_TITLE']}. \
             To confirm your registration please click in the link below.<br>\
-                <a href='{confirmation_link}'>{confirmation_link}</a><br><br>If you did not register \
+                <a href='{link}'>{link}</a><br><br>If you did not register \
                     into our website please and want to remove your email from \
-                        our database please click <a href='{confirmation_link}&confirm=false'>here</a>. \
+                        our database please click <a href='{link}&confirm=false'>here</a>. \
                             <br><br><br>{current_app.config['WEB_TITLE']}"
         # send_async_email.delay(message)
         print(message)
@@ -44,8 +44,39 @@ class Users(MethodView):
         return user
 
 
+@bp.route('/users/resendkey')
+class UsersResendKey(MethodView):
+    @bp.arguments(UserResendKeySubmitSchema)
+    @bp.response(UserResendKeySchema)
+    def post(self, args):
+        """
+        Resend confirmation key to users' email
+        """
+        user = User.get_by_email(args['email'])
+
+        if not user:
+            HTTPAbort.not_found(field="email")
+        if user.email_confirmed:
+            HTTPAbort.email_already_confirmed()
+
+        key = user.add_confirmation_key()
+        link = f"{current_app.config['FRONTEND_HOST']}/confirmation/submit?key={key}&username={user.username}"
+        message = f"Hello {user.name}. Thank you for registering in {current_app.config['WEB_TITLE']}. \
+            To confirm your registration please click in the link below.<br>\
+                <a href='{link}'>{link}</a><br><br>If you did not register \
+                    into our website please and want to remove your email from \
+                        our database please click <a href='{link}&confirm=false'>here</a>. \
+                            <br><br><br>{current_app.config['WEB_TITLE']}"
+        # send_async_email.delay(message)
+        print(message)
+        db.session.commit()
+        response = {"username": user.username, "email": user.email}
+        print(response)
+        return response
+
+
 @bp.route('/users/<string:username>/confirm-email')
-class UsersConfirmation(MethodView):
+class UsersConfirmationSubmit(MethodView):
     @bp.arguments(UserConfirmationSchema, location="query")
     @bp.response(code=201)
     def post(self, args, username):

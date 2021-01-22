@@ -177,7 +177,7 @@ class UserRegisterSchema(UserBaseSchema):
 
 class UserLoginSchema(UserBaseSchema):
     class Meta:
-        fields = ("username", "password")
+        fields = ["username", "password"]
 
     @post_load
     def check(self, data, **kwargs):
@@ -192,6 +192,21 @@ class UserLoginSchema(UserBaseSchema):
             raise ValidationError(field_name="password",
                                   message="Wrong data.")
         return data
+
+
+class UserResendKeySubmitSchema(SQLAlchemySchema):
+
+    email = fields.Email(validate=[
+        validate.Length(min=6, max=36)], load_only=True, required=True)
+
+
+class UserResendKeySchema(UserBaseSchema):
+    class Meta:
+        model = User
+        fields = ["email", "username"]
+
+    email = fields.Email(validate=[
+        validate.Length(min=6, max=36)], dump_only=True)
 
 
 class LoginResponseSchema(SQLAlchemySchema):
