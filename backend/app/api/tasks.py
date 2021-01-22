@@ -64,15 +64,15 @@ def create_post(logged_user, data, name="No name", description="No description",
             existing_post = logged_user.posts.filter_by(data_uuid=did).first()
             if not existing_post:
                 # noinspection PyArgumentList
-                post = Post(
-                    author=logged_user,
-                    data_uuid=did,
-                    name=name_,
-                    description=description_,
-                    number_of_instances=ninsts_,
-                    number_of_features=nattrs_,
-                    active=active
-                )
+                # post = Post(
+                #     author=logged_user,
+                #     data_uuid=did,
+                #     name=name_,
+                #     description=description_,
+                #     number_of_instances=ninsts_,
+                #     number_of_features=nattrs_,
+                #     active=active
+                # )
                 # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
                 # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
                 db.session.add(post)
