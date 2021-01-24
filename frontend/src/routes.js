@@ -14,6 +14,8 @@ import NotFound from './pages/NotFound';
 import ConfirmationSubmit from './pages/ConfirmationSubmit';
 import ConfirmationResend from './pages/ConfirmationResend';
 import Confirmation from './pages/Confirmation';
+import AccountRecover from './pages/AccountRecover';
+import AccountRecoverSubmit from './pages/AccountRecoverSubmit';
 
 export default function Routes() {
     return (
@@ -25,6 +27,8 @@ export default function Routes() {
                 <Route path="/confirmation/submit" component={ConfirmationSubmit} />
                 <Route path="/confirmation/resend" component={ConfirmationResend} />
                 <Route path="/confirmation" component={Confirmation} />
+                <Route path="/recover/submit" component={AccountRecoverSubmit} />
+                <Route path="/recover" component={AccountRecover} />                
                 <PrivateRoute path="/home" component={Home} />
                 <PrivateRoute path="/client" component={OkaClient} />
                 <PrivateRoute path="/users/:username" exact component={Users} />

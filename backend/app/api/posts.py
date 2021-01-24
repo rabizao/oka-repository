@@ -93,8 +93,7 @@ class PostsActivate(MethodView):
         post = Post.query.filter_by(
             data_uuid=args["data_uuid"], user_id=logged_user.id).first()
         if not post:
-            abort(422, errors={
-                "json": {"data_uuid": ["Post not found."]}})
+            HTTPAbort.not_found(field="data_uuid")
         post.active = True
         db.session.commit()
 
@@ -113,8 +112,7 @@ class PostsById(MethodView):
         if not post or not post.active:
             HTTPAbort.not_found()
         if not logged_user.has_access(post):
-            abort(422, errors={
-                "json": {"id": ["You dont have access to this post."]}})
+            HTTPAbort.not_authorized()
         return post
 
     @bp.auth_required
@@ -131,13 +129,11 @@ class PostsById(MethodView):
             HTTPAbort.not_found()
 
         if post.public:
-            abort(422, errors={
-                "json": {"id": ["Public posts can not be edited."]}})
+            HTTPAbort.not_possible(field="id", complement="Public posts can not be edited.")
 
         if not logged_user.is_admin():
             if logged_user != post.author:
-                abort(422, errors={
-                    "json": {"id": ["You can only edit your own datasets."]}})
+                HTTPAbort.not_authorized()
 
         post.update(args)
         db.session.commit()
@@ -153,13 +149,11 @@ class PostsById(MethodView):
             HTTPAbort.not_found()
 
         if post.public:
-            abort(422, errors={
-                "json": {"id": ["Public posts can not be deleted."]}})
+            HTTPAbort.not_possible(field="id", complement="Public posts can not be deleted.")
 
         logged_user = User.get_by_username(get_jwt_identity())
         if post.author != logged_user:
-            abort(422, errors={
-                "json": {"id": ["Only the author can delete the post."]}})
+            HTTPAbort.not_authorized()
 
         post.active = False
         db.session.commit()
@@ -180,20 +174,15 @@ class PostsCollaboratorsById(MethodView):
 
         collaborator = User.get_by_username(args["username"])
         if not collaborator:
-            abort(422, errors={
-                "json": {"username": ["Does not exist."]}})
+            HTTPAbort.not_found(field="username")
 
         logged_user = User.get_by_username(get_jwt_identity())
 
         if post.author == collaborator:
-            abort(422, errors={
-                "json": {"username": ["You can not invite yourself."]}})
+            HTTPAbort.not_possible()
 
         if not post.author == logged_user:
-            abort(422, errors={
-                "json": {"username":
-                         [
-                             "Only the author can invite collaborators to the post."]}})
+            HTTPAbort.not_possible(complement="Only the author can invite collaborators to the post.")
 
         if collaborator.has_access(post):
             collaborator.deny_access(post)
@@ -234,13 +223,11 @@ class PostsPublishById(MethodView):
             HTTPAbort.not_found()
 
         if post.public:
-            abort(422, errors={
-                "json": {"id": ["The post is already published."]}})
+            HTTPAbort.not_possible(field="id", complement="The post is already published.")
 
         logged_user = User.get_by_username(get_jwt_identity())
         if post.author != logged_user:
-            abort(422, errors={
-                "json": {"id": ["Only the author can publish the post."]}})
+            HTTPAbort.not_authorized()
 
         # TODO: Verify if the post has all classification variables before next steps
 

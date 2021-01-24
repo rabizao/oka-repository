@@ -55,6 +55,7 @@ export default function Login() {
                     <button className="button-primary" type="submit">Login</button>
                 </form>
                 <h6 className="margin-top-small">Not registered? <Link className="link-underline" to="/register">Register now!</Link></h6>
+                <h6 className="margin-top-small">Lost account name or password? <Link className="link-underline" to="/recover">Recover now!</Link></h6>
             </div>
         </>
     )

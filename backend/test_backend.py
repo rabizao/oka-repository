@@ -412,7 +412,6 @@ class ApiCase(unittest.TestCase):
         # 6
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(f"/api/downloads/data?pids={post_id}")
-        print(response.json)
         self.assertEqual(response.status_code, 200)
         result = download_data.run([post_id], username, "127.0.0.1")
         self.assertEqual(result['state'], 'SUCCESS')
@@ -593,7 +592,6 @@ class ApiCase(unittest.TestCase):
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(
                 f"/api/posts/{post_id}/run", json=step)
-            print(response.json)
         self.assertEqual(response.status_code, 200)
         result = run_step.run(post_id, step_full, username)
         self.assertEqual(json.loads(result['result'])[

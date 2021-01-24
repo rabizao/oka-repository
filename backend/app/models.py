@@ -1,6 +1,7 @@
 import json
 import uuid as u
 from datetime import datetime
+from flask.globals import current_app
 
 from sqlalchemy import and_, or_
 from werkzeug.security import check_password_hash
@@ -69,7 +70,10 @@ class User(PaginateMixin, db.Model):
     password = db.Column(db.String(128), nullable=False)
     email = db.Column(db.String(120), index=True,
                       nullable=False)
-    email_confirmation_key = db.Column(db.String(120), unique=True)
+    email_confirmation_key = db.Column(db.String(120))
+    account_reset_key = db.Column(db.String(120))
+    account_reset_key_generation_time = db.Column(
+        db.DateTime, default=datetime.utcnow)
     email_confirmed = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(128), nullable=False)
     about_me = db.Column(db.String(140))
@@ -248,6 +252,16 @@ class User(PaginateMixin, db.Model):
 
     def get_file_by_name(self, name):
         return File.query.filter(File.name == name, File.owner_id == self.id).first()
+
+    def account_reset_key_expired(self):
+        return self.account_reset_key_generation_time \
+            + current_app.config['RESET_ACCOUNT_KEY_EXPIRES'] < datetime.utcnow()
+
+    def add_reset_key(self):
+        key = str(u.uuid4())
+        self.account_reset_key = key
+        self.account_reset_key_generation_time = datetime.utcnow()
+        return key
 
     @staticmethod
     def list_by_name(search_term):

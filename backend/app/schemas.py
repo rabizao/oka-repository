@@ -194,13 +194,29 @@ class UserLoginSchema(UserBaseSchema):
         return data
 
 
-class UserResendKeySubmitSchema(SQLAlchemySchema):
+class UserRecoverKeySubmitSchema(SQLAlchemySchema):
 
     email = fields.Email(validate=[
         validate.Length(min=6, max=36)], load_only=True, required=True)
 
 
-class UserResendKeySchema(UserBaseSchema):
+class UserRecoverKeySubmitNewPassSchema(SQLAlchemySchema):
+    class Meta:
+        model = User
+
+    username = auto_field(validate=[
+        validate.Length(min=6, max=36)], required=True)
+    password = auto_field(validate=[
+        validate.Length(min=6, max=36)], load_only=True, required=True)
+    key = auto_field(column_name="account_reset_key", required=True)
+
+    @post_load
+    def check(self, data, **kwargs):
+        data["password"] = generate_password_hash(data["password"])
+        return data
+
+
+class UserRecoverKeySchema(UserBaseSchema):
     class Meta:
         model = User
         fields = ["email", "username"]

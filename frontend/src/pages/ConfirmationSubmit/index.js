@@ -8,7 +8,7 @@ import api from '../../services/api';
 import { notifyError } from '../../utils';
 import { NotificationManager } from 'react-notifications';
 
-export default function ConfirmationSubmit() {
+export default function AccountRecoverSubmit() {
     let location = useLocation();
     const key = queryString.parse(location.search).key
     const username = queryString.parse(location.search).username

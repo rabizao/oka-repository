@@ -4,7 +4,6 @@ from . import bp
 from app.models import User, Message
 from app.schemas import MessageBaseSchema, MessageListSchema
 from flask.views import MethodView
-from flask_smorest import abort
 from flask_jwt_extended import get_jwt_identity
 from sqlalchemy.sql import expression
 from sqlalchemy import types, case
@@ -44,8 +43,7 @@ class MessagesByUsername(MethodView):
             HTTPAbort.not_found(field="username")
         logged_user = User.get_by_username(get_jwt_identity())
         if user == logged_user:
-            abort(422, errors={"json": {"username": [
-                  "You can not send a message to yourself."]}})
+            HTTPAbort.not_possible()
         message = Message(body=args['body'],
                           author=logged_user, recipient=user)
         db.session.add(message)
@@ -139,10 +137,5 @@ class MessagesById(MethodView):
         if not message or not message.active:
             HTTPAbort.not_found()
         if not message.author == logged_user and not message.recipient == logged_user:
-            abort(422, errors={
-                "json":
-                {"id":
-                 ["Only the sender and the recipient have access to this message."
-                  ]
-                 }})
+            HTTPAbort.not_authorized()
         return message

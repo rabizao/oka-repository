@@ -40,6 +40,14 @@ class HTTPAbort:
             "json": {"username": ["Access denied."]}})
 
     @staticmethod
+    def not_possible(field="username", complement=""):
+        """
+        Called when the action is not possible
+        """
+        return abort(422, errors={
+            "json": {field: ["Not possible." + complement]}})
+
+    @staticmethod
     def not_found(field="id"):
         """
         Called when the provided field does not exist
@@ -52,6 +60,14 @@ class HTTPAbort:
         Called when the provided field is invalid
         """
         return abort(422, errors={"json": {field: ["Invalid."]}})
+
+    @staticmethod
+    def key_expired():
+        """
+        Called when logged user is providing an expired key
+        """
+        return abort(422, errors={"json": {"key": [
+            "Expired."]}})
 
     @staticmethod
     def email_already_confirmed():
@@ -68,3 +84,11 @@ class HTTPAbort:
         """
         return abort(422, errors={"json": {"email": [
             "Not confirmed."]}})
+
+    @staticmethod
+    def unexpected_error():
+        """
+        Called when logged user is trying to access a service but his email was not confirmed yet
+        """
+        return abort(422, errors={"json": {"error": [
+            "Unexpected error."]}})
