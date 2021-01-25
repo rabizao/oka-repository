@@ -31,6 +31,7 @@ export default function Users(props) {
     const [message, setMessage] = useState('');
     const [name, setName] = useState('');
     const [about_me, setAbout_me] = useState('');
+    const [password, setPassword] = useState('');
     const [nameEdit, setNameEdit] = useState('');
     const [about_meEdit, setAbout_meEdit] = useState('');
     const history = useHistory();
@@ -131,7 +132,11 @@ export default function Users(props) {
         e.preventDefault()
         const data = {
             name: nameEdit,
-            about_me: about_meEdit
+            about_me: about_meEdit,
+            password: password
+        }
+        if (data.password === '') {
+            delete data["password"]
         }
         try {
             await api.put(`users/${username}`, data);
@@ -152,7 +157,7 @@ export default function Users(props) {
             await api.post(`messages/${user.username}`, data);
             setOpenMessage(false);
             setMessage('');
-            NotificationManager.success("Message sent. Click here to follow the conversation", "Sent", 4000, () => {history.push(`/users/${username}/conversation/${user.username}`)})
+            NotificationManager.success("Message sent. Click here to follow the conversation", "Sent", 4000, () => { history.push(`/users/${username}/conversation/${user.username}`) })
         } catch (error) {
             notifyError(error);
         }
@@ -168,27 +173,39 @@ export default function Users(props) {
         <>
             <Modal
                 open={openEdit}
-                onClose={()=>setOpenEdit(false)}
+                onClose={() => setOpenEdit(false)}
             >
                 <div className="modal padding-big">
                     <h3 className="margin-top-small">Update your data</h3>
                     <form className="form flex-column margin-top-small" onSubmit={e => handleEditSubmit(e)}>
-                        <label>
-                            Name
+                        <div className="flex-row flex-axis-center flex-space-between">
+                            <label for="name">Name</label>
                             <input
+                                id="name"
                                 placeholder="Your name"
                                 value={nameEdit}
                                 onChange={e => setNameEdit(e.target.value)}
                             />
-                        </label>
-                        <label>
-                            About
+                        </div>
+                        <div className="flex-row flex-axis-center flex-space-between">
+                            <label for="about">About</label>
                             <input
+                                id="about"
                                 placeholder="Your position"
                                 value={about_meEdit}
                                 onChange={e => setAbout_meEdit(e.target.value)}
                             />
-                        </label>
+                        </div>
+                        <div className="flex-row flex-axis-center flex-space-between">
+                            <label for="password">Password</label>
+                            <input
+                                id="password"
+                                type="password"
+                                placeholder="Password"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                            />
+                        </div>
                         <button className="button-primary" type="submit">Save</button>
                     </form>
                 </div>

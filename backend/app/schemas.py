@@ -32,6 +32,8 @@ def past(uuid):
 class UserBaseSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = User
+        exclude = ["email_confirmation_key", "account_reset_key", "account_reset_key_generation_time",
+                   "last_message_read_time", "last_notification_read_time"]
 
     id = auto_field(dump_only=True)
     username = auto_field(validate=[
@@ -39,7 +41,7 @@ class UserBaseSchema(SQLAlchemyAutoSchema):
     password = auto_field(validate=[
         validate.Length(min=6, max=36)], load_only=True)
     email = fields.Email(validate=[
-        validate.Length(min=6, max=36)], load_only=True, required=True)
+        validate.Length(min=6, max=36)], required=True)
     followed = auto_field(dump_only=True)
     followers = auto_field(dump_only=True)
 
@@ -164,7 +166,7 @@ class UserRegisterSchema(UserBaseSchema):
 
     @post_load
     def check_unique_email(self, data, **kwargs):
-        if User.get_by_confirmed_email(data["email"]):
+        if User.get_by_email(data["email"]):
             raise ValidationError(field_name='email',
                                   message="Already in use.")
         return data
@@ -251,16 +253,10 @@ class UserEditSchema(SQLAlchemySchema):
     password = fields.String(validate=[
         validate.Length(min=6, max=36)], load_only=True)
     about_me = fields.String(validate=[
-        validate.Length(min=1, max=140)])
-    email = fields.Email(validate=[
-        validate.Length(min=6, max=36)])
+        validate.Length(max=140)])
 
     @post_load
     def check(self, data, **kwargs):
-        if 'email' in data:
-            if User.get_by_confirmed_email(data["email"]):
-                raise ValidationError(field_name='email',
-                                      message="Already in use.")
         if 'password' in data:
             data["password"] = generate_password_hash(data["password"])
 
