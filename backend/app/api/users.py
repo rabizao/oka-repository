@@ -171,7 +171,6 @@ class UsersById(MethodView):
         if not logged_user.is_admin():
             if logged_user.username != user.username:
                 HTTPAbort.not_authorized()
-
         user.update(args)
         db.session.commit()
 

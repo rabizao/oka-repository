@@ -91,7 +91,7 @@ export default function OkaHeader(props) {
 
             <div className="oka-header-right-buttons">
                 <ul className="ul-padding-sides-not-first">
-                    <li className="flex-row cursor-pointer icon-normal">
+                    {/* <li className="flex-row cursor-pointer icon-normal">
                         <PopOver
                             component={Apps}
                             componentClasses="icon-tertiary"
@@ -108,7 +108,7 @@ export default function OkaHeader(props) {
                                 </div>
                             }
                         />
-                    </li>
+                    </li> */}
                     <li className="flex-row cursor-pointer icon-normal">
                         <Badge badgeContent={notificationsContext.notificationsBadgeCount} color="error">
                             <PopOver

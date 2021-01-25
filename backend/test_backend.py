@@ -735,8 +735,6 @@ class ApiCase(unittest.TestCase):
             2 - Create user1 and login with user1
             3 - Verify if user1 can edit user2
             4 - Verify if user1 can edit user1
-            5 - User1 can use user2's email while not confirmed
-            6 - User1 can not use user2's email because it was confirmed
         """
         # 1
         username2 = self.login(user=create_user2)['username']
@@ -751,22 +749,9 @@ class ApiCase(unittest.TestCase):
         self.assertNotEqual(user2.email, "newemail@ll.com")
         # 4
         response = self.client.put("api/users/" + str(username1),
-                                   json={"email": "newemail@ll.com"})
+                                   json={"about_me": "Postdoc"})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(user1.email, "newemail@ll.com")
-        # 5
-        response = self.client.put("api/users/" + str(username1),
-                                   json={"email": user2.email})
-        self.assertEqual(response.status_code, 200)
-        # 6
-        response = self.client.put("api/users/" + str(username1),
-                                   json={"email": user1.email})
-        self.assertEqual(response.status_code, 200)
-        user2.email_confirmed = True
-        db.session.commit()
-        response = self.client.put("api/users/" + str(username1),
-                                   json={"email": user2.email})
-        self.assertEqual(response.status_code, 422)
+        self.assertEqual(user1.about_me, "Postdoc")
 
     def test_follow_user(self):
         """
