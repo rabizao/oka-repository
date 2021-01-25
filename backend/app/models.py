@@ -216,9 +216,6 @@ class User(PaginateMixin, db.Model):
         return self.accessible.filter(
             access.c.post_id == post.id).count() > 0 or post.author == self or post.public is True
 
-    def can_download(self, file):
-        return self.files.filter(file.owner == self).count() > 0
-
     def grant_access(self, post):
         if not self.has_access(post):
             self.accessible.append(post)
@@ -250,8 +247,11 @@ class User(PaginateMixin, db.Model):
         db.session.add(file)
         return file
 
+    def can_download(self, file):
+        return self.files.filter(file.owner == self).count() > 0
+
     def get_file_by_name(self, name):
-        return File.query.filter(File.name == name, File.owner_id == self.id).first()
+        return self.files.filter(File.name == name).first()
 
     def account_reset_key_expired(self):
         return self.account_reset_key_generation_time \

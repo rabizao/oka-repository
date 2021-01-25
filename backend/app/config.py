@@ -39,7 +39,7 @@ class Config(object):
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['okarepository@gmail.com']
-    TMP_FOLDER = '/tmp/oka/'
+    TMP_FOLDER = '/tmp/oka'
     RESET_ACCOUNT_KEY_EXPIRES = timedelta(days=1)
 
     WEB_TITLE = 'OKA Knowledge Repository'
