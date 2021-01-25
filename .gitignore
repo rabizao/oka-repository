@@ -52,4 +52,4 @@ token.txt
 .commit_before_stashed
 *.out
 backend/.myenv
-
+.vscode
