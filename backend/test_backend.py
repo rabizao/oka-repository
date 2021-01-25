@@ -407,7 +407,7 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 422)
         # List all posts
         response = self.client.get("/api/posts")
-        self.assertEqual(len(response.json), 2)
+        self.assertEqual(len(response.json), 1)
         self.assertEqual(response.status_code, 200)
         # 6
         with patch('app.api.tasks.User.launch_task'):
@@ -462,7 +462,7 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 422)
         # Post should appear on user's feed and not on user2's feed
         response = self.client.get(f"/api/users/{username}/feed")
-        self.assertEqual(len(response.json), 2)
+        self.assertEqual(len(response.json), 1)
         self.login(create_user=False, user=create_user2)
         response = self.client.get(f"/api/users/{username2}/feed")
         self.assertEqual(len(response.json), 0)
