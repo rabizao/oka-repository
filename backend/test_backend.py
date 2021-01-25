@@ -17,6 +17,7 @@ from app.api.posts import save_files
 from app.api.tasks import process_file, download_data, run_step
 from app.config import Config
 from app.models import User, Token, Notification, Post
+from app.utils import consts
 
 create_user1 = {
     "username": "user1111",
@@ -87,7 +88,7 @@ class ApiCase(unittest.TestCase):
 
         if admin:
             user = User.query.get(data['id'])
-            user.role = 10
+            user.role = consts.get("ROLE_ADMIN")
             db.session.commit()
 
         if long_term:
@@ -406,11 +407,11 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 422)
         # List all posts
         response = self.client.get("/api/posts")
-        self.assertEqual(len(response.json), 1)
+        self.assertEqual(len(response.json), 2)
         self.assertEqual(response.status_code, 200)
         # 6
         with patch('app.api.tasks.User.launch_task'):
-            response = self.client.get(f"/api/downloads/data?pids={post_id}")
+            response = self.client.post(f"/api/downloads/data?pids={post_id}")
         self.assertEqual(response.status_code, 200)
         result = download_data.run([post_id], username, "127.0.0.1")
         self.assertEqual(result['state'], 'SUCCESS')
@@ -461,7 +462,7 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 422)
         # Post should appear on user's feed and not on user2's feed
         response = self.client.get(f"/api/users/{username}/feed")
-        self.assertEqual(len(response.json), 1)
+        self.assertEqual(len(response.json), 2)
         self.login(create_user=False, user=create_user2)
         response = self.client.get(f"/api/users/{username2}/feed")
         self.assertEqual(len(response.json), 0)
@@ -569,20 +570,30 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(len(response.json), 1)
         # 16
         step = {
-            "category": "runCategory",
-            "algorithm": "runAlgorithm",
-            "parameters": "runParameter"
+            "category": "evaluation",
+            "algorithm": "partition",
+            "parameters": {'mode': 'cv', 'splits': 10, 'seed': 0, 'fields': 'X,Y'}
         }
+
+        step_full = {
+            'id': post.data_uuid,
+            'desc': {
+                'name': 'Partition',
+                'path': 'kururu.tool.evaluation.partition',
+                'config': {'mode': 'cv', 'splits': 10, 'seed': 0, 'fields': 'X,Y'}
+            }
+        }
+
         # Can not run step on inexistent post
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(
-                "/api/posts/100/run", json={"step": step})
+                "/api/posts/100/run", json=step)
         self.assertEqual(response.status_code, 422)
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(
-                f"/api/posts/{post_id}/run", json={"step": step})
+                f"/api/posts/{post_id}/run", json=step)
         self.assertEqual(response.status_code, 200)
-        result = run_step.run(post_id, step, username)
+        result = run_step.run(post_id, step_full, username)
         self.assertEqual(json.loads(result['result'])[
                          "code"] == "error", False)
         # 17
@@ -660,7 +671,6 @@ class ApiCase(unittest.TestCase):
 
         # 8
         data3 = data >> Let("Q", [1, 2])
-        print("3NbxyiMgS8dTkWRob4gbVtJ", data.id, data3.id)
         dic = {'kwargs': {
             "id": data3.id,
             "step": data3.step.id,
@@ -752,7 +762,7 @@ class ApiCase(unittest.TestCase):
         response = self.client.put("api/users/" + str(username1),
                                    json={"email": user1.email})
         self.assertEqual(response.status_code, 200)
-        user2.email_confirmation = True
+        user2.email_confirmed = True
         db.session.commit()
         response = self.client.put("api/users/" + str(username1),
                                    json={"email": user2.email})

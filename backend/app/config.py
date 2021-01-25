@@ -31,7 +31,7 @@ class Config(object):
     SECRET_KEY = os.environ.get('FLASK_SECRET_KEY') or 'you-guess'
     DEPLOYMENT_SECRET_KEY = os.environ.get('DEPLOYMENT_SECRET_KEY') or 'deploy-not-set'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'app.db')
-    TATU_URL = os.environ.get('TATU_URL') or 'sqlite://:memory:'
+    TATU_URL = os.environ.get('TATU_URL') or 'sqlite://' + os.path.join(basedir, 'tatu')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or 587)
@@ -39,9 +39,10 @@ class Config(object):
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = ['okarepository@gmail.com']
-    POSTS_PER_PAGE = 25
-    TMP_FOLDER = '/tmp/oka/'
+    TMP_FOLDER = '/tmp/oka'
+    RESET_ACCOUNT_KEY_EXPIRES = timedelta(days=1)
 
+    WEB_TITLE = 'OKA Knowledge Repository'
     API_TITLE = 'oka API'
     API_VERSION = ''
     OPENAPI_VERSION = '3.0.2'

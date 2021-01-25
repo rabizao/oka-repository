@@ -1,24 +1,21 @@
+import os
 from app import db
+from app.errors.handlers import HTTPAbort
 from . import bp
-from app.schemas import DownloadQuerySchema, TaskBaseSchema
+from app.schemas import DownloadFileByNameQuerySchema, DownloadQuerySchema, TaskBaseSchema
 from app.models import User
-from flask import request
+from flask import request, current_app, send_from_directory
 from flask.views import MethodView
-from flask_jwt_extended import jwt_required, get_jwt_identity
-
-
-# Talvez seja uma boa ideia atrelar os downloads ao id do post, assim podemos incrementar post.downloads += 1
-# para mostrar quantas vezes cada post foi baixado
+from flask_jwt_extended import get_jwt_identity
 
 
 @bp.route('/downloads/data')
 class Downloads(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(DownloadQuerySchema, location="query")
     @bp.response(TaskBaseSchema)
-    def get(self, args):
-        """Download a zipped file containing all the requested datasets"""
-
+    def post(self, args):
+        """Launch a task to download a zipped file containing all the requested datasets"""
         pids = sorted(args['pids'])
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
@@ -29,3 +26,18 @@ class Downloads(MethodView):
         db.session.commit()
 
         return task
+
+    @bp.auth_required
+    @bp.arguments(DownloadFileByNameQuerySchema, location="query")
+    def get(self, args):
+        """Download a file by the generated file id"""
+        logged_user = User.get_by_username(get_jwt_identity())
+        path = f"{current_app.config['TMP_FOLDER']}/{args['name']}"
+        file = logged_user.get_file_by_name(args['name'])
+
+        if not os.path.isfile(path) or not file:
+            HTTPAbort.not_found("name")
+        if not logged_user.can_download(file):
+            HTTPAbort.not_authorized()
+
+        return send_from_directory(current_app.config['TMP_FOLDER'], args['name'], as_attachment=True)

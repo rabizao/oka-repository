@@ -7,7 +7,7 @@ import { LoginContext } from '../../contexts/LoginContext';
 import api from '../../services/api';
 import { notifyError } from '../../utils';
 
-export default function Register() {
+export default function Login() {
     const history = useHistory();
 
     const loginContext = useContext(LoginContext);
@@ -40,7 +40,7 @@ export default function Register() {
             <div className="margin-top-big flex-column flex-axis-center">
                 <h1><Link to="/home">Oka</Link></h1>
                 <h6 className="margin-top-small">Please fill in your data</h6>
-                <form className="form flex-column content-box margin-very-small" onSubmit={handleSubmit}>
+                <form className="form flex-column content-box margin-very-small margin-top-small" onSubmit={handleSubmit}>
                     <input
                         placeholder="Username"
                         value={username}
@@ -55,6 +55,7 @@ export default function Register() {
                     <button className="button-primary" type="submit">Login</button>
                 </form>
                 <h6 className="margin-top-small">Not registered? <Link className="link-underline" to="/register">Register now!</Link></h6>
+                <h6 className="margin-top-small">Lost account name or password? <Link className="link-underline" to="/recover">Recover now!</Link></h6>
             </div>
         </>
     )

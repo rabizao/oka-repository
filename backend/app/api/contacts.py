@@ -1,16 +1,16 @@
 from app import db
+from app.errors.handlers import HTTPAbort
 from . import bp
 from app.api.tasks import send_async_email
 from app.models import Contact, User
 from app.schemas import ContactBaseSchema
 from flask.views import MethodView
-from flask_smorest import abort
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import get_jwt_identity
 
 
 @bp.route('/contacts')
 class Contacts(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(ContactBaseSchema, location="query")
     @bp.response(ContactBaseSchema(many=True))
     @bp.paginate()
@@ -19,11 +19,10 @@ class Contacts(MethodView):
         This route should return a json object containing all contacts in the database and should be available
         to the admins
         """
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
+        logged_user = User.get_by_username(get_jwt_identity())
 
-        if logged_user.role != 10:
-            abort(422, errors={"json": {"role": ["Not allowed."]}})
+        if not logged_user.is_admin():
+            HTTPAbort.not_authorized()
 
         data, pagination_parameters.item_count = Contact.get(args, pagination_parameters.page,
                                                              pagination_parameters.page_size)
@@ -47,20 +46,19 @@ class Contacts(MethodView):
 
 @bp.route('/contacts/<int:id>')
 class ContactsById(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.response(ContactBaseSchema)
     def get(self, id):
         """
         This route should return a json object containing the contact with id <id> in the database.
         Available only for the admins
         """
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
+        logged_user = User.get_by_username(get_jwt_identity())
 
-        if logged_user.role != 10:
-            abort(422, errors={"json": {"role": ["Not allowed."]}})
+        if not logged_user.is_admin():
+            HTTPAbort.not_authorized()
 
         contact = Contact.query.get(id)
         if not contact or not contact.active:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            HTTPAbort.not_found()
         return contact

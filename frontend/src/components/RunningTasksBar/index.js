@@ -15,7 +15,7 @@ export default function RunningTasksBar() {
                         <h3>No running tasks</h3> :
                         Object.entries(runningTasksBarContext.tasks).map(([id, task]) =>
                             <div key={id} className="flex-row flex-axis-center box">
-                                <div className="padding-medium"><CircularProgress className="icon-primary" variant="static" value={task.progress} /></div>
+                                <div className="padding-medium"><CircularProgress className="icon-primary" variant="determinate" value={task.progress} /></div>
                                 <div className="padding-medium">{task.description}</div>
                             </div>
                         )

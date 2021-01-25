@@ -4,10 +4,11 @@ from datetime import datetime
 
 from flask import current_app
 from flask.views import MethodView
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask_jwt_extended import get_jwt_identity
 from flask_smorest import abort
 
 from app import db
+from app.errors.handlers import HTTPAbort
 from app.models import Comment, Post, User
 from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
                          PostEditSchema, PostFilesSchema, PostQuerySchema,
@@ -30,7 +31,7 @@ def save_files(input_files):
 # noinspection PyArgumentList
 @bp.route("/posts")
 class Posts(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(PostQuerySchema, location="query")
     @bp.response(PostBaseSchema(many=True))
     @bp.paginate()
@@ -38,15 +39,14 @@ class Posts(MethodView):
         """
         Show all posts
         """
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
+        logged_user = User.get_by_username(get_jwt_identity())
 
         data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
                                                           pagination_parameters.page_size,
                                                           query=logged_user.accessible_posts())
         return data
 
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(PostFilesSchema, location="files")
     @bp.response(TaskBaseSchema)
     def post(self, argsFiles):
@@ -64,7 +64,7 @@ class Posts(MethodView):
         db.session.commit()
         return task
 
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(PostCreateSchema)
     @bp.response(code=200)
     def put(self, args):
@@ -82,7 +82,7 @@ class Posts(MethodView):
 # noinspection PyArgumentList
 @bp.route("/posts/activate")
 class PostsActivate(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(PostActivateSchema)
     @bp.response(code=200)
     def put(self, args):
@@ -93,33 +93,29 @@ class PostsActivate(MethodView):
         post = Post.query.filter_by(
             data_uuid=args["data_uuid"], user_id=logged_user.id).first()
         if not post:
-            abort(422, errors={
-                "json": {"data_uuid": ["Post not found."]}})
+            HTTPAbort.not_found(field="data_uuid")
         post.active = True
         db.session.commit()
 
 
 @bp.route('/posts/<int:id>')
 class PostsById(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.response(PostBaseSchema)
     def get(self, id):
         """
         Show info about the post with id {id}
         """
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
+        logged_user = User.get_by_username(get_jwt_identity())
 
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={
-                "json": {"id": ["Does not exist."]}})
+            HTTPAbort.not_found()
         if not logged_user.has_access(post):
-            abort(422, errors={
-                "json": {"id": ["You dont have access to this post."]}})
+            HTTPAbort.not_authorized()
         return post
 
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(PostEditSchema)
     @bp.response(code=200)
     def put(self, args, id):
@@ -130,22 +126,19 @@ class PostsById(MethodView):
         post = Post.query.get(id)
 
         if not post or not post.active:
-            abort(422, errors={
-                "json": {"id": ["Does not exist."]}})
+            HTTPAbort.not_found()
 
         if post.public:
-            abort(422, errors={
-                "json": {"id": ["Public posts can not be edited."]}})
+            HTTPAbort.not_possible(field="id", complement="Public posts can not be edited.")
 
         if not logged_user.is_admin():
             if logged_user != post.author:
-                abort(422, errors={
-                    "json": {"id": ["You can only edit your own datasets."]}})
+                HTTPAbort.not_authorized()
 
         post.update(args)
         db.session.commit()
 
-    @jwt_required
+    @bp.auth_required
     @bp.response(code=200)
     def delete(self, id):
         """
@@ -153,17 +146,14 @@ class PostsById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={
-                "json": {"id": ["Does not exist."]}})
+            HTTPAbort.not_found()
 
         if post.public:
-            abort(422, errors={
-                "json": {"id": ["Public posts can not be deleted."]}})
+            HTTPAbort.not_possible(field="id", complement="Public posts can not be deleted.")
 
         logged_user = User.get_by_username(get_jwt_identity())
         if post.author != logged_user:
-            abort(422, errors={
-                "json": {"id": ["Only the author can delete the post."]}})
+            HTTPAbort.not_authorized()
 
         post.active = False
         db.session.commit()
@@ -171,7 +161,7 @@ class PostsById(MethodView):
 
 @bp.route('/posts/<int:id>/collaborators')
 class PostsCollaboratorsById(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(UserBaseSchema(only=["username"]))
     @bp.response(code=201)
     def post(self, args, id):
@@ -180,26 +170,19 @@ class PostsCollaboratorsById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={
-                "json": {"id": ["Does not exist."]}})
+            HTTPAbort.not_found()
 
         collaborator = User.get_by_username(args["username"])
         if not collaborator:
-            abort(422, errors={
-                "json": {"username": ["Does not exist."]}})
+            HTTPAbort.not_found(field="username")
 
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
+        logged_user = User.get_by_username(get_jwt_identity())
 
         if post.author == collaborator:
-            abort(422, errors={
-                "json": {"username": ["You can not invite yourself."]}})
+            HTTPAbort.not_possible()
 
         if not post.author == logged_user:
-            abort(422, errors={
-                "json": {"username":
-                         [
-                             "Only the author can invite collaborators to the post."]}})
+            HTTPAbort.not_possible(complement="Only the author can invite collaborators to the post.")
 
         if collaborator.has_access(post):
             collaborator.deny_access(post)
@@ -210,7 +193,7 @@ class PostsCollaboratorsById(MethodView):
 
 @bp.route('/posts/<int:id>/favorite')
 class PostsFavoriteById(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.response(code=200)
     def post(self, id):
         """
@@ -218,11 +201,9 @@ class PostsFavoriteById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={
-                "json": {"id": ["Does not exist."]}})
+            HTTPAbort.not_found()
 
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
+        logged_user = User.get_by_username(get_jwt_identity())
         if logged_user.has_favorited(post):
             logged_user.unfavorite(post)
         else:
@@ -231,7 +212,7 @@ class PostsFavoriteById(MethodView):
 
 @bp.route('/posts/<int:id>/publish')
 class PostsPublishById(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.response(code=200)
     def post(self, id):
         """
@@ -239,18 +220,14 @@ class PostsPublishById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={
-                "json": {"id": ["Does not exist."]}})
+            HTTPAbort.not_found()
 
         if post.public:
-            abort(422, errors={
-                "json": {"id": ["The post is already published."]}})
+            HTTPAbort.not_possible(field="id", complement="The post is already published.")
 
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
+        logged_user = User.get_by_username(get_jwt_identity())
         if post.author != logged_user:
-            abort(422, errors={
-                "json": {"id": ["Only the author can publish the post."]}})
+            HTTPAbort.not_authorized()
 
         # TODO: Verify if the post has all classification variables before next steps
 
@@ -261,7 +238,7 @@ class PostsPublishById(MethodView):
 
 @bp.route('/posts/<int:id>/comments')
 class PostsCommentsById(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(CommentQuerySchema, location="query")
     @bp.response(CommentBaseSchema(many=True))
     @bp.paginate()
@@ -271,8 +248,7 @@ class PostsCommentsById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={
-                "json": {"id": ["Does not exist."]}})
+            HTTPAbort.not_found()
 
         order_by = getattr(Comment.timestamp, args['order_by'])()
         query = post.comments
@@ -282,7 +258,7 @@ class PostsCommentsById(MethodView):
                                                           query=query, order_by=order_by)
         return data
 
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(CommentBaseSchema)
     @bp.response(CommentBaseSchema)
     def post(self, args, id):
@@ -291,11 +267,9 @@ class PostsCommentsById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={
-                "json": {"id": ["Does not exist."]}})
+            HTTPAbort.not_found()
 
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
+        logged_user = User.get_by_username(get_jwt_identity())
         comment = post.add_comment(text=args['text'], author=logged_user)
 
         return comment
@@ -303,7 +277,7 @@ class PostsCommentsById(MethodView):
 
 @bp.route('/posts/<int:id>/stats')
 class PostsStatsById(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(StatsQuerySchema, location="query")
     def get(self, args, id):
         """
@@ -311,8 +285,7 @@ class PostsStatsById(MethodView):
         """
         post = Post.query.get(id)
         if not post or not post.active:
-            abort(422, errors={
-                "json": {"id": ["Does not exist."]}})
+            HTTPAbort.not_found()
 
         tatu = current_app.config['TATU_SERVER']
         data = tatu.fetch(post.data_uuid, lazy=False)
@@ -338,7 +311,7 @@ class PostsStatsById(MethodView):
 
 @bp.route('/posts/<int:id>/twins')
 class PostsTwinsById(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(PostQuerySchema, location="query")
     @bp.response(PostBaseSchema(many=True))
     @bp.paginate()
@@ -348,11 +321,9 @@ class PostsTwinsById(MethodView):
         """
         post = Post.query.get(id)
         if not post:
-            abort(422, errors={
-                "json": {"id": ["Does not exist."]}})
+            HTTPAbort.not_found()
 
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
+        logged_user = User.get_by_username(get_jwt_identity())
 
         data, pagination_parameters.item_count = Post.get(args, pagination_parameters.page,
                                                           pagination_parameters.page_size,
@@ -362,7 +333,7 @@ class PostsTwinsById(MethodView):
 
 @bp.route('/posts/<int:id>/run')
 class PostsTransformById(MethodView):
-    @jwt_required
+    @bp.auth_required
     @bp.arguments(RunSchema)
     @bp.response(TaskBaseSchema)
     def post(self, args, id):
@@ -371,12 +342,27 @@ class PostsTransformById(MethodView):
         """
         post = Post.query.get(id)
         if not post:
-            abort(422, errors={"json": {"id": ["Does not exist."]}})
+            HTTPAbort.not_found()
 
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
 
+        for key, value in args["parameters"].items():
+            try:
+                args["parameters"][key] = int(value)
+            except ValueError:
+                pass
+
+        step_asdict = {
+            'id': post.data_uuid,
+            'desc': {
+                'name': args["algorithm"].capitalize(),
+                'path': f'kururu.tool.{args["category"]}.{args["algorithm"]}',
+                'config': args["parameters"]
+            }
+        }
+
         task = logged_user.launch_task('run_step', 'Processing your simulation',
-                                       [post.id, args["step"], username])
+                                       [post.id, step_asdict, username])
         db.session.commit()
         return task

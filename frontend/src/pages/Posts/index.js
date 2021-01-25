@@ -21,22 +21,30 @@ import { frontendUrl } from '../../services/api';
 import { notifyError } from '../../utils';
 
 
-const runData = [
+const categories = [
     {
-        "name": "Category 1",
-        "uuid": "uuid category 1",
+        "name": "Evaluation",
+        "uuid": "evaluation",
         "algorithms": [
             {
-                "name": "Algorithm 1",
-                "uuid": "uuid algorithm 1",
+                "name": "Partition",
+                "uuid": "partition",
                 "parameters": [
                     {
-                        "name": "a",
-                        "values": [10, 20, 30, 50]
+                        "name": "mode",
+                        "values": ["cv"]
                     },
                     {
-                        "name": "b",
-                        "values": ["valor1", "valor2", "valor3",]
+                        "name": "splits",
+                        "values": [2, 3, 4, 5, 6, 7, 8, 9, 10]
+                    },
+                    {
+                        "name": "seed",
+                        "values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                    },
+                    {
+                        "name": "fields",
+                        "values": ["X,Y"]
                     }
                 ]
             }
@@ -210,7 +218,7 @@ export default function Posts(props) {
 
     async function handleDownload() {
         try {
-            const resp = await api.get(`downloads/data?pids=${post.id}`);
+            const resp = await api.post(`downloads/data?pids=${post.id}`);
             var newTasks = { ...runningTasksBar.tasks };
             newTasks[resp.data.id] = {
                 description: "Starting..."
@@ -296,12 +304,10 @@ export default function Posts(props) {
 
         try {
             const r = await api.get(`sync?cat=data&fetch=false&uuids=${data_uuid}&empty=false`);
-            console.log(r.data);
-            console.log(r.data["has"]);
             if (r.data["has"] === false) {
                 NotificationManager.info("This Data has not being stored yet!", "NoData");
             } else {
-                await api.put(`posts/activate`, {"data_uuid":data_uuid});
+                await api.put(`posts/activate`, { "data_uuid": data_uuid });
                 const response = await api.get(`posts/${postId}`);
                 setPost(response.data);
                 setName(response.data.name);
@@ -366,11 +372,9 @@ export default function Posts(props) {
 
     async function handleRun() {
         const data = {
-            step: {
-                category: runCategory,
-                algorithm: runAlgorithm,
-                parameters: runParameter
-            }
+            category: runCategory,
+            algorithm: runAlgorithm,
+            parameters: runParameter
         }
 
         try {
@@ -479,44 +483,41 @@ export default function Posts(props) {
                 <div className="modal padding-big">
                     <h3 className="margin-bottom-small">Run</h3>
                     <h4 className="margin-top-small bold">Select a category</h4>
-                    <div className="padding-left-small">
-                        <select onChange={(e) => handleSelectCategory(e)} value={runCategory}>
-                            <option value={"select"}>Select</option>
-                            {
-                                runData.map((category) =>
-                                    <option key={category["uuid"]} value={category["uuid"]}>{category["name"]}</option>
-                                )
-                            }
-                        </select>
-                    </div>
+                    <select onChange={(e) => handleSelectCategory(e)} value={runCategory}>
+                        <option value={"select"}>Select</option>
+                        {
+                            categories.map((category) =>
+                                <option key={category["uuid"]} value={category["uuid"]}>{category["name"]}</option>
+                            )
+                        }
+                    </select>
                     {
                         showAlgorithms &&
                         <>
                             <h4 className="margin-top-small bold">Select the algorithm</h4>
-                            <div className="padding-left-small">
-                                <select onChange={(e) => handleSelectAlgorithm(e)} value={runAlgorithm}>
-                                    <option value={"select"}>Select</option>
-                                    {
-                                        runData.map((category) =>
-                                            category["algorithms"].map((algorithm) =>
-                                                <option key={algorithm["uuid"]} value={algorithm["uuid"]}>{algorithm["name"]}</option>
-                                            )
+                            <select onChange={(e) => handleSelectAlgorithm(e)} value={runAlgorithm}>
+                                <option value={"select"}>Select</option>
+                                {
+                                    categories.map((category) =>
+                                        category["algorithms"].map((algorithm) =>
+                                            <option key={algorithm["uuid"]} value={algorithm["uuid"]}>{algorithm["name"]}</option>
                                         )
-                                    }
-                                </select>
-                            </div>
+                                    )
+                                }
+                            </select>
                         </>
                     }
                     {
                         showAlgorithms && showParameters &&
                         <>
                             <h4 className="margin-top-small bold">Select the parameters</h4>
-                            <div className="padding-left-small">
-                                {
-                                    runData.map((category) =>
-                                        category["algorithms"].map((algorithm) =>
-                                            algorithm["parameters"].map((parameter) =>
-                                                <select key={parameter["name"]} onChange={(e) => handleSelectParameter(e, parameter["name"])} value={runParameter[parameter["name"]] || ''}>
+                            {
+                                categories.map((category) =>
+                                    category["algorithms"].map((algorithm) =>
+                                        algorithm["parameters"].map((parameter) =>
+                                            <div key={parameter["name"]} className="flex-row flex-space-between">
+                                                <label htmlFor={parameter["name"]}>{parameter["name"]}</label>
+                                                <select id={parameter["name"]} onChange={(e) => handleSelectParameter(e, parameter["name"])} value={runParameter[parameter["name"]] || ''}>
                                                     <option value={"select"}>Select</option>
                                                     {
                                                         parameter["values"].map((value) =>
@@ -524,15 +525,18 @@ export default function Posts(props) {
                                                         )
                                                     }
                                                 </select>
-                                            )
+                                            </div>
                                         )
                                     )
-                                }
-                            </div>
+                                )
+                            }
                         </>
                     }
+                    {
+                        showAlgorithms && showParameters && runCategory && runAlgorithm && runParameter &&
+                        <button onClick={handleRun} className="button-primary margin-top-small">Run</button>
+                    }
 
-                    <button onClick={handleRun} className="button-primary margin-top-small">Run</button>
 
                 </div>
             </Modal>

@@ -46,8 +46,9 @@ def create_app(config_class=Config):
     celery.conf.update(app.config)
     jwt.init_app(app)
 
-    api = Api()
-    api.init_app(app)
+    api = Api(app)
+    api.spec.components.security_scheme(
+        "bearerAuth", {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"})
 
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)

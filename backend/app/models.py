@@ -1,10 +1,13 @@
 import json
+import uuid as u
 from datetime import datetime
+from flask.globals import current_app
 
 from sqlalchemy import and_, or_
 from werkzeug.security import check_password_hash
 
 from . import celery, db
+from app.utils import consts
 
 
 followers = db.Table('followers',
@@ -67,7 +70,11 @@ class User(PaginateMixin, db.Model):
     password = db.Column(db.String(128), nullable=False)
     email = db.Column(db.String(120), index=True,
                       nullable=False)
-    email_confirmation = db.Column(db.Boolean, default=False)
+    email_confirmation_key = db.Column(db.String(120))
+    account_reset_key = db.Column(db.String(120))
+    account_reset_key_generation_time = db.Column(
+        db.DateTime, default=datetime.utcnow)
+    email_confirmed = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(128), nullable=False)
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
@@ -75,6 +82,7 @@ class User(PaginateMixin, db.Model):
     last_notification_read_time = db.Column(db.DateTime)
     active = db.Column(db.Boolean, default=True)
     role = db.Column(db.Integer, default=0)
+    files = db.relationship('File', backref='owner', lazy='dynamic')
 
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     comments = db.relationship('Comment', backref='author', lazy='dynamic')
@@ -109,6 +117,11 @@ class User(PaginateMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
+    def add_confirmation_key(self):
+        key = str(u.uuid4())
+        self.email_confirmation_key = key
+        return key
+
     def set_revoked_jti_store(self, jti, state, long_term=False):
         if long_term is True:
             self.revoke_longterm_token()
@@ -136,7 +149,7 @@ class User(PaginateMixin, db.Model):
         return
 
     def is_admin(self):
-        return self.role == 10
+        return self.role == consts.get("ROLE_ADMIN")
 
     def update(self, args):
         for key, value in args.items():
@@ -229,6 +242,27 @@ class User(PaginateMixin, db.Model):
         db.session.add(task)
         return task
 
+    def add_file(self, name):
+        file = File(owner=self, name=name)
+        db.session.add(file)
+        return file
+
+    def can_download(self, file):
+        return self.files.filter(file.owner == self).count() > 0
+
+    def get_file_by_name(self, name):
+        return self.files.filter(File.name == name).first()
+
+    def account_reset_key_expired(self):
+        return self.account_reset_key_generation_time \
+            + current_app.config['RESET_ACCOUNT_KEY_EXPIRES'] < datetime.utcnow()
+
+    def add_reset_key(self):
+        key = str(u.uuid4())
+        self.account_reset_key = key
+        self.account_reset_key_generation_time = datetime.utcnow()
+        return key
+
     @staticmethod
     def list_by_name(search_term):
         return User.query.filter(User.username.like("%{}%".format(search_term))).all()
@@ -239,11 +273,11 @@ class User(PaginateMixin, db.Model):
 
     @staticmethod
     def get_by_email(email):
-        return User.query.filter_by(email=email).all()
+        return User.query.filter_by(email=email).first()
 
     @staticmethod
     def get_by_confirmed_email(email):
-        return User.query.filter_by(email=email, email_confirmation=True).first()
+        return User.query.filter_by(email=email, email_confirmed=True).first()
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
@@ -378,6 +412,12 @@ class Task(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     complete = db.Column(db.Boolean, default=False)
     active = db.Column(db.Boolean, default=True)
+
+
+class File(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), index=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 
 class Token(db.Model):

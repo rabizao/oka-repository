@@ -87,11 +87,21 @@ class UserQuerySchema(SQLAlchemySchema):
     username = fields.String()
 
 
+class UserConfirmationSchema(SQLAlchemySchema):
+    class Meta:
+        unknown = EXCLUDE
+
+    key = fields.String(required=True)
+    confirm = fields.Boolean(missing=True)
+
+
 class RunSchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
-    step = fields.Dict(required=True)
+    category = fields.String(required=True)
+    algorithm = fields.String(required=True)
+    parameters = fields.Dict(required=True)
 
 
 class PostQuerySchema(SQLAlchemySchema):
@@ -169,7 +179,7 @@ class UserRegisterSchema(UserBaseSchema):
 
 class UserLoginSchema(UserBaseSchema):
     class Meta:
-        fields = ("username", "password")
+        fields = ["username", "password"]
 
     @post_load
     def check(self, data, **kwargs):
@@ -184,6 +194,37 @@ class UserLoginSchema(UserBaseSchema):
             raise ValidationError(field_name="password",
                                   message="Wrong data.")
         return data
+
+
+class UserRecoverKeySubmitSchema(SQLAlchemySchema):
+
+    email = fields.Email(validate=[
+        validate.Length(min=6, max=36)], load_only=True, required=True)
+
+
+class UserRecoverKeySubmitNewPassSchema(SQLAlchemySchema):
+    class Meta:
+        model = User
+
+    username = auto_field(validate=[
+        validate.Length(min=6, max=36)], required=True)
+    password = auto_field(validate=[
+        validate.Length(min=6, max=36)], load_only=True, required=True)
+    key = auto_field(column_name="account_reset_key", required=True)
+
+    @post_load
+    def check(self, data, **kwargs):
+        data["password"] = generate_password_hash(data["password"])
+        return data
+
+
+class UserRecoverKeySchema(UserBaseSchema):
+    class Meta:
+        model = User
+        fields = ["email", "username"]
+
+    email = fields.Email(validate=[
+        validate.Length(min=6, max=36)], dump_only=True)
 
 
 class LoginResponseSchema(SQLAlchemySchema):
@@ -251,12 +292,16 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     id = auto_field(dump_only=True)
     author = Nested(UserBaseSchema, dump_only=True)
     comments = auto_field(dump_only=True)
-    allowed = fields.Pluck(UserBaseSchema, "username", many=True, dump_only=True)
+    allowed = fields.Pluck(UserBaseSchema, "username",
+                           many=True, dump_only=True)
     favorites = auto_field(dump_only=True)
-    data_uuid_colors = fields.Function(lambda obj: colors(obj.data_uuid), dump_only=True)
-    attrs = fields.Function(lambda obj: get_attrs(obj.data_uuid), dump_only=True)
+    data_uuid_colors = fields.Function(
+        lambda obj: colors(obj.data_uuid), dump_only=True)
+    attrs = fields.Function(lambda obj: get_attrs(
+        obj.data_uuid), dump_only=True)
     history = fields.Function(lambda obj: past(obj.data_uuid), dump_only=True)
-    downloads = fields.Function(lambda obj: obj.get_unique_download_count(), dump_only=True)
+    downloads = fields.Function(
+        lambda obj: obj.get_unique_download_count(), dump_only=True)
 
 
 class PostEditSchema(SQLAlchemySchema):
@@ -313,7 +358,8 @@ class SyncContentFileSchema(SQLAlchemySchema):
 
 
 class SyncFieldsSchema(SQLAlchemySchema):
-    rows = fields.List(fields.Tuple((fields.String(), fields.String(), fields.String())), required=True)
+    rows = fields.List(fields.Tuple(
+        (fields.String(), fields.String(), fields.String())), required=True)
 
 
 class SyncFieldsQuerySchema(SQLAlchemySchema):
@@ -343,6 +389,13 @@ class DownloadQuerySchema(SQLAlchemySchema):
         unknown = EXCLUDE
 
     pids = fields.List(fields.String(), required=True)
+
+
+class DownloadFileByNameQuerySchema(SQLAlchemySchema):
+    class Meta:
+        unknown = EXCLUDE
+
+    name = fields.String(required=True)
 
 
 class StatsQuerySchema(SQLAlchemySchema):
