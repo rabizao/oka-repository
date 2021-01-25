@@ -542,7 +542,7 @@ button, input[type="submit"], input[type="reset"] {
     text-decoration: underline;
 }
 
-.form input, .form button, .form textarea {
+.form input, .form button, .form textarea, .form select {
     height: 50px;
     padding: 10px;
     border: var(--border);
@@ -650,6 +650,10 @@ button, input[type="submit"], input[type="reset"] {
 
 .width100 {
     width: 100%;
+}
+
+.width50 {
+    width: 50%;
 }
 
 .max-width-big {
