@@ -76,7 +76,9 @@ export default function Posts(props) {
     const [runCategory, setRunCategory] = useState('');
     const [runAlgorithm, setRunAlgorithm] = useState('');
     const [runParameter, setRunParameter] = useState({});
+    const [reloadPost, setReloadPost] = useState(0);
     const [nameEdit, setNameEdit] = useState('');
+    const [publishConfirmationWord, setPublishConfirmationWord] = useState('');
     const [descriptionEdit, setDescriptionEdit] = useState('');
     const postUrl = frontendUrl + `/posts/${post.id}/description`;
 
@@ -100,7 +102,7 @@ export default function Posts(props) {
             }
         }
         fetchPost();
-    }, [id])
+    }, [id, reloadPost])
 
     const textBox = (text) => {
         return (
@@ -326,7 +328,6 @@ export default function Posts(props) {
 
     async function handleSubmitCollaborator(e, username) {
         e.preventDefault();
-        var newPost = { ...post };
 
         const data = {
             username: username
@@ -334,17 +335,12 @@ export default function Posts(props) {
 
         try {
             await api.post(`posts/${id}/collaborators`, data);
-            if (post.allowed.includes(username)) {
-                newPost.allowed = newPost.allowed.filter(item => item !== username)
-            } else {
-                newPost.allowed.push(username)
-            }
+            setReloadPost(reloadPost + 1);
             NotificationManager.success(`Successfully edited ${username} access.`, "Collaborator", 8000)
             setCollaboratorUsername('');
         } catch (error) {
             notifyError(error);
         }
-        setPost(newPost);
     }
 
     function handleSelectCategory(e) {
@@ -449,11 +445,11 @@ export default function Posts(props) {
                     {
                         post.allowed && post.allowed.map((collaborator) =>
                             <button
-                                key={collaborator}
-                                onClick={(e) => handleSubmitCollaborator(e, collaborator)}
+                                key={collaborator.username}
+                                onClick={(e) => handleSubmitCollaborator(e, collaborator.username)}
                                 className={"button-negative margin-very-small"}
                             >
-                                {collaborator}
+                                {collaborator.username}
                             </button>
                         )
                     }
@@ -565,7 +561,28 @@ export default function Posts(props) {
                     <h3>Publish your post</h3>
                     <h5 className="margin-top-small">You can not undo this action. Please note that after publishing your post it will be available to everyone forever. If you want to make this post available to a specific group of people please use share button instead.
                     </h5>
-                    <button onClick={handlePublish} className="button-primary margin-top-small">I want to make {post.name} of author {post.author && post.author.name} available to everyone forever!</button>
+                    <h4 className="margin-top-small bold">Publication Details to be displayed on the published page</h4>
+                    <div className="flex-column margin-top-small">
+                        <h5>Title: {post.name}</h5>
+                        <h5>Author: {post.author && post.author.name}</h5>
+                        {
+                            post && post.allowed &&
+                            <h5>Collaborators:
+                                {
+                                    post.allowed.map((collaborator, index) =>
+                                        <span key={index}> {collaborator.name}{(index !== post.allowed.length - 1) && ","}</span>
+                                    )
+                                }
+                            </h5>
+                        }
+                    </div>
+                    <h4 className="margin-top-small bold color-error">If any of the information above is wrong please correct before proceed</h4>
+                    <h4 className="margin-top-small bold">Type {name} bellow to proceed</h4>
+                    <input
+                        placeholder={name}
+                        onChange={e => setPublishConfirmationWord(e.target.value)}
+                    />
+                    <button onClick={handlePublish} className={`button-primary margin-top-small ${name === publishConfirmationWord ? "active" : "inactive"}`}>I want to make {post.name} of author {post.author && post.author.name} available to everyone forever!</button>
                 </div>
             </Modal>
             <OkaHeader />

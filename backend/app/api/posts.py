@@ -107,12 +107,14 @@ class PostsById(MethodView):
         Show info about the post with id {id}
         """
         logged_user = User.get_by_username(get_jwt_identity())
-
         post = Post.query.get(id)
+
         if not post or not post.active:
             HTTPAbort.not_found()
+
         if not logged_user.has_access(post):
             HTTPAbort.not_authorized()
+
         return post
 
     @bp.auth_required
@@ -129,7 +131,8 @@ class PostsById(MethodView):
             HTTPAbort.not_found()
 
         if post.public:
-            HTTPAbort.not_possible(field="id", complement="Public posts can not be edited.")
+            HTTPAbort.not_possible(
+                field="id", complement="Public posts can not be edited.")
 
         if not logged_user.is_admin():
             if logged_user != post.author:
@@ -149,7 +152,8 @@ class PostsById(MethodView):
             HTTPAbort.not_found()
 
         if post.public:
-            HTTPAbort.not_possible(field="id", complement="Public posts can not be deleted.")
+            HTTPAbort.not_possible(
+                field="id", complement="Public posts can not be deleted.")
 
         logged_user = User.get_by_username(get_jwt_identity())
         if post.author != logged_user:
@@ -182,7 +186,8 @@ class PostsCollaboratorsById(MethodView):
             HTTPAbort.not_possible()
 
         if not post.author == logged_user:
-            HTTPAbort.not_possible(complement="Only the author can invite collaborators to the post.")
+            HTTPAbort.not_possible(
+                complement="Only the author can invite collaborators to the post.")
 
         if collaborator.has_access(post):
             collaborator.deny_access(post)
@@ -199,11 +204,15 @@ class PostsFavoriteById(MethodView):
         """
         Favorite/unfavorite post with id {id}
         """
+        logged_user = User.get_by_username(get_jwt_identity())
         post = Post.query.get(id)
+
         if not post or not post.active:
             HTTPAbort.not_found()
 
-        logged_user = User.get_by_username(get_jwt_identity())
+        if not logged_user.has_access(post):
+            HTTPAbort.not_authorized()
+
         if logged_user.has_favorited(post):
             logged_user.unfavorite(post)
         else:
@@ -223,7 +232,8 @@ class PostsPublishById(MethodView):
             HTTPAbort.not_found()
 
         if post.public:
-            HTTPAbort.not_possible(field="id", complement="The post is already published.")
+            HTTPAbort.not_possible(
+                field="id", complement="The post is already published.")
 
         logged_user = User.get_by_username(get_jwt_identity())
         if post.author != logged_user:
@@ -246,9 +256,14 @@ class PostsCommentsById(MethodView):
         """
         Return the comments of a post with id {id}
         """
+        logged_user = User.get_by_username(get_jwt_identity())
         post = Post.query.get(id)
+
         if not post or not post.active:
             HTTPAbort.not_found()
+
+        if not logged_user.has_access(post):
+            HTTPAbort.not_authorized()
 
         order_by = getattr(Comment.timestamp, args['order_by'])()
         query = post.comments
@@ -265,11 +280,15 @@ class PostsCommentsById(MethodView):
         """
         Create a new comment for the post with id {id}
         """
+        logged_user = User.get_by_username(get_jwt_identity())
         post = Post.query.get(id)
+
         if not post or not post.active:
             HTTPAbort.not_found()
 
-        logged_user = User.get_by_username(get_jwt_identity())
+        if not logged_user.has_access(post):
+            HTTPAbort.not_authorized()
+
         comment = post.add_comment(text=args['text'], author=logged_user)
 
         return comment
@@ -283,9 +302,14 @@ class PostsStatsById(MethodView):
         """
         Return the stats of a dataset of a post with id {id}
         """
+        logged_user = User.get_by_username(get_jwt_identity())
         post = Post.query.get(id)
+
         if not post or not post.active:
             HTTPAbort.not_found()
+
+        if not logged_user.has_access(post):
+            HTTPAbort.not_authorized()
 
         tatu = current_app.config['TATU_SERVER']
         data = tatu.fetch(post.data_uuid, lazy=False)
@@ -340,12 +364,15 @@ class PostsTransformById(MethodView):
         """
         Return the twins of a post with id {id}
         """
-        post = Post.query.get(id)
-        if not post:
-            HTTPAbort.not_found()
-
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
+        post = Post.query.get(id)
+
+        if not post or not post.active:
+            HTTPAbort.not_found()
+
+        if not logged_user.has_access(post):
+            HTTPAbort.not_authorized()
 
         for key, value in args["parameters"].items():
             try:
