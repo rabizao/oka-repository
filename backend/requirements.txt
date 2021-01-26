@@ -1,4 +1,4 @@
-aiuna==0.2101.1
+aiuna==0.2101.6
 akangatu==0.20.12a0
 alembic==1.5.1
 amqp==5.0.2
@@ -25,7 +25,7 @@ Flask-Mail==0.9.1
 Flask-Migrate==2.6.0
 flask-smorest==0.27.0
 Flask-SQLAlchemy==2.4.4
-garoupa==0.2101.10
+garoupa==0.2101.11
 idna==2.10
 imbalanced-learn==0.7.0
 imblearn==0.0
