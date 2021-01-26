@@ -4,7 +4,6 @@ from flask import current_app
 from flask_smorest.fields import Upload
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
-from marshmallow_sqlalchemy.fields import Nested
 from werkzeug.security import generate_password_hash
 
 from app import db
@@ -54,8 +53,9 @@ class CommentBaseSchema(SQLAlchemyAutoSchema):
 
     id = auto_field(dump_only=True)
     text = auto_field(required=True)
-    author = Nested(UserBaseSchema, dump_only=True)
-    replies = Nested(lambda: CommentBaseSchema(), many=True, dump_only=True)
+    author = fields.Nested(UserBaseSchema, dump_only=True)
+    replies = fields.Nested(lambda: CommentBaseSchema(),
+                            many=True, dump_only=True)
 
 
 class CommentQuerySchema(SQLAlchemySchema):
@@ -286,10 +286,10 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
         model = Post
 
     id = auto_field(dump_only=True)
-    author = Nested(UserBaseSchema, dump_only=True)
+    author = fields.Nested(UserBaseSchema, dump_only=True)
     comments = auto_field(dump_only=True)
-    allowed = fields.Pluck(UserBaseSchema, "username",
-                           many=True, dump_only=True)
+    allowed = fields.Nested(UserBaseSchema(only=["username", "name"]),
+                            many=True, dump_only=True)
     favorites = auto_field(dump_only=True)
     data_uuid_colors = fields.Function(
         lambda obj: colors(obj.data_uuid), dump_only=True)
