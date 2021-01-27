@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { useHistory, Link } from 'react-router-dom';
-import { Search, Apps, Notifications, AccountBalance, ChatBubble } from '@material-ui/icons';
+import { Search, Notifications, ChatBubble } from '@material-ui/icons'; // Apps, AccountBalance,
 import Badge from '@material-ui/core/Badge';
 
 import './styles.css';

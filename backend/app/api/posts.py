@@ -6,6 +6,8 @@ from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity
 from flask_smorest import abort
+from kururu.tool.enhancement.attribute.binarize import Binarize
+from kururu.tool.enhancement.instance.sampling.under.sample import Sample_
 
 from app import db
 from app.errors.handlers import HTTPAbort
@@ -313,16 +315,17 @@ class PostsStatsById(MethodView):
 
         tatu = current_app.config['TATU_SERVER']
         data = tatu.fetch(post.data_uuid, lazy=False)
+        data_modified = data >> Sample_(n=500) * Binarize
 
         datas = []
-        for m in data.Yt[0]:
+        for m in data_modified.Yt[0]:
             inner = []
-            for k in range(len(data.X)):
-                if m == data.Y[k]:
+            for k in range(len(data_modified.X)):
+                if m == data_modified.Y[k]:
                     inner.append(
                         {
-                            "x": data.X[k, args['x']],
-                            "y": data.X[k, args['y']],
+                            "x": data_modified.X[k, args['x']],
+                            "y": data_modified.X[k, args['y']],
                         })
             datas.append(
                 {
