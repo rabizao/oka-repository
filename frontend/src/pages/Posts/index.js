@@ -4,7 +4,7 @@ import { Link, useHistory } from 'react-router-dom';
 import './styles.css';
 
 import { NotificationManager } from 'react-notifications';
-import { CloudDownload, Favorite, FavoriteBorder, ChevronLeft, ChevronRight, FormatQuote, Share, PlayArrow, Edit, Clear, Save } from '@material-ui/icons';
+import { CloudDownload, Favorite, FavoriteBorder, ChevronLeft, ChevronRight, FormatQuote, Share, PlayArrow, Edit, Clear, Save, ToggleOn, ToggleOff } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 import Modal from '@material-ui/core/Modal';
 
@@ -54,7 +54,6 @@ const categories = [
 ]
 
 
-
 export default function Posts(props) {
     const id = props.match.params.id;
     const section = props.match.params.section ? props.match.params.section : "empty";
@@ -71,6 +70,7 @@ export default function Posts(props) {
     const [showHistory, setShowHistory] = useState(false);
     const [showAlgorithms, setShowAlgorithms] = useState(false);
     const [showParameters, setShowParameters] = useState(false);
+    const [showMeta, setShowMeta] = useState(false);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [runCategory, setRunCategory] = useState('');
@@ -104,6 +104,110 @@ export default function Posts(props) {
         fetchPost();
     }, [id, reloadPost])
 
+    const metas = {
+        Tasks: [
+            {
+                title: "Classification",
+                variable: post.classification || null,
+                tag: "classification"
+            },
+            {
+                title: "Regression",
+                variable: post.regression || null,
+                tag: "regression"
+            },
+            {
+                title: "Clustering",
+                variable: post.clustering || null,
+                tag: "clustering"
+            },
+            {
+                title: "Others",
+                variable: post.other_tasks || null,
+                tag: "other_tasks"
+            }
+        ],
+        Domains: [
+            {
+                title: "Life Sciences",
+                variable: post.life_sciences || null,
+                tag: "life_sciences"
+            },
+            {
+                title: "Physical Sciences",
+                variable: post.physical_sciences || null,
+                tag: "physical_sciences"
+            },
+            {
+                title: "Engineering",
+                variable: post.engineering || null,
+                tag: "engineering"
+            },
+            {
+                title: "Social",
+                variable: post.social || null,
+                tag: "social"
+            },
+            {
+                title: "Business",
+                variable: post.business || null,
+                tag: "business"
+            },
+            {
+                title: "Finances",
+                variable: post.finances || null,
+                tag: "finances"
+            },
+            {
+                title: "Astronomy",
+                variable: post.astronomy || null,
+                tag: "astronomy"
+            },
+            {
+                title: "Medical",
+                variable: post.medical || null,
+                tag: "medical"
+            },
+            {
+                title: "Others",
+                variable: post.other_domains || null,
+                tag: "other_domains"
+            }
+        ],
+        Features: [
+            {
+                title: "Categorical",
+                variable: post.categorical || null,
+                tag: "categorical"
+            },
+            {
+                title: "Numerical",
+                variable: post.numerical || null,
+                tag: "numerical"
+            },
+            {
+                title: "Text",
+                variable: post.text || null,
+                tag: "text"
+            },
+            {
+                title: "Images",
+                variable: post.images || null,
+                tag: "images"
+            },
+            {
+                title: "Time Series",
+                variable: post.time_series || null,
+                tag: "time_series"
+            },
+            {
+                title: "Others",
+                variable: post.other_features || null,
+                tag: "other_features"
+            }
+        ]
+    }
+
     const textBox = (text) => {
         return (
             <div className="content-box margin-very-small">
@@ -121,38 +225,81 @@ export default function Posts(props) {
         element.style.height = (element.scrollHeight) + "px";
     }
 
+    async function handlePostMetaUpdate(tag, state) {
+        console.log(tag)
+
+        const data = {
+            [tag]: !state
+        }
+
+        try {
+            await api.put(`posts/${id}`, data);
+            var newPost = { ...post };
+            newPost[tag] = !state;
+            setPost(newPost);
+        } catch (error) {
+            notifyError(error);
+        }
+    }
+
     const descriptionBox = (text) => {
         return (
             <div className="content-box margin-very-small">
                 {loadingHero ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
-                    <div className="padding-sides-small padding-vertical-small text-box">
-                        {editDescription ?
-                            <div className="flex-column">
-                                <div className="flex-row">
-                                    <button className="icon-normal" onClick={() => setEditDescription(false)}><Clear className="icon-secondary" /></button>
-                                    <button className="icon-normal" onClick={handleEditDescriptionSubmit}><Save className="icon-secondary" /></button>
+                    <>
+                        <button className={`${showMeta ? "button-negative" : "button-primary"} margin-small`} onClick={() => setShowMeta(!showMeta)}>
+                            {showMeta ? "Hide Meta" : "Show Meta"}
+                        </button>
+                        {
+                            showMeta &&
+                            <div className="padding-sides-small padding-bottom-medium padding-top-small">
+                                <div className="flex-column content-box">
+                                    {Object.entries(metas).map(([option, obj]) =>
+                                        <div key={option}>
+                                            <h2 className="padding-small margin-top-small">{option}</h2>
+                                            {obj.map((item) =>
+                                                <div key={item.tag} className="flex-row flex-axis-center flex-space-between box-horizontal background-hover padding-small">
+                                                    <h4>{item.title}</h4>
+                                                    <button className={`icon-medium ${!item.variable && "icon-error" }`} onClick={() => handlePostMetaUpdate(item.tag, item.variable)}>{item.variable ? <ToggleOn /> : <ToggleOff />}</button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
-                                <form className="form-edit-description">
-                                    <textarea
-                                        onKeyUp={e => handleTextAreaAdjust(e.target)}
-                                        onClick={e => handleTextAreaAdjust(e.target)}
-                                        placeholder={description}
-                                        value={descriptionEdit}
-                                        onChange={e => setDescriptionEdit(e.target.value)}
-                                    />
-                                </form>
-                            </div> :
-                            <div className="flex-column">
-                                {!post.public &&
-                                    <div className="flex-row">
-                                        <button className="icon-normal" onClick={() => setEditDescription(true)}><Edit className="icon-secondary" /></button>
-                                    </div>
-                                }
-                                <>{text}</>
                             </div>
                         }
-                    </div>
+                        <h2 className="padding-small">Description</h2>
+                        <div className="content-box margin-very-small">
+                            <div className="padding-sides-small padding-vertical-small text-box">
+                                {editDescription ?
+                                    <div className="flex-column">
+                                        <div className="flex-row">
+                                            <button className="icon-normal" onClick={() => setEditDescription(false)}><Clear className="icon-secondary" /></button>
+                                            <button className="icon-normal" onClick={handleEditDescriptionSubmit}><Save className="icon-secondary" /></button>
+                                        </div>
+                                        <form className="form-edit-description">
+                                            <textarea
+                                                onKeyUp={e => handleTextAreaAdjust(e.target)}
+                                                onClick={e => handleTextAreaAdjust(e.target)}
+                                                placeholder={description}
+                                                value={descriptionEdit}
+                                                onChange={e => setDescriptionEdit(e.target.value)}
+                                            />
+                                        </form>
+                                    </div> :
+                                    <div className="flex-column">
+                                        {!post.public &&
+                                            <div className="flex-row">
+                                                <button className="icon-normal" onClick={() => setEditDescription(true)}><Edit className="icon-secondary" /></button>
+                                            </div>
+                                        }
+                                        <>{text}</>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </>
                 }
             </div>
         )

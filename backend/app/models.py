@@ -54,6 +54,8 @@ class PaginateMixin(object):
                 else:
                     search_conds += [getattr(cls,
                                              key).like(f"%{item}%") for item in values]
+            elif isinstance(values, bool):
+                search_conds += [getattr(cls, key).is_(values)]
             else:
                 search_conds += [getattr(cls, key).like(f"%{values}%")]
 

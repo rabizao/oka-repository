@@ -186,7 +186,7 @@ def run_step(self, post_id, step_asdict, username):
     # result = create_post(logged_user, data)
     # ==================================================================
 
-    # TODO: vai precisar criar post pras partições? (nessa função?) onde? 
+    # TODO: vai precisar criar post pras partições? (nessa função?) onde?
 
     result = create_post(logged_user,
                          data,

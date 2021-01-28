@@ -315,9 +315,7 @@ class PostsStatsById(MethodView):
 
         tatu = current_app.config['TATU_SERVER']
         data = tatu.fetch(post.data_uuid, lazy=False)
-        if len(data.X) > 500:
-            data = data >> Sample_(n=500)
-        data_modified = data >> Binarize
+        data_modified = data >> Sample_(n=min(len(data.X), 500)) * Binarize
 
         datas = []
         for m in data_modified.Yt[0]:

@@ -300,14 +300,15 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
         lambda obj: obj.get_unique_download_count(), dump_only=True)
 
 
-class PostEditSchema(SQLAlchemySchema):
+class PostEditSchema(SQLAlchemyAutoSchema):
     class Meta:
-        unknown = EXCLUDE
-
-    name = fields.String(validate=[
-        validate.Length(min=1, max=120)])
-    description = fields.String(validate=[
-        validate.Length(min=1, max=100000)])
+        model = Post
+        fields = ["name", "description", "number_of_features", "number_of_targets", "number_of_instances",
+                  "classification", "regression", "clustering", "other_tasks", "number_of_classes",
+                  "type_of_regression", "number_of_clusters", "life_sciences", "physical_sciences",
+                  "engineering", "social", "business", "finances", "astronomy", "quantum_mechanics",
+                  "medical", "financial", "other_domains", "categorical", "numerical", "text",
+                  "images", "time_series", "other_features"]
 
 
 class PostCreateSchema(SQLAlchemySchema):
