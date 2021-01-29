@@ -261,7 +261,11 @@ export default function Posts(props) {
                                             {obj.map((item) =>
                                                 <div key={item.tag} className="flex-row flex-axis-center flex-space-between box-horizontal background-hover padding-small">
                                                     <h4>{item.title}</h4>
-                                                    <button className={`icon-medium ${!item.variable && "icon-error" }`} onClick={() => handlePostMetaUpdate(item.tag, item.variable)}>{item.variable ? <ToggleOn /> : <ToggleOff />}</button>
+                                                    {
+                                                        loggedUser.username === post.author.username && !post.public ? 
+                                                        <button className={`icon-medium ${!item.variable && "icon-error" }`} onClick={() => handlePostMetaUpdate(item.tag, item.variable)}>{item.variable ? <ToggleOn /> : <ToggleOff />}</button> :
+                                                        <div className={`icon-medium ${!item.variable && "icon-error" }`}>{item.variable ? <ToggleOn /> : <ToggleOff />}</div>
+                                                    }
                                                 </div>
                                             )}
                                         </div>
@@ -454,8 +458,9 @@ export default function Posts(props) {
 
         try {
             const r = await api.get(`sync?cat=data&fetch=false&uuids=${data_uuid}&empty=false`);
+            console.log(r)
             if (r.data["has"] === false) {
-                NotificationManager.info("This Data has not being stored yet!", "NoData");
+                NotificationManager.info("This Data was not stored yet!", "NoData");
             } else {
                 await api.put(`posts/activate`, { "data_uuid": data_uuid });
                 const response = await api.get(`posts/${postId}`);
