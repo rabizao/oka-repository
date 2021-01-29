@@ -74,9 +74,8 @@ class Posts(MethodView):
         Create inactive post (and without Data for a while), and parents.
         """
         logged_user = User.get_by_username(get_jwt_identity())
-        did = args["data_uuid"]
         obj = create_post(
-            logged_user, did, args["name"], args["description"], active=False, info=args["info"])
+            logged_user, args["data_uuid"], args["name"], args["description"], active=False, info=args["info"])
         if obj["code"] != "success":
             abort(422, errors={"json": {"data_uuid": obj["message"]}})
 
