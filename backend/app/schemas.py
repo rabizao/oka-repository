@@ -295,7 +295,7 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
         lambda obj: colors(obj.data_uuid), dump_only=True)
     attrs = fields.Function(lambda obj: get_attrs(
         obj.data_uuid), dump_only=True)
-    history = fields.Function(lambda obj: past(obj.data_uuid), dump_only=True)
+    # history = fields.Function(lambda obj: past(obj.data_uuid), dump_only=True)
     downloads = fields.Function(
         lambda obj: obj.get_unique_download_count(), dump_only=True)
 
