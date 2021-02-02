@@ -18,7 +18,7 @@ Start API:
 
     cd backend/
     source venv/bin/activate    
-    python oka.py
+    python backend.py
 
 Access documentation:
 ---
