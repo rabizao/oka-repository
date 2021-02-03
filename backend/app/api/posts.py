@@ -14,7 +14,7 @@ from app.errors.handlers import HTTPAbort
 from app.models import Comment, Post, User
 from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
                          PostEditSchema, PostFilesSchema, PostQuerySchema,
-                         RunSchema, TaskBaseSchema, UserBaseSchema, StatsQuerySchema, PostCreateSchema,
+                         RunSchema, TaskBaseSchema, UserBaseSchema, VisualizeQuerySchema, PostCreateSchema,
                          PostActivateSchema)
 from . import bp
 from .tasks import create_post
@@ -295,13 +295,13 @@ class PostsCommentsById(MethodView):
         return comment
 
 
-@bp.route('/posts/<int:id>/stats')
-class PostsStatsById(MethodView):
+@bp.route('/posts/<int:id>/visualize')
+class PostsVisualizeById(MethodView):
     @bp.auth_required
-    @bp.arguments(StatsQuerySchema, location="query")
+    @bp.arguments(VisualizeQuerySchema, location="query")
     def get(self, args, id):
         """
-        Return the stats of a dataset of a post with id {id}
+        Return the visualize of a dataset of a post with id {id}
         """
         logged_user = User.get_by_username(get_jwt_identity())
         post = Post.query.get(id)

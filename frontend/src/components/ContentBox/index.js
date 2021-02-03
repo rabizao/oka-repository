@@ -95,7 +95,7 @@ export default function ContentBox(props) {
                                 <li key={post.id} className="background-hover">
                                     <div className="content-item flex-row padding-medium">
                                         <Link to={`/users/${post.author.username}/uploads`} ><Avatar name={post.author.name} size="40" round={true} /></Link>
-                                        <Link className="padding-left-small width100 nowrap" to={`/posts/${post.id}/description`}>
+                                        <Link className="padding-left-small width100 nowrap" to={`/posts/${post.id}/overview`}>
                                             <div className="flex-column">
                                                 <div className="ellipsis">
                                                     <span className="font-size-medium bold">{post.author.name}</span> - <span>{post.author.username}</span> - <TimeAgo datetime={post.timestamp + 'Z'} />

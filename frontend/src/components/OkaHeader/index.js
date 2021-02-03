@@ -30,7 +30,7 @@ export default function OkaHeader(props) {
         switch (notification.name) {
             case 'data_uploaded':
                 return (
-                    <Link key={notification.id} className="padding-medium box background-hover width100" to={`/posts/${notification.payload_json.id}/description`}>
+                    <Link key={notification.id} className="padding-medium box background-hover width100" to={`/posts/${notification.payload_json.id}/overview`}>
                         <span className="ellipsis-3">{notification.payload_json.original_name}: </span>
                         <span className={`ellipsis-3 ${notification.payload_json.code === "error" && "color-error"}`}> {notification.payload_json.message}</span>
                     </Link>)
