@@ -803,7 +803,9 @@ class ApiCase(unittest.TestCase):
         info = {
             "past": list(iris.past),
             "nattrs": iris.X.shape[1],
-            "ninsts": iris.X.shape[0]
+            "ninsts": iris.X.shape[0],
+            "ntargs": iris.Y.shape[1] if len(iris.Y.shape) > 1 else 1,
+            "nclasses": len(set(iris.y))
         }
         response = self.client.put(
             "/api/posts", json={'data_uuid': iris.id, 'info': info})
