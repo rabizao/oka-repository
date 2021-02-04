@@ -17,15 +17,17 @@ def get_attrs(uuid):
     return data.Xd if data else {}
 
 
-def past(uuid):
+def past(post):
     tatu = current_app.config['TATU_SERVER']
-    data = tatu.fetch(uuid, lazy=False)
+    data = tatu.fetch(post.data_uuid, lazy=False)
     if not data:
         return []  # REMINDER: The history exists, but is not accessible through data.fetch()
     lst = []
+    userid = post.author.id
     for k, d in list(data.past.items())[:-1]:
+        print(k, data.past.keys(), "<<<<<<<<<<<<<<<<<<<<")
         if d["step"]["desc"]["name"][:3] not in ["B", "Rev", "In", "Aut", "E"]:
-            post = Post.query.filter_by(data_uuid=k).first()
+            post = Post.query.filter_by(data_uuid=k, user_id=userid).first()
             lst.append({"id": k, "data": d, "post": post and post.id})
     return lst
 
@@ -295,7 +297,7 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
         lambda obj: colors(obj.data_uuid), dump_only=True)
     attrs = fields.Function(lambda obj: get_attrs(
         obj.data_uuid), dump_only=True)
-    # history = fields.Function(lambda obj: past(obj.data_uuid), dump_only=True)
+    history = fields.Function(lambda obj: past(obj), dump_only=True)
     downloads = fields.Function(
         lambda obj: obj.get_unique_download_count(), dump_only=True)
 
