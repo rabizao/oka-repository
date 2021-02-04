@@ -22,7 +22,7 @@ class Deployment(MethodView):
             HTTPAbort.not_authorized()
 
         try:
-            subprocess.check_output(
+            subprocess.run(
                 "nohup ~/deploy.sh > ~/deploy_log.txt 2>&1 &", shell=True)
         except Exception:
             HTTPAbort.unexpected_error()
