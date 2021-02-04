@@ -24,7 +24,11 @@ def create_post(logged_user, data, name, description, filename=None, active=True
     """Create an inactive post for the given Data object or data id str."""
     if info is None:
         info = {
-            "nattrs": data.X.shape[1], "ninsts": data.X.shape[0], "past": list(data.past)}
+            "nattrs": data.X.shape[1],
+            "ninsts": data.X.shape[0],
+            "ntargs": data.Y.shape[1] if len(data.Y.shape) > 1 else 1,
+            "nclasses": len(set(data.y)),
+            "past": list(data.past)}
     data_id = data.id if isinstance(data, Data) else data
     if filename is None:
         filename = name
@@ -54,14 +58,14 @@ def create_post(logged_user, data, name, description, filename=None, active=True
         )
     else:
         # Defaults for ancestors.
-        name_, description_, ninsts_, nattrs_ = "No name", "No description", -1, -1
+        name_, description_, ninsts_, nattrs_, ntargs_, nclasses_ = "No name", "No description", -1, -1, -1, -1
 
         # Create post and needed ancestors.
         for did in info["past"][1:]:
             if did == data_id:
                 # Only the last Data object has metainfo.
-                name_, description_, ninsts_, nattrs_ = name, description, info[
-                    "ninsts"], info["nattrs"]
+                name_, description_, ninsts_, nattrs_, ntargs_, nclasses_ = name, description, info[
+                    "ninsts"], info["nattrs"], info["ntargs"], info["nclasses"]
             existing_post = logged_user.posts.filter_by(data_uuid=did).first()
             if not existing_post:
                 # noinspection PyArgumentList
@@ -72,6 +76,8 @@ def create_post(logged_user, data, name, description, filename=None, active=True
                     description=description_,
                     number_of_instances=ninsts_,
                     number_of_features=nattrs_,
+                    number_of_targets=ntargs_,
+                    number_of_classes=nclasses_,
                     active=active
                 )
                 # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,

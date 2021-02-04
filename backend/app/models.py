@@ -305,6 +305,7 @@ class Post(PaginateMixin, db.Model):
     number_of_features = db.Column(db.Integer)
     number_of_targets = db.Column(db.Integer)
     number_of_instances = db.Column(db.Integer)
+    number_of_classes = db.Column(db.Integer)
     # Tasks
     classification = db.Column(db.Boolean)
     regression = db.Column(db.Boolean)

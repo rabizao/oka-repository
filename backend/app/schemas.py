@@ -9,6 +9,7 @@ from werkzeug.security import generate_password_hash
 from app import db
 from app.models import User, Post, Comment, Contact, Notification, Task, Message
 from garoupa.avatar23 import colors
+# from kururu.tool.manipulation.slice import Slice
 
 
 def get_attrs(uuid):
@@ -30,6 +31,16 @@ def past(post):
             post = Post.query.filter_by(data_uuid=k, user_id=userid).first()
             lst.append({"id": k, "data": d, "post": post and post.id})
     return lst
+
+
+def head(uuid):
+    tatu = current_app.config['TATU_SERVER']
+    data = tatu.fetch(uuid, lazy=False)
+    if not data:
+        return []  # REMINDER: The history exists, but is not accessible through data.fetch()
+    # data >>= Slice(last=10)
+
+    return [data.Xd] + data.X[0:10:, 0:10].tolist()
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -300,12 +311,13 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     history = fields.Function(lambda obj: past(obj), dump_only=True)
     downloads = fields.Function(
         lambda obj: obj.get_unique_download_count(), dump_only=True)
+    head = fields.Function(lambda obj: head(obj.data_uuid), dump_only=True)
 
 
 class PostEditSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Post
-        fields = ["name", "description", "number_of_features", "number_of_targets", "number_of_instances",
+        fields = ["name", "description", "number_of_instances",
                   "classification", "regression", "clustering", "other_tasks", "number_of_classes",
                   "type_of_regression", "number_of_clusters", "life_sciences", "physical_sciences",
                   "engineering", "social", "business", "finances", "astronomy", "quantum_mechanics",
@@ -397,7 +409,7 @@ class DownloadFileByNameQuerySchema(SQLAlchemySchema):
     name = fields.String(required=True)
 
 
-class StatsQuerySchema(SQLAlchemySchema):
+class VisualizeQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 

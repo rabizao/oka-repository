@@ -335,7 +335,7 @@ class ApiCase(unittest.TestCase):
             10 - Comment post
             11 - Reply to comment
             12 - Add user2 as collaborator, check, remove and check again
-            13 - Get stats data
+            13 - Get visualize data
             14 - Users can not upload same dataset twice
             15 - Check twins of post. Add user2 as collaborator. Check twins again
             16 - Run step
@@ -540,10 +540,10 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(User.get_by_username(
             username2).has_access(post), False)
         # 13
-        # Can not get stats of inexistent post
-        response = self.client.get("/api/posts/100/stats?plt=scatter")
+        # Can not get visualize of inexistent post
+        response = self.client.get("/api/posts/100/visualize?plt=scatter")
         self.assertEqual(response.status_code, 422)
-        response = self.client.get(f"/api/posts/{post_id}/stats?plt=scatter")
+        response = self.client.get(f"/api/posts/{post_id}/visualize?plt=scatter")
         self.assertEqual(response.status_code, 200)
         # 14
         result = process_file.run(files, username2)
@@ -803,7 +803,9 @@ class ApiCase(unittest.TestCase):
         info = {
             "past": list(iris.past),
             "nattrs": iris.X.shape[1],
-            "ninsts": iris.X.shape[0]
+            "ninsts": iris.X.shape[0],
+            "ntargs": iris.Y.shape[1] if len(iris.Y.shape) > 1 else 1,
+            "nclasses": len(set(iris.y))
         }
         response = self.client.put(
             "/api/posts", json={'data_uuid': iris.id, 'info': info})

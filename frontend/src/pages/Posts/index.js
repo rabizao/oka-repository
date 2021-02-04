@@ -13,7 +13,7 @@ import OkaNavBar from '../../components/OkaNavBar';
 import OkaPostComments from '../../components/OkaPostComments';
 import OkaPostsBox from '../../components/OkaPostsBox';
 import ScatterPlot from '../../components/ScatterPlot';
-import api, { dashUrl } from '../../services/api';
+import api from '../../services/api'; // , { dashUrl }
 import { LoginContext } from '../../contexts/LoginContext';
 import { RunningTasksBarContext } from '../../contexts/RunningTasksBarContext';
 import { NotificationsContext } from '../../contexts/NotificationsContext';
@@ -71,6 +71,7 @@ export default function Posts(props) {
     const [showAlgorithms, setShowAlgorithms] = useState(false);
     const [showParameters, setShowParameters] = useState(false);
     const [showMeta, setShowMeta] = useState(false);
+    const [showData, setShowData] = useState(false);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [runCategory, setRunCategory] = useState('');
@@ -80,7 +81,7 @@ export default function Posts(props) {
     const [nameEdit, setNameEdit] = useState('');
     const [publishConfirmationWord, setPublishConfirmationWord] = useState('');
     const [descriptionEdit, setDescriptionEdit] = useState('');
-    const postUrl = frontendUrl + `/posts/${post.id}/description`;
+    const postUrl = frontendUrl + `/posts/${post.id}`;
 
     const loggedUser = useContext(LoginContext);
     const runningTasksBar = useContext(RunningTasksBarContext);
@@ -105,105 +106,173 @@ export default function Posts(props) {
     }, [id, reloadPost])
 
     const metas = {
+        General: [
+            {
+                title: "Features",
+                variable: post.number_of_features || null,
+                tag: "features",
+                type: "numeric",
+                editable: false
+            },
+            {
+                title: "Instances",
+                variable: post.number_of_instances || null,
+                tag: "instances",
+                type: "numeric",
+                editable: false
+            },
+            {
+                title: "Targets",
+                variable: post.number_of_targets || null,
+                tag: "targets",
+                type: "numeric",
+                editable: false
+            },            
+            {
+                title: "Classes",
+                variable: post.number_of_classes || null,
+                tag: "classes",
+                type: "numeric",
+                editable: false
+            },
+        ],
         Tasks: [
             {
                 title: "Classification",
                 variable: post.classification || null,
-                tag: "classification"
+                tag: "classification",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Regression",
                 variable: post.regression || null,
-                tag: "regression"
+                tag: "regression",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Clustering",
                 variable: post.clustering || null,
-                tag: "clustering"
+                tag: "clustering",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Others",
                 variable: post.other_tasks || null,
-                tag: "other_tasks"
+                tag: "other_tasks",
+                type: "boolean",
+                editable: true
             }
         ],
         Domains: [
             {
                 title: "Life Sciences",
                 variable: post.life_sciences || null,
-                tag: "life_sciences"
+                tag: "life_sciences",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Physical Sciences",
                 variable: post.physical_sciences || null,
-                tag: "physical_sciences"
+                tag: "physical_sciences",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Engineering",
                 variable: post.engineering || null,
-                tag: "engineering"
+                tag: "engineering",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Social",
                 variable: post.social || null,
-                tag: "social"
+                tag: "social",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Business",
                 variable: post.business || null,
-                tag: "business"
+                tag: "business",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Finances",
                 variable: post.finances || null,
-                tag: "finances"
+                tag: "finances",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Astronomy",
                 variable: post.astronomy || null,
-                tag: "astronomy"
+                tag: "astronomy",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Medical",
                 variable: post.medical || null,
-                tag: "medical"
+                tag: "medical",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Others",
                 variable: post.other_domains || null,
-                tag: "other_domains"
+                tag: "other_domains",
+                type: "boolean",
+                editable: true
             }
         ],
         Features: [
             {
                 title: "Categorical",
                 variable: post.categorical || null,
-                tag: "categorical"
+                tag: "categorical",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Numerical",
                 variable: post.numerical || null,
-                tag: "numerical"
+                tag: "numerical",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Text",
                 variable: post.text || null,
-                tag: "text"
+                tag: "text",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Images",
                 variable: post.images || null,
-                tag: "images"
+                tag: "images",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Time Series",
                 variable: post.time_series || null,
-                tag: "time_series"
+                tag: "time_series",
+                type: "boolean",
+                editable: true
             },
             {
                 title: "Others",
                 variable: post.other_features || null,
-                tag: "other_features"
+                tag: "other_features",
+                type: "boolean",
+                editable: true
             }
         ]
     }
@@ -242,15 +311,43 @@ export default function Posts(props) {
         }
     }
 
-    const descriptionBox = (text) => {
+    const overviewBox = (text) => {
+        const fakeTable = [
+            ["col1", "col2", "col3"],
+            [2, 1, 3],
+            [2, 2, 1],
+            [1, 4, 2]
+        ];
+
         return (
             <div className="content-box margin-very-small">
                 {loadingHero ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
                     <>
+                        <button className={`${showData ? "button-negative" : "button-primary"} margin-small`} onClick={() => setShowData(!showData)}>
+                            {showData ? "Hide Data" : "Show Data"}
+                        </button>
                         <button className={`${showMeta ? "button-negative" : "button-primary"} margin-small`} onClick={() => setShowMeta(!showMeta)}>
                             {showMeta ? "Hide Meta" : "Show Meta"}
                         </button>
+                        {
+                            showData &&
+                            <div className="padding-sides-small padding-bottom-medium padding-top-small">
+                                <div className="flex-row-nowrap overflow-x-auto content-box padding-very-small">
+                                    <table className="width100 text-center">
+                                        {post.head.map((row, index) =>
+                                            <tr>
+                                                {row.map((data) =>
+                                                    index == 0 ?
+                                                        <th className="padding-very-small box">{data}</th> :
+                                                        <td className="padding-very-small box">{data}</td>
+                                                )}
+                                            </tr>
+                                        )}
+                                    </table>
+                                </div>
+                            </div>
+                        }
                         {
                             showMeta &&
                             <div className="padding-sides-small padding-bottom-medium padding-top-small">
@@ -262,9 +359,25 @@ export default function Posts(props) {
                                                 <div key={item.tag} className="flex-row flex-axis-center flex-space-between box-horizontal background-hover padding-small">
                                                     <h4>{item.title}</h4>
                                                     {
-                                                        loggedUser.username === post.author.username && !post.public ? 
-                                                        <button className={`icon-medium ${!item.variable && "icon-error" }`} onClick={() => handlePostMetaUpdate(item.tag, item.variable)}>{item.variable ? <ToggleOn /> : <ToggleOff />}</button> :
-                                                        <div className={`icon-medium ${!item.variable && "icon-error" }`}>{item.variable ? <ToggleOn /> : <ToggleOff />}</div>
+                                                        loggedUser.username === post.author.username && !post.public ? (
+                                                            item.editable ? (
+                                                                item.type === "boolean" && (
+                                                                    <button className={`icon-medium ${!item.variable && "icon-error"}`} onClick={() => handlePostMetaUpdate(item.tag, item.variable)}>{item.variable ? <ToggleOn /> : <ToggleOff />}</button>
+                                                                )
+                                                            ) : (
+                                                                    item.type == "boolean" ? (
+                                                                        <div className={`icon-medium ${!item.variable && "color-error"}`}>{item.variable ? <ToggleOn /> : <ToggleOff />}</div>
+                                                                    ) : (
+                                                                            <div className={"padding-sides-small"}>{item.variable}</div>
+                                                                        )
+                                                                )
+                                                        ) : (
+                                                                item.type == "boolean" ? (
+                                                                    <div className={`icon-medium ${!item.variable && "icon-error"}`}>{item.variable ? <ToggleOn /> : <ToggleOff />}</div>
+                                                                ) : (
+                                                                        <div className={"padding-sides-small"}>{item.variable}</div>
+                                                                    )
+                                                            )
                                                     }
                                                 </div>
                                             )}
@@ -309,13 +422,54 @@ export default function Posts(props) {
         )
     }
 
-    const visualizer = (uuid) => {
+    const Visualizer = () => {
+        const [showingCharts, setShowingCharts] = useState([]);
+        const charts = {
+            scatter: {
+                "title": "Scatter Plot",
+                "component": <ScatterPlot postId={id} attrs={post.attrs} />
+            }
+        };
+
+        function handleChartsShowing(e, chart) {
+            e.preventDefault();
+            var newShowingCharts = [...showingCharts];
+
+            if (newShowingCharts.includes(chart)) {
+                newShowingCharts = newShowingCharts.filter(item => item !== chart)
+            } else {
+                newShowingCharts.push(chart);
+            }
+            setShowingCharts(newShowingCharts);
+        }
+
         return (
             <div className="content-box margin-very-small">
-                <iframe title="iframe-dash" className="iframe-dash" src={`${dashUrl}/${uuid}`}></iframe>
+                {loadingHero ?
+                    <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
+                    <>
+                        {Object.entries(charts).map(([option, obj]) =>
+                            <button key={option} className={`${showingCharts.includes(option) ? ("button-negative") : "button-primary"} margin-small`} onClick={(e) => handleChartsShowing(e, option)}>{obj.title}</button>
+                        )}
+                        {
+                            showingCharts.length > 0 &&
+                            showingCharts.map((chart) =>
+                                <div key={chart}>{charts[chart].component}</div>
+                            )
+                        }
+                    </>
+                }
             </div>
         )
     }
+
+    // const visualizer = (uuid) => {
+    //     return (
+    //         <div className="content-box margin-very-small">
+    //             <iframe title="iframe-dash" className="iframe-dash" src={`${dashUrl}/${uuid}`}></iframe>
+    //         </div>
+    //     )
+    // }
 
     const navItems = {
         empty: {
@@ -324,26 +478,26 @@ export default function Posts(props) {
             "content": <></>,
             "hide": true
         },
-        description: {
-            "name": "Description",
-            "url": "/posts/" + id + "/description",
-            "content": descriptionBox(description)
+        overview: {
+            "name": "Overview",
+            "url": "/posts/" + id + "/overview",
+            "content": overviewBox(description)
+        },
+        visualize: {
+            "name": "Visualize",
+            "url": "/posts/" + id + "/visualize",
+            "content": <Visualizer />
         },
         comments: {
             "name": "Comments",
             "url": "/posts/" + id + "/comments",
             "content": <OkaPostComments postId={id} />
         },
-        visualize: {
-            "name": "Visualize",
-            "url": "/posts/" + id + "/visualize",
-            "content": visualizer(post.data_uuid)
-        },
-        stats: {
-            "name": "Stats",
-            "url": "/posts/" + id + "/stats",
-            "content": <ScatterPlot postId={id} attrs={post.attrs} />
-        },
+        // visualize: {
+        //     "name": "Visualize",
+        //     "url": "/posts/" + id + "/visualize",
+        //     "content": visualizer(post.data_uuid)
+        // },        
         twins: {
             "name": "Twins",
             "url": "/posts/" + id + "/twins",
@@ -470,7 +624,7 @@ export default function Posts(props) {
                 setDescription(response.data.description ? response.data.description : '');
                 setDescriptionEdit(response.data.description ? response.data.description : '');
                 setLoadingHero(false);
-                history.push(`/posts/${postId}/description`);
+                history.push(`/posts/${postId}/overview`);
             }
         } catch (error) {
             notifyError(error);
