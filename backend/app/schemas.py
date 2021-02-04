@@ -4,12 +4,12 @@ from flask import current_app
 from flask_smorest.fields import Upload
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
-from marshmallow_sqlalchemy.fields import Nested
 from werkzeug.security import generate_password_hash
 
 from app import db
 from app.models import User, Post, Comment, Contact, Notification, Task, Message
 from garoupa.avatar23 import colors
+# from kururu.tool.manipulation.slice import Slice
 
 
 def get_attrs(uuid):
@@ -23,15 +23,29 @@ def past(uuid):
     data = tatu.fetch(uuid, lazy=False)
     if not data:
         return []  # REMINDER: The history exists, but is not accessible through data.fetch()
-    return [
-        {"data": v, "post": Post.query.filter_by(data_uuid=k).first().id}
-        for k, v in data.past.items() if v["step"]["desc"]["name"][:3] not in ["B", "Rev", "In", "Aut", "E"]
-    ]
+    lst = []
+    for k, d in list(data.past.items())[:-1]:
+        if d["step"]["desc"]["name"][:3] not in ["B", "Rev", "In", "Aut", "E"]:
+            post = Post.query.filter_by(data_uuid=k).first()
+            lst.append({"id": k, "data": d, "post": post and post.id})
+    return lst
+
+
+def head(uuid):
+    tatu = current_app.config['TATU_SERVER']
+    data = tatu.fetch(uuid, lazy=False)
+    if not data:
+        return []  # REMINDER: The history exists, but is not accessible through data.fetch()
+    # data >>= Slice(last=10)
+
+    return [data.Xd] + data.X[0:10:, 0:10].tolist()
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = User
+        exclude = ["email_confirmation_key", "account_reset_key", "account_reset_key_generation_time",
+                   "last_message_read_time", "last_notification_read_time"]
 
     id = auto_field(dump_only=True)
     username = auto_field(validate=[
@@ -39,7 +53,7 @@ class UserBaseSchema(SQLAlchemyAutoSchema):
     password = auto_field(validate=[
         validate.Length(min=6, max=36)], load_only=True)
     email = fields.Email(validate=[
-        validate.Length(min=6, max=36)], load_only=True, required=True)
+        validate.Length(min=6, max=36)], required=True)
     followed = auto_field(dump_only=True)
     followers = auto_field(dump_only=True)
 
@@ -50,8 +64,9 @@ class CommentBaseSchema(SQLAlchemyAutoSchema):
 
     id = auto_field(dump_only=True)
     text = auto_field(required=True)
-    author = Nested(UserBaseSchema, dump_only=True)
-    replies = Nested(lambda: CommentBaseSchema(), many=True, dump_only=True)
+    author = fields.Nested(UserBaseSchema, dump_only=True)
+    replies = fields.Nested(lambda: CommentBaseSchema(),
+                            many=True, dump_only=True)
 
 
 class CommentQuerySchema(SQLAlchemySchema):
@@ -164,7 +179,7 @@ class UserRegisterSchema(UserBaseSchema):
 
     @post_load
     def check_unique_email(self, data, **kwargs):
-        if User.get_by_confirmed_email(data["email"]):
+        if User.get_by_email(data["email"]):
             raise ValidationError(field_name='email',
                                   message="Already in use.")
         return data
@@ -177,7 +192,7 @@ class UserRegisterSchema(UserBaseSchema):
 
 class UserLoginSchema(UserBaseSchema):
     class Meta:
-        fields = ("username", "password")
+        fields = ["username", "password"]
 
     @post_load
     def check(self, data, **kwargs):
@@ -192,6 +207,37 @@ class UserLoginSchema(UserBaseSchema):
             raise ValidationError(field_name="password",
                                   message="Wrong data.")
         return data
+
+
+class UserRecoverKeySubmitSchema(SQLAlchemySchema):
+
+    email = fields.Email(validate=[
+        validate.Length(min=6, max=36)], load_only=True, required=True)
+
+
+class UserRecoverKeySubmitNewPassSchema(SQLAlchemySchema):
+    class Meta:
+        model = User
+
+    username = auto_field(validate=[
+        validate.Length(min=6, max=36)], required=True)
+    password = auto_field(validate=[
+        validate.Length(min=6, max=36)], load_only=True, required=True)
+    key = auto_field(column_name="account_reset_key", required=True)
+
+    @post_load
+    def check(self, data, **kwargs):
+        data["password"] = generate_password_hash(data["password"])
+        return data
+
+
+class UserRecoverKeySchema(UserBaseSchema):
+    class Meta:
+        model = User
+        fields = ["email", "username"]
+
+    email = fields.Email(validate=[
+        validate.Length(min=6, max=36)], dump_only=True)
 
 
 class LoginResponseSchema(SQLAlchemySchema):
@@ -220,16 +266,10 @@ class UserEditSchema(SQLAlchemySchema):
     password = fields.String(validate=[
         validate.Length(min=6, max=36)], load_only=True)
     about_me = fields.String(validate=[
-        validate.Length(min=1, max=140)])
-    email = fields.Email(validate=[
-        validate.Length(min=6, max=36)])
+        validate.Length(max=140)])
 
     @post_load
     def check(self, data, **kwargs):
-        if 'email' in data:
-            if User.get_by_confirmed_email(data["email"]):
-                raise ValidationError(field_name='email',
-                                      message="Already in use.")
         if 'password' in data:
             data["password"] = generate_password_hash(data["password"])
 
@@ -257,10 +297,10 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
         model = Post
 
     id = auto_field(dump_only=True)
-    author = Nested(UserBaseSchema, dump_only=True)
+    author = fields.Nested(UserBaseSchema, dump_only=True)
     comments = auto_field(dump_only=True)
-    allowed = fields.Pluck(UserBaseSchema, "username",
-                           many=True, dump_only=True)
+    allowed = fields.Nested(UserBaseSchema(only=["username", "name"]),
+                            many=True, dump_only=True)
     favorites = auto_field(dump_only=True)
     data_uuid_colors = fields.Function(
         lambda obj: colors(obj.data_uuid), dump_only=True)
@@ -269,16 +309,18 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     history = fields.Function(lambda obj: past(obj.data_uuid), dump_only=True)
     downloads = fields.Function(
         lambda obj: obj.get_unique_download_count(), dump_only=True)
+    head = fields.Function(lambda obj: head(obj.data_uuid), dump_only=True)
 
 
-class PostEditSchema(SQLAlchemySchema):
+class PostEditSchema(SQLAlchemyAutoSchema):
     class Meta:
-        unknown = EXCLUDE
-
-    name = fields.String(validate=[
-        validate.Length(min=1, max=120)])
-    description = fields.String(validate=[
-        validate.Length(min=1, max=100000)])
+        model = Post
+        fields = ["name", "description", "number_of_instances",
+                  "classification", "regression", "clustering", "other_tasks", "number_of_classes",
+                  "type_of_regression", "number_of_clusters", "life_sciences", "physical_sciences",
+                  "engineering", "social", "business", "finances", "astronomy", "quantum_mechanics",
+                  "medical", "financial", "other_domains", "categorical", "numerical", "text",
+                  "images", "time_series", "other_features"]
 
 
 class PostCreateSchema(SQLAlchemySchema):
@@ -365,7 +407,7 @@ class DownloadFileByNameQuerySchema(SQLAlchemySchema):
     name = fields.String(required=True)
 
 
-class StatsQuerySchema(SQLAlchemySchema):
+class VisualizeQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 

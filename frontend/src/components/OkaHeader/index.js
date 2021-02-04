@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { useHistory, Link } from 'react-router-dom';
-import { Search, Apps, Notifications, AccountBalance, ChatBubble } from '@material-ui/icons';
+import { Search, Notifications, ChatBubble } from '@material-ui/icons'; // Apps, AccountBalance,
 import Badge from '@material-ui/core/Badge';
 
 import './styles.css';
@@ -30,7 +30,7 @@ export default function OkaHeader(props) {
         switch (notification.name) {
             case 'data_uploaded':
                 return (
-                    <Link key={notification.id} className="padding-medium box background-hover width100" to={`/posts/${notification.payload_json.id}/description`}>
+                    <Link key={notification.id} className="padding-medium box background-hover width100" to={`/posts/${notification.payload_json.id}/overview`}>
                         <span className="ellipsis-3">{notification.payload_json.original_name}: </span>
                         <span className={`ellipsis-3 ${notification.payload_json.code === "error" && "color-error"}`}> {notification.payload_json.message}</span>
                     </Link>)
@@ -91,7 +91,7 @@ export default function OkaHeader(props) {
 
             <div className="oka-header-right-buttons">
                 <ul className="ul-padding-sides-not-first">
-                    <li className="flex-row cursor-pointer icon-normal">
+                    {/* <li className="flex-row cursor-pointer icon-normal">
                         <PopOver
                             component={Apps}
                             componentClasses="icon-tertiary"
@@ -108,7 +108,7 @@ export default function OkaHeader(props) {
                                 </div>
                             }
                         />
-                    </li>
+                    </li> */}
                     <li className="flex-row cursor-pointer icon-normal">
                         <Badge badgeContent={notificationsContext.notificationsBadgeCount} color="error">
                             <PopOver

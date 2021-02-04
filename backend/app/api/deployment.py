@@ -3,7 +3,6 @@ from . import bp
 
 from flask import request, current_app
 from flask.views import MethodView
-from flask_smorest import abort
 import hashlib
 import hmac
 import subprocess
@@ -25,6 +24,5 @@ class Deployment(MethodView):
         try:
             subprocess.check_output(
                 "nohup ~/deploy.sh > ~/deploy_log.txt 2>&1 &", shell=True)
-        except Exception as e:
-            abort(422, errors={
-                "json": {"Internal Error": [f"{str(e)}"]}})
+        except Exception:
+            HTTPAbort.unexpected_error()

@@ -1,6 +1,7 @@
 import json
 import uuid as u
 from datetime import datetime
+from flask.globals import current_app
 
 from sqlalchemy import and_, or_
 from werkzeug.security import check_password_hash
@@ -53,6 +54,8 @@ class PaginateMixin(object):
                 else:
                     search_conds += [getattr(cls,
                                              key).like(f"%{item}%") for item in values]
+            elif isinstance(values, bool):
+                search_conds += [getattr(cls, key).is_(values)]
             else:
                 search_conds += [getattr(cls, key).like(f"%{values}%")]
 
@@ -69,7 +72,10 @@ class User(PaginateMixin, db.Model):
     password = db.Column(db.String(128), nullable=False)
     email = db.Column(db.String(120), index=True,
                       nullable=False)
-    email_confirmation_key = db.Column(db.String(120), unique=True)
+    email_confirmation_key = db.Column(db.String(120))
+    account_reset_key = db.Column(db.String(120))
+    account_reset_key_generation_time = db.Column(
+        db.DateTime, default=datetime.utcnow)
     email_confirmed = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(128), nullable=False)
     about_me = db.Column(db.String(140))
@@ -212,9 +218,6 @@ class User(PaginateMixin, db.Model):
         return self.accessible.filter(
             access.c.post_id == post.id).count() > 0 or post.author == self or post.public is True
 
-    def can_download(self, file):
-        return self.files.filter(file.owner == self).count() > 0
-
     def grant_access(self, post):
         if not self.has_access(post):
             self.accessible.append(post)
@@ -246,8 +249,21 @@ class User(PaginateMixin, db.Model):
         db.session.add(file)
         return file
 
+    def can_download(self, file):
+        return self.files.filter(file.owner == self).count() > 0
+
     def get_file_by_name(self, name):
-        return File.query.filter(File.name == name, File.owner_id == self.id).first()
+        return self.files.filter(File.name == name).first()
+
+    def account_reset_key_expired(self):
+        return self.account_reset_key_generation_time \
+            + current_app.config['RESET_ACCOUNT_KEY_EXPIRES'] < datetime.utcnow()
+
+    def add_reset_key(self):
+        key = str(u.uuid4())
+        self.account_reset_key = key
+        self.account_reset_key_generation_time = datetime.utcnow()
+        return key
 
     @staticmethod
     def list_by_name(search_term):
@@ -259,7 +275,7 @@ class User(PaginateMixin, db.Model):
 
     @staticmethod
     def get_by_email(email):
-        return User.query.filter_by(email=email).all()
+        return User.query.filter_by(email=email).first()
 
     @staticmethod
     def get_by_confirmed_email(email):
@@ -289,6 +305,7 @@ class Post(PaginateMixin, db.Model):
     number_of_features = db.Column(db.Integer)
     number_of_targets = db.Column(db.Integer)
     number_of_instances = db.Column(db.Integer)
+    number_of_classes = db.Column(db.Integer)
     # Tasks
     classification = db.Column(db.Boolean)
     regression = db.Column(db.Boolean)

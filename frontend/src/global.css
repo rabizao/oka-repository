@@ -31,6 +31,11 @@ h3, h4, h5, h6 {
     font-weight: 100;
 }
 
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
 input, button, textarea, select {
     font: 400 16px Roboto, sans-serif;
 }
@@ -397,6 +402,14 @@ button, input[type="submit"], input[type="reset"] {
     color: var(--tertiary-color);
 }
 
+.icon-error path {
+    fill: var(--error-color);
+}
+
+.icon-error svg circle {
+    color: var(--error-color);
+}
+
 .icon-primary path {
     fill: var(--primary-color);
 }
@@ -542,7 +555,7 @@ button, input[type="submit"], input[type="reset"] {
     text-decoration: underline;
 }
 
-.form input, .form button, .form textarea {
+.form input, .form button, .form textarea, .form select {
     height: 50px;
     padding: 10px;
     border: var(--border);
@@ -650,6 +663,10 @@ button, input[type="submit"], input[type="reset"] {
 
 .width100 {
     width: 100%;
+}
+
+.width50 {
+    width: 50%;
 }
 
 .max-width-big {

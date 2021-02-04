@@ -335,7 +335,7 @@ class ApiCase(unittest.TestCase):
             10 - Comment post
             11 - Reply to comment
             12 - Add user2 as collaborator, check, remove and check again
-            13 - Get stats data
+            13 - Get visualize data
             14 - Users can not upload same dataset twice
             15 - Check twins of post. Add user2 as collaborator. Check twins again
             16 - Run step
@@ -407,12 +407,11 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 422)
         # List all posts
         response = self.client.get("/api/posts")
-        self.assertEqual(len(response.json), 2)
+        self.assertEqual(len(response.json), 1)
         self.assertEqual(response.status_code, 200)
         # 6
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(f"/api/downloads/data?pids={post_id}")
-        print(response.json)
         self.assertEqual(response.status_code, 200)
         result = download_data.run([post_id], username, "127.0.0.1")
         self.assertEqual(result['state'], 'SUCCESS')
@@ -463,7 +462,7 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 422)
         # Post should appear on user's feed and not on user2's feed
         response = self.client.get(f"/api/users/{username}/feed")
-        self.assertEqual(len(response.json), 2)
+        self.assertEqual(len(response.json), 1)
         self.login(create_user=False, user=create_user2)
         response = self.client.get(f"/api/users/{username2}/feed")
         self.assertEqual(len(response.json), 0)
@@ -541,10 +540,10 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(User.get_by_username(
             username2).has_access(post), False)
         # 13
-        # Can not get stats of inexistent post
-        response = self.client.get("/api/posts/100/stats?plt=scatter")
+        # Can not get visualize of inexistent post
+        response = self.client.get("/api/posts/100/visualize?plt=scatter")
         self.assertEqual(response.status_code, 422)
-        response = self.client.get(f"/api/posts/{post_id}/stats?plt=scatter")
+        response = self.client.get(f"/api/posts/{post_id}/visualize?plt=scatter")
         self.assertEqual(response.status_code, 200)
         # 14
         result = process_file.run(files, username2)
@@ -593,7 +592,6 @@ class ApiCase(unittest.TestCase):
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(
                 f"/api/posts/{post_id}/run", json=step)
-            print(response.json)
         self.assertEqual(response.status_code, 200)
         result = run_step.run(post_id, step_full, username)
         self.assertEqual(json.loads(result['result'])[
@@ -737,8 +735,6 @@ class ApiCase(unittest.TestCase):
             2 - Create user1 and login with user1
             3 - Verify if user1 can edit user2
             4 - Verify if user1 can edit user1
-            5 - User1 can use user2's email while not confirmed
-            6 - User1 can not use user2's email because it was confirmed
         """
         # 1
         username2 = self.login(user=create_user2)['username']
@@ -753,22 +749,9 @@ class ApiCase(unittest.TestCase):
         self.assertNotEqual(user2.email, "newemail@ll.com")
         # 4
         response = self.client.put("api/users/" + str(username1),
-                                   json={"email": "newemail@ll.com"})
+                                   json={"about_me": "Postdoc"})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(user1.email, "newemail@ll.com")
-        # 5
-        response = self.client.put("api/users/" + str(username1),
-                                   json={"email": user2.email})
-        self.assertEqual(response.status_code, 200)
-        # 6
-        response = self.client.put("api/users/" + str(username1),
-                                   json={"email": user1.email})
-        self.assertEqual(response.status_code, 200)
-        user2.email_confirmed = True
-        db.session.commit()
-        response = self.client.put("api/users/" + str(username1),
-                                   json={"email": user2.email})
-        self.assertEqual(response.status_code, 422)
+        self.assertEqual(user1.about_me, "Postdoc")
 
     def test_follow_user(self):
         """
@@ -818,9 +801,11 @@ class ApiCase(unittest.TestCase):
         self.login()
         iris = Dataset().data
         info = {
-            "past": iris.past,
+            "past": list(iris.past),
             "nattrs": iris.X.shape[1],
-            "ninsts": iris.X.shape[0]
+            "ninsts": iris.X.shape[0],
+            "ntargs": iris.Y.shape[1] if len(iris.Y.shape) > 1 else 1,
+            "nclasses": len(set(iris.y))
         }
         response = self.client.put(
             "/api/posts", json={'data_uuid': iris.id, 'info': info})

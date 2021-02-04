@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import User, Token, Post, Comment, Message, Notification, Task, Download
+from app.models import User, Token, Post, Comment, Message, Notification, Task, Download, File
 
 app = create_app()
 
@@ -11,4 +11,4 @@ if __name__ == '__main__':
 def make_shell_context():
     return {'db': db, 'User': User, 'Token': Token, 'Post': Post,
             'Comment': Comment, 'Message': Message,
-            'Notification': Notification, 'Task': Task, 'Download': Download}
+            'Notification': Notification, 'Task': Task, 'Download': Download, 'File': File}

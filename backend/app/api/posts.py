@@ -6,13 +6,15 @@ from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity
 from flask_smorest import abort
+from kururu.tool.enhancement.attribute.binarize import Binarize
+from kururu.tool.enhancement.instance.sampling.under.sample import Sample_
 
 from app import db
 from app.errors.handlers import HTTPAbort
 from app.models import Comment, Post, User
 from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
                          PostEditSchema, PostFilesSchema, PostQuerySchema,
-                         RunSchema, TaskBaseSchema, UserBaseSchema, StatsQuerySchema, PostCreateSchema,
+                         RunSchema, TaskBaseSchema, UserBaseSchema, VisualizeQuerySchema, PostCreateSchema,
                          PostActivateSchema)
 from . import bp
 from .tasks import create_post
@@ -72,9 +74,8 @@ class Posts(MethodView):
         Create inactive post (and without Data for a while), and parents.
         """
         logged_user = User.get_by_username(get_jwt_identity())
-        did = args["data_uuid"]
         obj = create_post(
-            logged_user, did, args["name"], args["description"], active=False, info=args["info"])
+            logged_user, args["data_uuid"], args["name"], args["description"], active=False, info=args["info"])
         if obj["code"] != "success":
             abort(422, errors={"json": {"data_uuid": obj["message"]}})
 
@@ -93,8 +94,7 @@ class PostsActivate(MethodView):
         post = Post.query.filter_by(
             data_uuid=args["data_uuid"], user_id=logged_user.id).first()
         if not post:
-            abort(422, errors={
-                "json": {"data_uuid": ["Post not found."]}})
+            HTTPAbort.not_found(field="data_uuid")
         post.active = True
         db.session.commit()
 
@@ -108,13 +108,14 @@ class PostsById(MethodView):
         Show info about the post with id {id}
         """
         logged_user = User.get_by_username(get_jwt_identity())
-
         post = Post.query.get(id)
+
         if not post or not post.active:
             HTTPAbort.not_found()
+
         if not logged_user.has_access(post):
-            abort(422, errors={
-                "json": {"id": ["You dont have access to this post."]}})
+            HTTPAbort.not_authorized()
+
         return post
 
     @bp.auth_required
@@ -131,13 +132,12 @@ class PostsById(MethodView):
             HTTPAbort.not_found()
 
         if post.public:
-            abort(422, errors={
-                "json": {"id": ["Public posts can not be edited."]}})
+            HTTPAbort.not_possible(
+                field="id", complement="Public posts can not be edited.")
 
         if not logged_user.is_admin():
             if logged_user != post.author:
-                abort(422, errors={
-                    "json": {"id": ["You can only edit your own datasets."]}})
+                HTTPAbort.not_authorized()
 
         post.update(args)
         db.session.commit()
@@ -153,13 +153,12 @@ class PostsById(MethodView):
             HTTPAbort.not_found()
 
         if post.public:
-            abort(422, errors={
-                "json": {"id": ["Public posts can not be deleted."]}})
+            HTTPAbort.not_possible(
+                field="id", complement="Public posts can not be deleted.")
 
         logged_user = User.get_by_username(get_jwt_identity())
         if post.author != logged_user:
-            abort(422, errors={
-                "json": {"id": ["Only the author can delete the post."]}})
+            HTTPAbort.not_authorized()
 
         post.active = False
         db.session.commit()
@@ -180,20 +179,16 @@ class PostsCollaboratorsById(MethodView):
 
         collaborator = User.get_by_username(args["username"])
         if not collaborator:
-            abort(422, errors={
-                "json": {"username": ["Does not exist."]}})
+            HTTPAbort.not_found(field="username")
 
         logged_user = User.get_by_username(get_jwt_identity())
 
         if post.author == collaborator:
-            abort(422, errors={
-                "json": {"username": ["You can not invite yourself."]}})
+            HTTPAbort.not_possible()
 
         if not post.author == logged_user:
-            abort(422, errors={
-                "json": {"username":
-                         [
-                             "Only the author can invite collaborators to the post."]}})
+            HTTPAbort.not_possible(
+                complement="Only the author can invite collaborators to the post.")
 
         if collaborator.has_access(post):
             collaborator.deny_access(post)
@@ -210,11 +205,15 @@ class PostsFavoriteById(MethodView):
         """
         Favorite/unfavorite post with id {id}
         """
+        logged_user = User.get_by_username(get_jwt_identity())
         post = Post.query.get(id)
+
         if not post or not post.active:
             HTTPAbort.not_found()
 
-        logged_user = User.get_by_username(get_jwt_identity())
+        if not logged_user.has_access(post):
+            HTTPAbort.not_authorized()
+
         if logged_user.has_favorited(post):
             logged_user.unfavorite(post)
         else:
@@ -234,13 +233,12 @@ class PostsPublishById(MethodView):
             HTTPAbort.not_found()
 
         if post.public:
-            abort(422, errors={
-                "json": {"id": ["The post is already published."]}})
+            HTTPAbort.not_possible(
+                field="id", complement="The post is already published.")
 
         logged_user = User.get_by_username(get_jwt_identity())
         if post.author != logged_user:
-            abort(422, errors={
-                "json": {"id": ["Only the author can publish the post."]}})
+            HTTPAbort.not_authorized()
 
         # TODO: Verify if the post has all classification variables before next steps
 
@@ -259,9 +257,14 @@ class PostsCommentsById(MethodView):
         """
         Return the comments of a post with id {id}
         """
+        logged_user = User.get_by_username(get_jwt_identity())
         post = Post.query.get(id)
+
         if not post or not post.active:
             HTTPAbort.not_found()
+
+        if not logged_user.has_access(post):
+            HTTPAbort.not_authorized()
 
         order_by = getattr(Comment.timestamp, args['order_by'])()
         query = post.comments
@@ -278,40 +281,50 @@ class PostsCommentsById(MethodView):
         """
         Create a new comment for the post with id {id}
         """
+        logged_user = User.get_by_username(get_jwt_identity())
         post = Post.query.get(id)
+
         if not post or not post.active:
             HTTPAbort.not_found()
 
-        logged_user = User.get_by_username(get_jwt_identity())
+        if not logged_user.has_access(post):
+            HTTPAbort.not_authorized()
+
         comment = post.add_comment(text=args['text'], author=logged_user)
 
         return comment
 
 
-@bp.route('/posts/<int:id>/stats')
-class PostsStatsById(MethodView):
+@bp.route('/posts/<int:id>/visualize')
+class PostsVisualizeById(MethodView):
     @bp.auth_required
-    @bp.arguments(StatsQuerySchema, location="query")
+    @bp.arguments(VisualizeQuerySchema, location="query")
     def get(self, args, id):
         """
-        Return the stats of a dataset of a post with id {id}
+        Return the visualize of a dataset of a post with id {id}
         """
+        logged_user = User.get_by_username(get_jwt_identity())
         post = Post.query.get(id)
+
         if not post or not post.active:
             HTTPAbort.not_found()
 
+        if not logged_user.has_access(post):
+            HTTPAbort.not_authorized()
+
         tatu = current_app.config['TATU_SERVER']
         data = tatu.fetch(post.data_uuid, lazy=False)
+        data_modified = data >> Sample_(n=min(len(data.X), 500)) * Binarize
 
         datas = []
-        for m in data.Yt[0]:
+        for m in data_modified.Yt[0]:
             inner = []
-            for k in range(len(data.X)):
-                if m == data.Y[k]:
+            for k in range(len(data_modified.X)):
+                if m == data_modified.Y[k]:
                     inner.append(
                         {
-                            "x": data.X[k, args['x']],
-                            "y": data.X[k, args['y']],
+                            "x": data_modified.X[k, args['x']],
+                            "y": data_modified.X[k, args['y']],
                         })
             datas.append(
                 {
@@ -353,12 +366,15 @@ class PostsTransformById(MethodView):
         """
         Return the twins of a post with id {id}
         """
-        post = Post.query.get(id)
-        if not post:
-            HTTPAbort.not_found()
-
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
+        post = Post.query.get(id)
+
+        if not post or not post.active:
+            HTTPAbort.not_found()
+
+        if not logged_user.has_access(post):
+            HTTPAbort.not_authorized()
 
         for key, value in args["parameters"].items():
             try:

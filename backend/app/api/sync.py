@@ -90,6 +90,7 @@ class SyncFieldsByUuid(MethodView):
             "bin1": b"\x00\x13...\x31",
             "bin2": b"teste2"
         }
+        # print("fffffffffffffffffffields")
         # response = {
         #     "fields": tatu.getfields(uuid)
         # }
@@ -107,7 +108,10 @@ class SyncFields(MethodView):
         if argsQuery["cat"] == "fields":
             return {"n": tatu.putfields(args['rows'], argsQuery['ignoredup'])}
         if argsQuery["cat"] == "stream":
+            # try:
             return {"n": tatu.putstream(args['rows'], argsQuery['ignoredup'])}
+            # except Exception as e:
+            #     print(e)
 
 
 @bp.route("/sync/<string:uuid>/content")
