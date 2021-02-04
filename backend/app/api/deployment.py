@@ -23,6 +23,6 @@ class Deployment(MethodView):
 
         try:
             subprocess.run(
-                "~/deploy.sh > ~/deploy_log.txt 2>&1 &", shell=True)
+                "nohup ~/deploy.sh > ~/deploy_log.txt 2>&1 &", shell=True)
         except Exception:
             HTTPAbort.unexpected_error()
