@@ -23,6 +23,6 @@ class Deployment(MethodView):
 
         try:
             subprocess.run(
-                "nohup ~/deploy.sh > ~/deploy_log.txt 2>&1 &", shell=True)
+                "/home/oka/deploy.sh")
         except Exception:
             HTTPAbort.unexpected_error()
