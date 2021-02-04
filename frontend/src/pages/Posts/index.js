@@ -312,12 +312,6 @@ export default function Posts(props) {
     }
 
     const overviewBox = (text) => {
-        const fakeTable = [
-            ["col1", "col2", "col3"],
-            [2, 1, 3],
-            [2, 2, 1],
-            [1, 4, 2]
-        ];
 
         return (
             <div className="content-box margin-very-small">
@@ -338,7 +332,7 @@ export default function Posts(props) {
                                         {post.head.map((row, index) =>
                                             <tr>
                                                 {row.map((data) =>
-                                                    index == 0 ?
+                                                    index === 0 ?
                                                         <th className="padding-very-small box">{data}</th> :
                                                         <td className="padding-very-small box">{data}</td>
                                                 )}
@@ -365,14 +359,14 @@ export default function Posts(props) {
                                                                     <button className={`icon-medium ${!item.variable && "icon-error"}`} onClick={() => handlePostMetaUpdate(item.tag, item.variable)}>{item.variable ? <ToggleOn /> : <ToggleOff />}</button>
                                                                 )
                                                             ) : (
-                                                                    item.type == "boolean" ? (
+                                                                    item.type === "boolean" ? (
                                                                         <div className={`icon-medium ${!item.variable && "color-error"}`}>{item.variable ? <ToggleOn /> : <ToggleOff />}</div>
                                                                     ) : (
                                                                             <div className={"padding-sides-small"}>{item.variable}</div>
                                                                         )
                                                                 )
                                                         ) : (
-                                                                item.type == "boolean" ? (
+                                                                item.type === "boolean" ? (
                                                                     <div className={`icon-medium ${!item.variable && "icon-error"}`}>{item.variable ? <ToggleOn /> : <ToggleOff />}</div>
                                                                 ) : (
                                                                         <div className={"padding-sides-small"}>{item.variable}</div>
