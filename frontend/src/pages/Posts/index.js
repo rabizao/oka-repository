@@ -423,6 +423,10 @@ export default function Posts(props) {
                 "title": "Scatter Plot",
                 "component": <ScatterPlot postId={id} attrs={post.attrs} />
             }
+            //ParallelCoordinatesCanvas
+            //distributionplot
+            //boxplot
+            //pearson correlation matrix
         };
 
         function handleChartsShowing(e, chart) {

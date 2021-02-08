@@ -179,30 +179,33 @@ export default function Users(props) {
                     <h3 className="margin-top-small">Update your data</h3>
                     <form className="form flex-column margin-top-small" onSubmit={e => handleEditSubmit(e)}>
                         <div className="flex-row flex-axis-center flex-space-between">
-                            <label for="name">Name</label>
+                            <label htmlFor="name">Name</label>
                             <input
                                 id="name"
                                 placeholder="Your name"
                                 value={nameEdit}
+                                autoComplete="new-password"
                                 onChange={e => setNameEdit(e.target.value)}
                             />
                         </div>
                         <div className="flex-row flex-axis-center flex-space-between">
-                            <label for="about">About</label>
+                            <label htmlFor="about">About</label>
                             <input
                                 id="about"
                                 placeholder="Your position"
                                 value={about_meEdit}
+                                autoComplete="new-password"
                                 onChange={e => setAbout_meEdit(e.target.value)}
                             />
                         </div>
                         <div className="flex-row flex-axis-center flex-space-between">
-                            <label for="password">Password</label>
+                            <label htmlFor="password">Password</label>
                             <input
                                 id="password"
                                 type="password"
                                 placeholder="Password"
                                 value={password}
+                                autoComplete="new-password"
                                 onChange={e => setPassword(e.target.value)}
                             />
                         </div>
