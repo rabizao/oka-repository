@@ -19,6 +19,9 @@ import { RunningTasksBarContext } from '../../contexts/RunningTasksBarContext';
 import { NotificationsContext } from '../../contexts/NotificationsContext';
 import { frontendUrl } from '../../services/api';
 import { notifyError } from '../../utils';
+import ParallelCoordinatesPlot from '../../components/ParallelCoordinatesPlot';
+import HistogramPlot from '../../components/HistogramPlot';
+import PearsonCorrelationPlot from '../../components/PearsonCorrelationPlot';
 
 
 const categories = [
@@ -127,7 +130,7 @@ export default function Posts(props) {
                 tag: "targets",
                 type: "numeric",
                 editable: false
-            },            
+            },
             {
                 title: "Classes",
                 variable: post.number_of_classes || null,
@@ -312,12 +315,6 @@ export default function Posts(props) {
     }
 
     const overviewBox = (text) => {
-        const fakeTable = [
-            ["col1", "col2", "col3"],
-            [2, 1, 3],
-            [2, 2, 1],
-            [1, 4, 2]
-        ];
 
         return (
             <div className="content-box margin-very-small">
@@ -333,18 +330,21 @@ export default function Posts(props) {
                         {
                             showData &&
                             <div className="padding-sides-small padding-bottom-medium padding-top-small">
-                                <div className="flex-row-nowrap overflow-x-auto content-box padding-very-small">
-                                    <table className="width100 text-center">
-                                        {post.head.map((row, index) =>
-                                            <tr>
-                                                {row.map((data) =>
-                                                    index == 0 ?
-                                                        <th className="padding-very-small box">{data}</th> :
-                                                        <td className="padding-very-small box">{data}</td>
-                                                )}
-                                            </tr>
-                                        )}
-                                    </table>
+                                <div className="content-box padding-very-small">
+                                    <span>Showing the first 10 rows and columns</span>
+                                    <div className="flex-row-nowrap overflow-x-auto">
+                                        <table className="width100 text-center">
+                                            {post.head.map((row, index) =>
+                                                <tr>
+                                                    {row.map((data) =>
+                                                        index === 0 ?
+                                                            <th className="padding-very-small box">{data}</th> :
+                                                            <td className="padding-very-small box">{data}</td>
+                                                    )}
+                                                </tr>
+                                            )}
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         }
@@ -365,14 +365,14 @@ export default function Posts(props) {
                                                                     <button className={`icon-medium ${!item.variable && "icon-error"}`} onClick={() => handlePostMetaUpdate(item.tag, item.variable)}>{item.variable ? <ToggleOn /> : <ToggleOff />}</button>
                                                                 )
                                                             ) : (
-                                                                    item.type == "boolean" ? (
+                                                                    item.type === "boolean" ? (
                                                                         <div className={`icon-medium ${!item.variable && "color-error"}`}>{item.variable ? <ToggleOn /> : <ToggleOff />}</div>
                                                                     ) : (
                                                                             <div className={"padding-sides-small"}>{item.variable}</div>
                                                                         )
                                                                 )
                                                         ) : (
-                                                                item.type == "boolean" ? (
+                                                                item.type === "boolean" ? (
                                                                     <div className={`icon-medium ${!item.variable && "icon-error"}`}>{item.variable ? <ToggleOn /> : <ToggleOff />}</div>
                                                                 ) : (
                                                                         <div className={"padding-sides-small"}>{item.variable}</div>
@@ -426,9 +426,22 @@ export default function Posts(props) {
         const [showingCharts, setShowingCharts] = useState([]);
         const charts = {
             scatter: {
-                "title": "Scatter Plot",
+                "title": "Scatter",
                 "component": <ScatterPlot postId={id} attrs={post.attrs} />
-            }
+            },
+            parallelcoordinates: {
+                "title": "Parallel Coordinates",
+                "component": <ParallelCoordinatesPlot postId={id} attrs={post.attrs}/>
+            },
+            histogram: {
+                "title": "Histogram",
+                "component": <HistogramPlot postId={id} attrs={post.attrs}/>
+            },
+            pearsoncorrelation: {
+                "title": "Pearson Correlation",
+                "component": <PearsonCorrelationPlot postId={id} attrs={post.attrs}/>
+            }            
+            //boxplot
         };
 
         function handleChartsShowing(e, chart) {

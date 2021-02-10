@@ -26,7 +26,6 @@ def past(post):
     lst = []
     userid = post.author.id
     for k, d in list(data.past.items())[:-1]:
-        print(k, data.past.keys(), "<<<<<<<<<<<<<<<<<<<<")
         if d["step"]["desc"]["name"][:3] not in ["B", "Rev", "In", "Aut", "E"]:
             post = Post.query.filter_by(data_uuid=k, user_id=userid).first()
             lst.append({"id": k, "data": d, "post": post and post.id})
