@@ -237,6 +237,7 @@ export default function Users(props) {
                     <div className="flex-column flex-axis-center padding-medium width-smallest">
                         <Avatar name={user.name} size="80" round={true} />
                         <h1 className="color-tertiary margin-top-medium width100 ellipsis text-center">{name}</h1>
+                        <h5 className="color-tertiary margin-top-very-small width100 ellipsis text-center">@{username}</h5>
                         <h5 className="color-tertiary margin-top-very-small width100 ellipsis text-center">{about_me}</h5>
                         <h6 className="color-tertiary margin-top-small width100 ellipsis text-center">{user.followed && user.followed.length} following | {user.followers && user.followers.length} followers</h6>
 
