@@ -22,6 +22,7 @@ import { notifyError } from '../../utils';
 import ParallelCoordinatesPlot from '../../components/ParallelCoordinatesPlot';
 import HistogramPlot from '../../components/HistogramPlot';
 import PearsonCorrelationPlot from '../../components/PearsonCorrelationPlot';
+import NotFound from '../NotFound';
 
 
 const categories = [
@@ -60,7 +61,10 @@ const categories = [
 export default function Posts(props) {
     const id = props.match.params.id;
     const section = props.match.params.section ? props.match.params.section : "empty";
-    const [loadingHero, setLoadingHero] = useState(true);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+    const [render, setRender] = useState(0);
+    const [accessDenied, setAccessDenied] = useState(false);
     const [post, setPost] = useState({});
     const [editName, setEditName] = useState(false);
     const [editDescription, setEditDescription] = useState(false);
@@ -100,13 +104,20 @@ export default function Posts(props) {
                 setNameEdit(response.data.name);
                 setDescription(response.data.description ? response.data.description : '');
                 setDescriptionEdit(response.data.description ? response.data.description : '');
-                setLoadingHero(false);
+                setError(false);
             } catch (error) {
-                notifyError(error);
+                setError(true);
+                const resp = notifyError(error);
+                if (resp.accessDenied) {
+                    setAccessDenied(true);
+                }
+
+            } finally {
+                setLoading(false);
             }
         }
         fetchPost();
-    }, [id, reloadPost])
+    }, [id, reloadPost, render])
 
     const metas = {
         General: [
@@ -283,11 +294,19 @@ export default function Posts(props) {
     const textBox = (text) => {
         return (
             <div className="content-box margin-very-small">
-                {loadingHero ?
+                {loading ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
-                    <div className="flex-row padding-sides-small padding-vertical-small text-box">
-                        {text}
-                    </div>
+
+                    error ?
+                        <div className="flex-row flex-crossaxis-center flex-axis-center padding-big">
+                            <div className="margin-sides-verysmall">Problem loading, try to </div>
+                            <button className="button-primary" onClick={handleReload}>Reload</button>
+                        </div> :
+
+                        <div className="flex-row padding-sides-small padding-vertical-small text-box">
+                            {text}
+                        </div>
+
                 }
             </div>
         )
@@ -298,7 +317,6 @@ export default function Posts(props) {
     }
 
     async function handlePostMetaUpdate(tag, state) {
-        console.log(tag)
 
         const data = {
             [tag]: !state
@@ -314,109 +332,121 @@ export default function Posts(props) {
         }
     }
 
+    function handleReload() {
+        setRender(render + 1);
+        setLoading(true);
+    }
+
     const overviewBox = (text) => {
 
         return (
             <div className="content-box margin-very-small">
-                {loadingHero ?
+                {loading ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
-                    <>
-                        <button className={`${showData ? "button-negative" : "button-primary"} margin-small`} onClick={() => setShowData(!showData)}>
-                            {showData ? "Hide Data" : "Show Data"}
-                        </button>
-                        <button className={`${showMeta ? "button-negative" : "button-primary"} margin-small`} onClick={() => setShowMeta(!showMeta)}>
-                            {showMeta ? "Hide Meta" : "Show Meta"}
-                        </button>
-                        {
-                            showData &&
-                            <div className="padding-sides-small padding-bottom-medium padding-top-small">
-                                <div className="content-box padding-very-small">
-                                    <span>Showing the first 10 rows and columns</span>
-                                    <div className="flex-row-nowrap overflow-x-auto">
-                                        <table className="width100 text-center">
-                                            {post.head.map((row, index) =>
-                                                <tr>
-                                                    {row.map((data) =>
-                                                        index === 0 ?
-                                                            <th className="padding-very-small box">{data}</th> :
-                                                            <td className="padding-very-small box">{data}</td>
-                                                    )}
-                                                </tr>
-                                            )}
-                                        </table>
+
+                    error ?
+                        <div className="flex-row flex-crossaxis-center flex-axis-center padding-big">
+                            <div className="margin-sides-verysmall">Problem loading, try to </div>
+                            <button className="button-primary" onClick={handleReload}>Reload</button>
+                        </div> :
+                        <>
+                            <button className={`${showData ? "button-negative" : "button-primary"} margin-small`} onClick={() => setShowData(!showData)}>
+                                {showData ? "Hide Data" : "Show Data"}
+                            </button>
+                            <button className={`${showMeta ? "button-negative" : "button-primary"} margin-small`} onClick={() => setShowMeta(!showMeta)}>
+                                {showMeta ? "Hide Meta" : "Show Meta"}
+                            </button>
+                            {
+                                showData &&
+                                <div className="padding-sides-small padding-bottom-medium padding-top-small">
+                                    <div className="content-box padding-very-small">
+                                        <span>Showing the first 10 rows and columns</span>
+                                        <div className="flex-row-nowrap overflow-x-auto">
+                                            <table className="width100 text-center">
+                                                {post.head.map((row, index) =>
+                                                    <tr>
+                                                        {row.map((data) =>
+                                                            index === 0 ?
+                                                                <th className="padding-very-small box">{data}</th> :
+                                                                <td className="padding-very-small box">{data}</td>
+                                                        )}
+                                                    </tr>
+                                                )}
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        }
-                        {
-                            showMeta &&
-                            <div className="padding-sides-small padding-bottom-medium padding-top-small">
-                                <div className="flex-column content-box">
-                                    {Object.entries(metas).map(([option, obj]) =>
-                                        <div key={option}>
-                                            <h2 className="padding-small margin-top-small">{option}</h2>
-                                            {obj.map((item) =>
-                                                <div key={item.tag} className="flex-row flex-axis-center flex-space-between box-horizontal background-hover padding-small">
-                                                    <h4>{item.title}</h4>
-                                                    {
-                                                        loggedUser.username === post.author.username && !post.public ? (
-                                                            item.editable ? (
-                                                                item.type === "boolean" && (
-                                                                    <button className={`icon-medium ${!item.variable && "icon-error"}`} onClick={() => handlePostMetaUpdate(item.tag, item.variable)}>{item.variable ? <ToggleOn /> : <ToggleOff />}</button>
-                                                                )
+                            }
+                            {
+                                showMeta &&
+                                <div className="padding-sides-small padding-bottom-medium padding-top-small">
+                                    <div className="flex-column content-box">
+                                        {Object.entries(metas).map(([option, obj]) =>
+                                            <div key={option}>
+                                                <h2 className="padding-small margin-top-small">{option}</h2>
+                                                {obj.map((item) =>
+                                                    <div key={item.tag} className="flex-row flex-axis-center flex-space-between box-horizontal background-hover padding-small">
+                                                        <h4>{item.title}</h4>
+                                                        {
+                                                            loggedUser.username === post.author.username && !post.public ? (
+                                                                item.editable ? (
+                                                                    item.type === "boolean" && (
+                                                                        <button className={`icon-medium ${!item.variable && "icon-error"}`} onClick={() => handlePostMetaUpdate(item.tag, item.variable)}>{item.variable ? <ToggleOn /> : <ToggleOff />}</button>
+                                                                    )
+                                                                ) : (
+                                                                        item.type === "boolean" ? (
+                                                                            <div className={`icon-medium ${!item.variable && "color-error"}`}>{item.variable ? <ToggleOn /> : <ToggleOff />}</div>
+                                                                        ) : (
+                                                                                <div className={"padding-sides-small"}>{item.variable}</div>
+                                                                            )
+                                                                    )
                                                             ) : (
                                                                     item.type === "boolean" ? (
-                                                                        <div className={`icon-medium ${!item.variable && "color-error"}`}>{item.variable ? <ToggleOn /> : <ToggleOff />}</div>
+                                                                        <div className={`icon-medium ${!item.variable && "icon-error"}`}>{item.variable ? <ToggleOn /> : <ToggleOff />}</div>
                                                                     ) : (
                                                                             <div className={"padding-sides-small"}>{item.variable}</div>
                                                                         )
                                                                 )
-                                                        ) : (
-                                                                item.type === "boolean" ? (
-                                                                    <div className={`icon-medium ${!item.variable && "icon-error"}`}>{item.variable ? <ToggleOn /> : <ToggleOff />}</div>
-                                                                ) : (
-                                                                        <div className={"padding-sides-small"}>{item.variable}</div>
-                                                                    )
-                                                            )
-                                                    }
+                                                        }
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            }
+                            <h2 className="padding-small">Description</h2>
+                            <div className="content-box margin-very-small">
+                                <div className="padding-sides-small padding-vertical-small text-box">
+                                    {editDescription ?
+                                        <div className="flex-column">
+                                            <div className="flex-row">
+                                                <button className="icon-normal" onClick={() => setEditDescription(false)}><Clear className="icon-secondary" /></button>
+                                                <button className="icon-normal" onClick={handleEditDescriptionSubmit}><Save className="icon-secondary" /></button>
+                                            </div>
+                                            <form className="form-edit-description">
+                                                <textarea
+                                                    onKeyUp={e => handleTextAreaAdjust(e.target)}
+                                                    onClick={e => handleTextAreaAdjust(e.target)}
+                                                    placeholder={description}
+                                                    value={descriptionEdit}
+                                                    onChange={e => setDescriptionEdit(e.target.value)}
+                                                />
+                                            </form>
+                                        </div> :
+                                        <div className="flex-column">
+                                            {!post.public &&
+                                                <div className="flex-row">
+                                                    <button className="icon-normal" onClick={() => setEditDescription(true)}><Edit className="icon-secondary" /></button>
                                                 </div>
-                                            )}
+                                            }
+                                            <>{text}</>
                                         </div>
-                                    )}
+                                    }
                                 </div>
                             </div>
-                        }
-                        <h2 className="padding-small">Description</h2>
-                        <div className="content-box margin-very-small">
-                            <div className="padding-sides-small padding-vertical-small text-box">
-                                {editDescription ?
-                                    <div className="flex-column">
-                                        <div className="flex-row">
-                                            <button className="icon-normal" onClick={() => setEditDescription(false)}><Clear className="icon-secondary" /></button>
-                                            <button className="icon-normal" onClick={handleEditDescriptionSubmit}><Save className="icon-secondary" /></button>
-                                        </div>
-                                        <form className="form-edit-description">
-                                            <textarea
-                                                onKeyUp={e => handleTextAreaAdjust(e.target)}
-                                                onClick={e => handleTextAreaAdjust(e.target)}
-                                                placeholder={description}
-                                                value={descriptionEdit}
-                                                onChange={e => setDescriptionEdit(e.target.value)}
-                                            />
-                                        </form>
-                                    </div> :
-                                    <div className="flex-column">
-                                        {!post.public &&
-                                            <div className="flex-row">
-                                                <button className="icon-normal" onClick={() => setEditDescription(true)}><Edit className="icon-secondary" /></button>
-                                            </div>
-                                        }
-                                        <>{text}</>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    </>
+                        </>
+
                 }
             </div>
         )
@@ -431,16 +461,16 @@ export default function Posts(props) {
             },
             parallelcoordinates: {
                 "title": "Parallel Coordinates",
-                "component": <ParallelCoordinatesPlot postId={id} attrs={post.attrs}/>
+                "component": <ParallelCoordinatesPlot postId={id} attrs={post.attrs} />
             },
             histogram: {
                 "title": "Histogram",
-                "component": <HistogramPlot postId={id} attrs={post.attrs}/>
+                "component": <HistogramPlot postId={id} attrs={post.attrs} />
             },
             pearsoncorrelation: {
                 "title": "Pearson Correlation",
-                "component": <PearsonCorrelationPlot postId={id} attrs={post.attrs}/>
-            }            
+                "component": <PearsonCorrelationPlot postId={id} attrs={post.attrs} />
+            }
             //boxplot
         };
 
@@ -458,19 +488,25 @@ export default function Posts(props) {
 
         return (
             <div className="content-box margin-very-small">
-                {loadingHero ?
+                {loading ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
-                    <>
-                        {Object.entries(charts).map(([option, obj]) =>
-                            <button key={option} className={`${showingCharts.includes(option) ? ("button-negative") : "button-primary"} margin-small`} onClick={(e) => handleChartsShowing(e, option)}>{obj.title}</button>
-                        )}
-                        {
-                            showingCharts.length > 0 &&
-                            showingCharts.map((chart) =>
-                                <div key={chart}>{charts[chart].component}</div>
-                            )
-                        }
-                    </>
+
+                    error ?
+                        <div className="flex-row flex-crossaxis-center flex-axis-center padding-big">
+                            <div className="margin-sides-verysmall">Problem loading, try to </div>
+                            <button className="button-primary" onClick={handleReload}>Reload</button>
+                        </div> :
+                        <>
+                            {Object.entries(charts).map(([option, obj]) =>
+                                <button key={option} className={`${showingCharts.includes(option) ? ("button-negative") : "button-primary"} margin-small`} onClick={(e) => handleChartsShowing(e, option)}>{obj.title}</button>
+                            )}
+                            {
+                                showingCharts.length > 0 &&
+                                showingCharts.map((chart) =>
+                                    <div key={chart}>{charts[chart].component}</div>
+                                )
+                            }
+                        </>
                 }
             </div>
         )
@@ -625,7 +661,6 @@ export default function Posts(props) {
 
         try {
             const r = await api.get(`sync?cat=data&fetch=false&uuids=${data_uuid}&empty=false`);
-            console.log(r)
             if (r.data["has"] === false) {
                 NotificationManager.info("This Data was not stored yet!", "NoData");
             } else {
@@ -636,7 +671,7 @@ export default function Posts(props) {
                 setNameEdit(response.data.name);
                 setDescription(response.data.description ? response.data.description : '');
                 setDescriptionEdit(response.data.description ? response.data.description : '');
-                setLoadingHero(false);
+                setLoading(false);
                 history.push(`/posts/${postId}/overview`);
             }
         } catch (error) {
@@ -727,282 +762,292 @@ export default function Posts(props) {
     }
 
     return (
-        <>
-            <Modal
-                open={openDeletePost}
-                onClose={() => setOpenDeletePost(false)}
-            >
-                <div className="modal padding-big">
-                    <h3>Delete post</h3>
-                    <h5 className="margin-top-small">You can not undo this action. This dataset will be lost forever.</h5>
-                    <button onClick={handleDeletePost} className="button-negative margin-top-small">I want to delete {post.name} forever!</button>
-                </div>
-            </Modal>
-            <Modal
-                open={openCite}
-                onClose={() => setOpenCite(false)}
-            >
-                <div className="modal padding-big">
-                    <h3 className="margin-bottom-small">Cite this data</h3>
-                    {
-                        post.public ?
-                            citation() :
-                            <h5>The author must publish the post before it can be cited. </h5>
-                    }
-                </div>
-            </Modal>
-            <Modal
-                open={openShare}
-                onClose={() => setOpenShare(false)}
-            >
-                <div className="modal padding-big">
-                    <h3 className="margin-bottom-small">Dataset access</h3>
-                    {
-                        post.allowed && post.allowed.length > 0 &&
-                        <h4 className="margin-top-small bold">Already shared with</h4>
-                    }
-                    {
-                        post.allowed && post.allowed.map((collaborator) =>
-                            <button
-                                key={collaborator.username}
-                                onClick={(e) => handleSubmitCollaborator(e, collaborator.username)}
-                                className={"button-negative margin-very-small"}
-                            >
-                                {collaborator.username}
-                            </button>
-                        )
-                    }
-                    {
-                        post.public ?
-                            <>
-                                <h5>You can share this dataset using the following link</h5>
-                                <h5 className="padding-small background-secondary-color-light">{postUrl}</h5>
-                            </> :
-                            <>
-                                <h4 className="margin-top-small bold">Include a new collaborator</h4>
-                                <form className="form flex-column" onSubmit={e => handleSubmitCollaborator(e, collaboratorUsername)}>
-                                    <label>
-                                        Username
-                                    <input
-                                            placeholder="Username"
-                                            value={collaboratorUsername}
-                                            onChange={e => setCollaboratorUsername(e.target.value)}
-                                        />
-                                    </label>
-                                    <button className="button-primary" type="submit">Invite</button>
-                                </form>
-                            </>
-                    }
-                </div>
-            </Modal>
-            <Modal
-                open={openRun}
-                onClose={() => setOpenRun(false)}
-            >
-                <div className="modal padding-big">
-                    <h3 className="margin-bottom-small">Run</h3>
-                    <form className="flex-column" onSubmit={handleRun}>
-                        <h4 className="margin-top-small bold">Select a category</h4>
-                        <select onChange={(e) => handleSelectCategory(e)} value={runCategory}>
-                            <option value={"select"}>Select</option>
+        loading ?
+            <div className="flex-row flex-crossaxis-center"><CircularProgress className="icon-primary" /></div> :
+            accessDenied ?
+                <NotFound /> :
+                <>
+                    <Modal
+                        open={openDeletePost}
+                        onClose={() => setOpenDeletePost(false)}
+                    >
+                        <div className="modal padding-big">
+                            <h3>Delete post</h3>
+                            <h5 className="margin-top-small">You can not undo this action. This dataset will be lost forever.</h5>
+                            <button onClick={handleDeletePost} className="button-negative margin-top-small">I want to delete {post.name} forever!</button>
+                        </div>
+                    </Modal>
+                    <Modal
+                        open={openCite}
+                        onClose={() => setOpenCite(false)}
+                    >
+                        <div className="modal padding-big">
+                            <h3 className="margin-bottom-small">Cite this data</h3>
                             {
-                                categories.map((category) =>
-                                    <option key={category["uuid"]} value={category["uuid"]}>{category["name"]}</option>
+                                post.public ?
+                                    citation() :
+                                    <h5>The author must publish the post before it can be cited. </h5>
+                            }
+                        </div>
+                    </Modal>
+                    <Modal
+                        open={openShare}
+                        onClose={() => setOpenShare(false)}
+                    >
+                        <div className="modal padding-big">
+                            <h3 className="margin-bottom-small">Dataset access</h3>
+                            {
+                                post.allowed && post.allowed.length > 0 &&
+                                <h4 className="margin-top-small bold">Already shared with</h4>
+                            }
+                            {
+                                post.allowed && post.allowed.map((collaborator) =>
+                                    <button
+                                        key={collaborator.username}
+                                        onClick={(e) => handleSubmitCollaborator(e, collaborator.username)}
+                                        className={"button-negative margin-very-small"}
+                                    >
+                                        {collaborator.username}
+                                    </button>
                                 )
                             }
-                        </select>
-                        {
-                            showAlgorithms &&
-                            <>
-                                <h4 className="margin-top-small bold">Select the algorithm</h4>
-                                <select onChange={(e) => handleSelectAlgorithm(e)} value={runAlgorithm}>
+                            {
+                                post.public ?
+                                    <>
+                                        <h5>You can share this dataset using the following link</h5>
+                                        <h5 className="padding-small background-secondary-color-light">{postUrl}</h5>
+                                    </> :
+                                    <>
+                                        <h4 className="margin-top-small bold">Include a new collaborator</h4>
+                                        <form className="form flex-column" onSubmit={e => handleSubmitCollaborator(e, collaboratorUsername)}>
+                                            <label>
+                                                Username
+                                    <input
+                                                    placeholder="Username"
+                                                    value={collaboratorUsername}
+                                                    onChange={e => setCollaboratorUsername(e.target.value)}
+                                                />
+                                            </label>
+                                            <button className="button-primary" type="submit">Invite</button>
+                                        </form>
+                                    </>
+                            }
+                        </div>
+                    </Modal>
+                    <Modal
+                        open={openRun}
+                        onClose={() => setOpenRun(false)}
+                    >
+                        <div className="modal padding-big">
+                            <h3 className="margin-bottom-small">Run</h3>
+                            <form className="flex-column" onSubmit={handleRun}>
+                                <h4 className="margin-top-small bold">Select a category</h4>
+                                <select onChange={(e) => handleSelectCategory(e)} value={runCategory}>
                                     <option value={"select"}>Select</option>
                                     {
                                         categories.map((category) =>
-                                            category["algorithms"].map((algorithm) =>
-                                                <option key={algorithm["uuid"]} value={algorithm["uuid"]}>{algorithm["name"]}</option>
-                                            )
+                                            <option key={category["uuid"]} value={category["uuid"]}>{category["name"]}</option>
                                         )
                                     }
                                 </select>
-                            </>
-                        }
-                        {
-                            showAlgorithms && showParameters &&
-                            <>
-                                <h4 className="margin-top-small bold">Select the parameters</h4>
                                 {
-                                    categories.map((category) =>
-                                        category["algorithms"].map((algorithm) =>
-                                            algorithm["parameters"].map((parameter) =>
-                                                parameter["values"].length > 1 &&
-                                                <div key={parameter["name"]} className="flex-row flex-axis-center flex-space-between">
-                                                    <label className="width50" htmlFor={parameter["name"]}>{parameter["name"]}</label>
-                                                    {
-                                                        parameter["range"] ?
-                                                            <input
-                                                                className="width50"
-                                                                type="number"
-                                                                min={parameter["values"][0]}
-                                                                max={parameter["values"][1]}
-                                                                value={runParameter[parameter["name"]] || ''}
-                                                                onChange={e => handleSelectParameter(e, parameter["name"])}
-                                                            /> :
-                                                            <select className="width50" id={parameter["name"]} onChange={(e) => handleSelectParameter(e, parameter["name"])} value={runParameter[parameter["name"]] || ''}>
-                                                                <option value={"select"}>Select</option>
+                                    showAlgorithms &&
+                                    <>
+                                        <h4 className="margin-top-small bold">Select the algorithm</h4>
+                                        <select onChange={(e) => handleSelectAlgorithm(e)} value={runAlgorithm}>
+                                            <option value={"select"}>Select</option>
+                                            {
+                                                categories.map((category) =>
+                                                    category["algorithms"].map((algorithm) =>
+                                                        <option key={algorithm["uuid"]} value={algorithm["uuid"]}>{algorithm["name"]}</option>
+                                                    )
+                                                )
+                                            }
+                                        </select>
+                                    </>
+                                }
+                                {
+                                    showAlgorithms && showParameters &&
+                                    <>
+                                        <h4 className="margin-top-small bold">Select the parameters</h4>
+                                        {
+                                            categories.map((category) =>
+                                                category["algorithms"].map((algorithm) =>
+                                                    algorithm["parameters"].map((parameter) =>
+                                                        parameter["values"].length > 1 &&
+                                                        <div key={parameter["name"]} className="flex-row flex-axis-center flex-space-between">
+                                                            <label className="width50" htmlFor={parameter["name"]}>{parameter["name"]}</label>
+                                                            {
+                                                                parameter["range"] ?
+                                                                    <input
+                                                                        className="width50"
+                                                                        type="number"
+                                                                        min={parameter["values"][0]}
+                                                                        max={parameter["values"][1]}
+                                                                        value={runParameter[parameter["name"]] || ''}
+                                                                        onChange={e => handleSelectParameter(e, parameter["name"])}
+                                                                    /> :
+                                                                    <select className="width50" id={parameter["name"]} onChange={(e) => handleSelectParameter(e, parameter["name"])} value={runParameter[parameter["name"]] || ''}>
+                                                                        <option value={"select"}>Select</option>
+                                                                        {
+                                                                            parameter["values"].map((value) =>
+                                                                                <option key={value} value={value}>{value}</option>
+                                                                            )
+                                                                        }
+                                                                    </select>
+                                                            }
+                                                        </div>
+                                                    )
+                                                )
+                                            )
+                                        }
+                                    </>
+                                }
+                                {
+                                    showAlgorithms && showParameters && runCategory && runAlgorithm && runParameter &&
+                                    <button type="submit" className="button-primary margin-top-small">Run</button>
+                                }
+
+                            </form>
+                        </div>
+                    </Modal>
+                    <Modal
+                        open={openPublish}
+                        onClose={() => setOpenPublish(false)}
+                    >
+                        <div className="modal padding-big">
+                            <h3>Publish your post</h3>
+                            <h5 className="margin-top-small">You can not undo this action. Please note that after publishing your post it will be available to everyone forever. If you want to make this post available to a specific group of people please use share button instead.
+                    </h5>
+                            <h4 className="margin-top-small bold">Publication Details to be displayed on the published page</h4>
+                            <div className="flex-column margin-top-small">
+                                <h5>Title: {post.name}</h5>
+                                <h5>Author: {post.author && post.author.name}</h5>
+                                {
+                                    post && post.allowed &&
+                                    <h5>Collaborators:
+                                {
+                                            post.allowed.map((collaborator, index) =>
+                                                <span key={index}> {collaborator.name}{(index !== post.allowed.length - 1) && ","}</span>
+                                            )
+                                        }
+                                    </h5>
+                                }
+                            </div>
+                            <h4 className="margin-top-small bold color-error">If any of the information above is wrong please correct before proceed</h4>
+                            <h4 className="margin-top-small bold">Type {name} bellow to proceed</h4>
+                            <input
+                                placeholder={name}
+                                onChange={e => setPublishConfirmationWord(e.target.value)}
+                            />
+                            <button onClick={handlePublish} className={`button-primary margin-top-small ${name === publishConfirmationWord ? "active" : "inactive"}`}>I want to make {post.name} of author {post.author && post.author.name} available to everyone forever!</button>
+                        </div>
+                    </Modal>
+                    <OkaHeader />
+                    <div className="oka-hero-background padding-sides-small padding-top-big">
+                        {loading ?
+                            <div className="flex-row flex-crossaxis-center"><CircularProgress className="icon-tertiary" /></div> :
+
+                            error ?
+                                <div className="flex-row flex-crossaxis-center flex-axis-center padding-big">
+                                    <div className="margin-sides-verysmall color-tertiary">Problem loading, try to </div>
+                                    <button className="button-secondary" onClick={handleReload}>Reload</button>
+                                </div> :
+                                <>
+                                    {
+                                        !post.public && post.author && post.author.username === loggedUser.username &&
+                                        <div className="flex-row flex-crossaxis-center">
+                                            <button onClick={() => setOpenPublish(true)} className="button-secondary margin-very-small">Publish</button>
+                                            <button onClick={() => setOpenDeletePost(true)} className="button-negative margin-very-small">Remove</button>
+                                        </div>
+                                    }
+
+                                    <div className="flex-row margin-top-small">
+                                        <div className="flex-column flex-crossaxis-center">
+                                            <div className="flex-wrap">
+                                                {
+                                                    post.history.length > 0 &&
+                                                    (
+                                                        showHistory ?
+                                                            <>
+                                                                <button className="margin-very-small icon-medium" title="Hide History" onClick={() => setShowHistory(!showHistory)}><ChevronLeft className="icon-tertiary" /></button>
                                                                 {
-                                                                    parameter["values"].map((value) =>
-                                                                        <option key={value} value={value}>{value}</option>
+                                                                    post.history.map((item) =>
+                                                                        item.data.step.desc.name &&
+                                                                        <div key={item.id} className="flex-row">
+                                                                            <button
+                                                                                title="Show Dataset" alt="Show Dataset"
+                                                                                onClick={(e) => handleIconClick(e, item.post, item.id)}
+                                                                                className="box-uuid-history"
+                                                                                style={{ backgroundColor: `rgb(${item.data.colors[0][0]}, ${item.data.colors[0][1]}, ${item.data.colors[0][2]})`, border: `var(--border)` }}>
+                                                                                <span>&nbsp;</span>
+                                                                                {
+                                                                                    item.data.colors.slice(1).map((color, index) =>
+                                                                                        <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{item.id[index]}</span>
+                                                                                    )
+                                                                                }
+                                                                            </button>
+                                                                            <div className="flex-column flex-axis-center padding-sides-very-small">
+                                                                                <span className="color-tertiary">{item.data.step.desc.name}</span>
+                                                                                <span className="color-tertiary">→</span>
+                                                                            </div>
+                                                                        </div>
                                                                     )
                                                                 }
-                                                            </select>
-                                                    }
-                                                </div>
-                                            )
-                                        )
-                                    )
-                                }
-                            </>
-                        }
-                        {
-                            showAlgorithms && showParameters && runCategory && runAlgorithm && runParameter &&
-                            <button type="submit" className="button-primary margin-top-small">Run</button>
-                        }
-
-                    </form>
-                </div>
-            </Modal>
-            <Modal
-                open={openPublish}
-                onClose={() => setOpenPublish(false)}
-            >
-                <div className="modal padding-big">
-                    <h3>Publish your post</h3>
-                    <h5 className="margin-top-small">You can not undo this action. Please note that after publishing your post it will be available to everyone forever. If you want to make this post available to a specific group of people please use share button instead.
-                    </h5>
-                    <h4 className="margin-top-small bold">Publication Details to be displayed on the published page</h4>
-                    <div className="flex-column margin-top-small">
-                        <h5>Title: {post.name}</h5>
-                        <h5>Author: {post.author && post.author.name}</h5>
-                        {
-                            post && post.allowed &&
-                            <h5>Collaborators:
-                                {
-                                    post.allowed.map((collaborator, index) =>
-                                        <span key={index}> {collaborator.name}{(index !== post.allowed.length - 1) && ","}</span>
-                                    )
-                                }
-                            </h5>
+                                                            </> :
+                                                            <button className="margin-very-small icon-medium" title="Expand History" onClick={() => setShowHistory(!showHistory)}><ChevronRight className="icon-tertiary" /></button>
+                                                    )
+                                                }
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={(e) => copyToClipboard(e, post.data_uuid)}
+                                            title="Click to copy to clipboard"
+                                            className="box-uuid"
+                                            style={{ backgroundColor: `rgb(${post.data_uuid_colors[0][0]}, ${post.data_uuid_colors[0][1]}, ${post.data_uuid_colors[0][2]})`, border: `var(--border)` }}>
+                                            <span>&nbsp;</span>
+                                            {
+                                                post.data_uuid_colors.slice(1).map((color, index) =>
+                                                    <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{post.data_uuid[index]}</span>
+                                                )
+                                            }
+                                        </button>
+                                    </div>
+                                    <div className="flex-row flex-axis-center">
+                                        {editName ?
+                                            <>
+                                                <form className="form-edit-name" onSubmit={handleEditNameSubmit}>
+                                                    <input
+                                                        placeholder={name}
+                                                        value={nameEdit}
+                                                        onChange={e => setNameEdit(e.target.value)}
+                                                    />
+                                                </form>
+                                                <button className="icon-normal" onClick={() => setEditName(false)}><Clear className="icon-secondary" /></button>
+                                            </> :
+                                            <>
+                                                <h1 className="color-tertiary ellipsis">{name}</h1>
+                                                {!post.public &&
+                                                    <button className="icon-normal" onClick={() => setEditName(true)}><Edit className="icon-secondary" /></button>
+                                                }
+                                            </>
+                                        }
+                                    </div>
+                                    <h6 className="color-tertiary">OID: <span className="font-courier color-tertiary">{post.data_uuid}</span></h6>
+                                    <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
+                                    <h6 className="color-tertiary">{post.downloads} downloads | {post.favorites.length} favorited</h6>
+                                    <div className="margin-top-very-small" >
+                                        <button className="icon-normal" title="Download" onClick={handleDownload}><CloudDownload className="icon-secondary" /></button>
+                                        {post.favorites && post.favorites.includes(loggedUser.id) ? <button className="icon-normal margin-left-very-small" title="Unfavorite" onClick={handleFavorite}><Favorite className="icon-secondary" /></button> : <button title="Favorite" className="icon-normal margin-left-very-small" onClick={handleFavorite}><FavoriteBorder className="icon-secondary" /></button>}
+                                        <button className="icon-normal margin-left-very-small" title="Cite" onClick={() => setOpenCite(true)}><FormatQuote className="icon-secondary" /></button>
+                                        <button className="icon-normal margin-left-very-small" title="Share" onClick={() => setOpenShare(true)}><Share className="icon-secondary" /></button>
+                                        <button className="icon-normal margin-left-very-small" title="Run" onClick={() => setOpenRun(true)}><PlayArrow className="icon-secondary" /></button>
+                                    </div>
+                                </>
                         }
                     </div>
-                    <h4 className="margin-top-small bold color-error">If any of the information above is wrong please correct before proceed</h4>
-                    <h4 className="margin-top-small bold">Type {name} bellow to proceed</h4>
-                    <input
-                        placeholder={name}
-                        onChange={e => setPublishConfirmationWord(e.target.value)}
-                    />
-                    <button onClick={handlePublish} className={`button-primary margin-top-small ${name === publishConfirmationWord ? "active" : "inactive"}`}>I want to make {post.name} of author {post.author && post.author.name} available to everyone forever!</button>
-                </div>
-            </Modal>
-            <OkaHeader />
-            <div className="oka-hero-background padding-sides-small padding-top-big">
-                {loadingHero ?
-                    <div className="flex-row flex-crossaxis-center"><CircularProgress className="icon-tertiary" /></div> :
-                    <>
-                        {
-                            !post.public && post.author && post.author.username === loggedUser.username &&
-                            <div className="flex-row flex-crossaxis-center">
-                                <button onClick={() => setOpenPublish(true)} className="button-secondary margin-very-small">Publish</button>
-                                <button onClick={() => setOpenDeletePost(true)} className="button-negative margin-very-small">Remove</button>
-                            </div>
-                        }
-
-                        <div className="flex-row margin-top-small">
-                            <div className="flex-column flex-crossaxis-center">
-                                <div className="flex-wrap">
-                                    {
-                                        post.history.length > 0 &&
-                                        (
-                                            showHistory ?
-                                                <>
-                                                    <button className="margin-very-small icon-medium" title="Hide History" onClick={() => setShowHistory(!showHistory)}><ChevronLeft className="icon-tertiary" /></button>
-                                                    {
-                                                        post.history.map((item) =>
-                                                            item.data.step.desc.name &&
-                                                            <div key={item.id} className="flex-row">
-                                                                <button
-                                                                    title="Show Dataset" alt="Show Dataset"
-                                                                    onClick={(e) => handleIconClick(e, item.post, item.id)}
-                                                                    className="box-uuid-history"
-                                                                    style={{ backgroundColor: `rgb(${item.data.colors[0][0]}, ${item.data.colors[0][1]}, ${item.data.colors[0][2]})`, border: `var(--border)` }}>
-                                                                    <span>&nbsp;</span>
-                                                                    {
-                                                                        item.data.colors.slice(1).map((color, index) =>
-                                                                            <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{item.id[index]}</span>
-                                                                        )
-                                                                    }
-                                                                </button>
-                                                                <div className="flex-column flex-axis-center padding-sides-very-small">
-                                                                    <span className="color-tertiary">{item.data.step.desc.name}</span>
-                                                                    <span className="color-tertiary">→</span>
-                                                                </div>
-                                                            </div>
-                                                        )
-                                                    }
-                                                </> :
-                                                <button className="margin-very-small icon-medium" title="Expand History" onClick={() => setShowHistory(!showHistory)}><ChevronRight className="icon-tertiary" /></button>
-                                        )
-                                    }
-                                </div>
-                            </div>
-                            <button
-                                onClick={(e) => copyToClipboard(e, post.data_uuid)}
-                                title="Click to copy to clipboard"
-                                className="box-uuid"
-                                style={{ backgroundColor: `rgb(${post.data_uuid_colors[0][0]}, ${post.data_uuid_colors[0][1]}, ${post.data_uuid_colors[0][2]})`, border: `var(--border)` }}>
-                                <span>&nbsp;</span>
-                                {
-                                    post.data_uuid_colors.slice(1).map((color, index) =>
-                                        <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{post.data_uuid[index]}</span>
-                                    )
-                                }
-                            </button>
-                        </div>
-                        <div className="flex-row flex-axis-center">
-                            {editName ?
-                                <>
-                                    <form className="form-edit-name" onSubmit={handleEditNameSubmit}>
-                                        <input
-                                            placeholder={name}
-                                            value={nameEdit}
-                                            onChange={e => setNameEdit(e.target.value)}
-                                        />
-                                    </form>
-                                    <button className="icon-normal" onClick={() => setEditName(false)}><Clear className="icon-secondary" /></button>
-                                </> :
-                                <>
-                                    <h1 className="color-tertiary ellipsis">{name}</h1>
-                                    {!post.public &&
-                                        <button className="icon-normal" onClick={() => setEditName(true)}><Edit className="icon-secondary" /></button>
-                                    }
-                                </>
-                            }
-                        </div>
-                        <h6 className="color-tertiary">OID: <span className="font-courier color-tertiary">{post.data_uuid}</span></h6>
-                        <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
-                        <h6 className="color-tertiary">{post.downloads} downloads | {post.favorites.length} favorited</h6>
-                        <div className="margin-top-very-small" >
-                            <button className="icon-normal" title="Download" onClick={handleDownload}><CloudDownload className="icon-secondary" /></button>
-                            {post.favorites && post.favorites.includes(loggedUser.id) ? <button className="icon-normal margin-left-very-small" title="Unfavorite" onClick={handleFavorite}><Favorite className="icon-secondary" /></button> : <button title="Favorite" className="icon-normal margin-left-very-small" onClick={handleFavorite}><FavoriteBorder className="icon-secondary" /></button>}
-                            <button className="icon-normal margin-left-very-small" title="Cite" onClick={() => setOpenCite(true)}><FormatQuote className="icon-secondary" /></button>
-                            <button className="icon-normal margin-left-very-small" title="Share" onClick={() => setOpenShare(true)}><Share className="icon-secondary" /></button>
-                            <button className="icon-normal margin-left-very-small" title="Run" onClick={() => setOpenRun(true)}><PlayArrow className="icon-secondary" /></button>
-                        </div>
-                    </>
-                }
-            </div>
-            <OkaNavBar navItems={navItems} />
-            <div className="margin-bottom-huge">{section in navItems ? navItems[section].content : textBox("Section not found.")}</div>
-        </>
+                    <OkaNavBar navItems={navItems} />
+                    <div className="margin-bottom-huge">{section in navItems ? navItems[section].content : textBox("Section not found.")}</div>
+                </>
     )
 }

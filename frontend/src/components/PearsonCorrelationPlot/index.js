@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { ResponsiveHeatMap } from '@nivo/heatmap';
 import api from '../../services/api';
 import { notifyError } from '../../utils';
+import { CircularProgress } from '@material-ui/core';
 
 const mockData = [
     {
@@ -234,79 +235,102 @@ const mockData = [
 
 export default function PearsonCorrelationPlot({ postId, attrs }) {
     const [chartData, setChartData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+    const [render, setRender] = useState(0);
 
     useEffect(() => {
         async function fetchData() {
             try {
                 const response = await api.get(`posts/${postId}/visualize?plt=pearsoncorrelation`);
                 setChartData(response.data);
+                setError(false);
             } catch (error) {
                 notifyError(error);
+                setError(true);
+            } finally {
+                setLoading(false);
             }
         }
         fetchData();
-    }, [postId])
+    }, [postId, render])
+
+    function handleReload() {
+        setRender(render + 1);
+        setLoading(true);
+    }
 
     return (
         <div className="content-box margin-very-small padding-bottom-big">
-            <div className="flex-column padding-small">
-                <h2>Pearson Correlation Plot</h2>
-                <h5>Description</h5>
-            </div>
-            <div className="height-chart">
-                <ResponsiveHeatMap
-                    data={mockData}
-                    keys={[
-                        'hot dog',
-                        'burger',
-                        'sandwich',
-                        'kebab',
-                        'fries',
-                        'donut',
-                        'junk',
-                        'sushi',
-                        'ramen',
-                        'curry',
-                        'udon'
-                    ]}
-                    indexBy="country"
-                    margin={{ top: 100, right: 60, bottom: 60, left: 60 }}
-                    forceSquare={true}
-                    axisTop={{ orient: 'top', tickSize: 5, tickPadding: 5, tickRotation: -90, legend: '', legendOffset: 36 }}
-                    axisRight={null}
-                    axisBottom={null}
-                    axisLeft={{
-                        orient: 'left',
-                        tickSize: 5,
-                        tickPadding: 5,
-                        tickRotation: 0,
-                        legend: 'country',
-                        legendPosition: 'middle',
-                        legendOffset: -40
-                    }}
-                    cellOpacity={1}
-                    cellBorderColor={{ from: 'color', modifiers: [['darker', 0.4]] }}
-                    labelTextColor={{ from: 'color', modifiers: [['darker', 1.8]] }}
-                    defs={[
-                        {
-                            id: 'lines',
-                            type: 'patternLines',
-                            background: 'inherit',
-                            color: 'rgba(0, 0, 0, 0.1)',
-                            rotation: -45,
-                            lineWidth: 4,
-                            spacing: 7
-                        }
-                    ]}
-                    fill={[{ id: 'lines' }]}
-                    animate={true}
-                    motionConfig="wobbly"
-                    motionStiffness={80}
-                    motionDamping={9}
-                    hoverTarget="cell"
-                    cellHoverOthersOpacity={0.25}
-                />
-            </div>
+            {loading ?
+                <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
+
+                error ?
+                    <div className="flex-row flex-crossaxis-center flex-axis-center padding-big">
+                        <div className="margin-sides-verysmall">Problem loading, try to </div>
+                        <button className="button-primary" onClick={handleReload}>Reload</button>
+                    </div> :
+                    <>
+                        <div className="flex-column padding-small">
+                            <h2>Pearson Correlation Plot</h2>
+                            <h5>Description</h5>
+                        </div>
+                        <div className="height-chart">
+                            <ResponsiveHeatMap
+                                data={mockData}
+                                keys={[
+                                    'hot dog',
+                                    'burger',
+                                    'sandwich',
+                                    'kebab',
+                                    'fries',
+                                    'donut',
+                                    'junk',
+                                    'sushi',
+                                    'ramen',
+                                    'curry',
+                                    'udon'
+                                ]}
+                                indexBy="country"
+                                margin={{ top: 100, right: 60, bottom: 60, left: 60 }}
+                                forceSquare={true}
+                                axisTop={{ orient: 'top', tickSize: 5, tickPadding: 5, tickRotation: -90, legend: '', legendOffset: 36 }}
+                                axisRight={null}
+                                axisBottom={null}
+                                axisLeft={{
+                                    orient: 'left',
+                                    tickSize: 5,
+                                    tickPadding: 5,
+                                    tickRotation: 0,
+                                    legend: 'country',
+                                    legendPosition: 'middle',
+                                    legendOffset: -40
+                                }}
+                                cellOpacity={1}
+                                cellBorderColor={{ from: 'color', modifiers: [['darker', 0.4]] }}
+                                labelTextColor={{ from: 'color', modifiers: [['darker', 1.8]] }}
+                                defs={[
+                                    {
+                                        id: 'lines',
+                                        type: 'patternLines',
+                                        background: 'inherit',
+                                        color: 'rgba(0, 0, 0, 0.1)',
+                                        rotation: -45,
+                                        lineWidth: 4,
+                                        spacing: 7
+                                    }
+                                ]}
+                                fill={[{ id: 'lines' }]}
+                                animate={true}
+                                motionConfig="wobbly"
+                                motionStiffness={80}
+                                motionDamping={9}
+                                hoverTarget="cell"
+                                cellHoverOthersOpacity={0.25}
+                            />
+                        </div>
+                    </>
+            }
         </div>
     )
 }

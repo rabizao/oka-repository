@@ -24,7 +24,9 @@ export default function Users(props) {
     const username = props.match.params.username;
     const section = props.match.params.section ? props.match.params.section : "empty";
     const [parsedQueries, setParsedQueries] = useState({});
-    const [loadingHero, setLoadingHero] = useState(true);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+    const [render, setRender] = useState(0);
     const [user, setUser] = useState({});
     const [openEdit, setOpenEdit] = useState(false);
     const [openMessage, setOpenMessage] = useState(false);
@@ -41,11 +43,19 @@ export default function Users(props) {
     const textBox = (text) => {
         return (
             <div className="content-box margin-very-small">
-                {loadingHero ?
+                {loading ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
-                    <div className="flex-row flex-space-between padding-sides-small padding-vertical-small text-box">
-                        {text}
-                    </div>
+
+                    error ?
+                        <div className="flex-row flex-crossaxis-center flex-axis-center padding-big">
+                            <div className="margin-sides-verysmall">Problem loading, try to </div>
+                            <button className="button-primary" onClick={handleReload}>Reload</button>
+                        </div> :
+
+                        <div className="flex-row padding-sides-small padding-vertical-small text-box">
+                            {text}
+                        </div>
+
                 }
             </div>
         )
@@ -105,13 +115,16 @@ export default function Users(props) {
                 setUser(response.data);
                 setName(response.data.name);
                 setAbout_me(response.data.about_me ? response.data.about_me : '');
-                setLoadingHero(false);
+                setError(false);
             } catch (error) {
                 notifyError(error);
+                setError(true);
+            } finally {
+                setLoading(false);
             }
         }
         fetchUser();
-    }, [username])
+    }, [username, render])
 
     async function handleFollow() {
         var newUser = { ...user };
@@ -167,6 +180,11 @@ export default function Users(props) {
         setOpenEdit(true);
         setNameEdit(name);
         setAbout_meEdit(about_me);
+    }
+
+    function handleReload() {
+        setRender(render + 1);
+        setLoading(true);
     }
 
     return (
@@ -231,26 +249,30 @@ export default function Users(props) {
             </Modal>
             <OkaHeader />
             <div className="flex-column flex-axis-center oka-hero-background padding-sides-small padding-top-big">
-                {loadingHero ?
+                {loading ?
                     <CircularProgress className="icon-tertiary" /> :
+                    error ?
+                        <div className="flex-row flex-crossaxis-center flex-axis-center padding-big">
+                            <div className="margin-sides-verysmall color-tertiary">Problem loading, try to </div>
+                            <button className="button-secondary" onClick={handleReload}>Reload</button>
+                        </div> :
+                        <div className="flex-column flex-axis-center padding-medium width-smallest">
+                            <Avatar name={user.name} size="80" round={true} />
+                            <h1 className="color-tertiary margin-top-medium width100 ellipsis text-center">{name}</h1>
+                            <h5 className="color-tertiary margin-top-very-small width100 ellipsis text-center">@{username}</h5>
+                            <h5 className="color-tertiary margin-top-very-small width100 ellipsis text-center">{about_me}</h5>
+                            <h6 className="color-tertiary margin-top-small width100 ellipsis text-center">{user.followed && user.followed.length} following | {user.followers && user.followers.length} followers</h6>
 
-                    <div className="flex-column flex-axis-center padding-medium width-smallest">
-                        <Avatar name={user.name} size="80" round={true} />
-                        <h1 className="color-tertiary margin-top-medium width100 ellipsis text-center">{name}</h1>
-                        <h5 className="color-tertiary margin-top-very-small width100 ellipsis text-center">@{username}</h5>
-                        <h5 className="color-tertiary margin-top-very-small width100 ellipsis text-center">{about_me}</h5>
-                        <h6 className="color-tertiary margin-top-small width100 ellipsis text-center">{user.followed && user.followed.length} following | {user.followers && user.followers.length} followers</h6>
-
-                        {(user.id === loggedUser.id) ?
-                            <div className="flex-row flex-axis-center margin-top-small">
-                                <button onClick={handleOpenEdit} className="button-secondary">Edit</button>
-                            </div> :
-                            <div>
-                                <button onClick={handleFollow} className="button-secondary margin-very-small">{user.followers && user.followers.includes(loggedUser.id) ? "Unfollow" : "Follow"}</button>
-                                <button onClick={() => setOpenMessage(true)} className="button-secondary margin-very-small">Message</button>
-                            </div>
-                        }
-                    </div>
+                            {(user.id === loggedUser.id) ?
+                                <div className="flex-row flex-axis-center margin-top-small">
+                                    <button onClick={handleOpenEdit} className="button-secondary">Edit</button>
+                                </div> :
+                                <div>
+                                    <button onClick={handleFollow} className="button-secondary margin-very-small">{user.followers && user.followers.includes(loggedUser.id) ? "Unfollow" : "Follow"}</button>
+                                    <button onClick={() => setOpenMessage(true)} className="button-secondary margin-very-small">Message</button>
+                                </div>
+                            }
+                        </div>
                 }
 
             </div>
