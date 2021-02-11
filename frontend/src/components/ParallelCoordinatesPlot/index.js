@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { ResponsiveParallelCoordinates } from '@nivo/parallel-coordinates';
 import api from '../../services/api';
 import { notifyError } from '../../utils';
+import { CircularProgress } from '@material-ui/core';
 
 const mockData = [
     {
@@ -2249,90 +2250,113 @@ const mockData = [
 
 export default function ParallelCoordinatesPlot({ postId, attrs }) {
     const [chartData, setChartData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+    const [render, setRender] = useState(0);
 
     useEffect(() => {
         async function fetchData() {
             try {
                 const response = await api.get(`posts/${postId}/visualize?plt=parallelcoordinates`);
                 setChartData(response.data);
+                setError(false);
             } catch (error) {
                 notifyError(error);
+                setError(true);
+            } finally {
+                setLoading(false);
             }
         }
         fetchData();
-    }, [postId])
+    }, [postId, render])
+
+    function handleReload() {
+        setRender(render + 1);
+        setLoading(true);
+    }
 
     return (
         <div className="content-box margin-very-small padding-bottom-big">
-            <div className="flex-column padding-small">
-                <h2>Parallel Coordinates Plot</h2>
-                <h5>Description</h5>
-            </div>
-            <div className="height-chart">
-                <ResponsiveParallelCoordinates
-                    data={mockData}
-                    variables={[
-                        {
-                            key: 'temp',
-                            type: 'linear',
-                            min: 'auto',
-                            max: 'auto',
-                            ticksPosition: 'before',
-                            legend: 'temperature',
-                            legendPosition: 'start',
-                            legendOffset: 20
-                        },
-                        {
-                            key: 'cost',
-                            type: 'linear',
-                            min: 0,
-                            max: 'auto',
-                            ticksPosition: 'before',
-                            legend: 'cost',
-                            legendPosition: 'start',
-                            legendOffset: 20
-                        },
-                        {
-                            key: 'color',
-                            type: 'point',
-                            padding: 1,
-                            values: [
-                                'red',
-                                'yellow',
-                                'green'
-                            ],
-                            legend: 'color',
-                            legendPosition: 'start',
-                            legendOffset: -20
-                        },
-                        {
-                            key: 'target',
-                            type: 'point',
-                            padding: 0,
-                            values: [
-                                'A',
-                                'B',
-                                'C',
-                                'D',
-                                'E'
-                            ],
-                            legend: 'target',
-                            legendPosition: 'start',
-                            legendOffset: -20
-                        },
-                        {
-                            key: 'volume',
-                            type: 'linear',
-                            min: 0,
-                            max: 'auto',
-                            legend: 'volume',
-                            legendPosition: 'start',
-                            legendOffset: -20
-                        }
-                    ]}
-                    margin={{ top: 50, right: 60, bottom: 50, left: 60 }}
-                />
-            </div>
+            {loading ?
+                <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
+
+                error ?
+                    <div className="flex-row flex-crossaxis-center flex-axis-center padding-big">
+                        <div className="margin-sides-verysmall">Problem loading, try to </div>
+                        <button className="button-primary" onClick={handleReload}>Reload</button>
+                    </div> :
+                    <>
+                        <div className="flex-column padding-small">
+                            <h2>Parallel Coordinates Plot</h2>
+                            <h5>Description</h5>
+                        </div>
+                        <div className="height-chart">
+                            <ResponsiveParallelCoordinates
+                                data={mockData}
+                                variables={[
+                                    {
+                                        key: 'temp',
+                                        type: 'linear',
+                                        min: 'auto',
+                                        max: 'auto',
+                                        ticksPosition: 'before',
+                                        legend: 'temperature',
+                                        legendPosition: 'start',
+                                        legendOffset: 20
+                                    },
+                                    {
+                                        key: 'cost',
+                                        type: 'linear',
+                                        min: 0,
+                                        max: 'auto',
+                                        ticksPosition: 'before',
+                                        legend: 'cost',
+                                        legendPosition: 'start',
+                                        legendOffset: 20
+                                    },
+                                    {
+                                        key: 'color',
+                                        type: 'point',
+                                        padding: 1,
+                                        values: [
+                                            'red',
+                                            'yellow',
+                                            'green'
+                                        ],
+                                        legend: 'color',
+                                        legendPosition: 'start',
+                                        legendOffset: -20
+                                    },
+                                    {
+                                        key: 'target',
+                                        type: 'point',
+                                        padding: 0,
+                                        values: [
+                                            'A',
+                                            'B',
+                                            'C',
+                                            'D',
+                                            'E'
+                                        ],
+                                        legend: 'target',
+                                        legendPosition: 'start',
+                                        legendOffset: -20
+                                    },
+                                    {
+                                        key: 'volume',
+                                        type: 'linear',
+                                        min: 0,
+                                        max: 'auto',
+                                        legend: 'volume',
+                                        legendPosition: 'start',
+                                        legendOffset: -20
+                                    }
+                                ]}
+                                margin={{ top: 50, right: 60, bottom: 50, left: 60 }}
+                            />
+                        </div>
+                    </>
+            }
         </div>
     )
 }

@@ -15,6 +15,8 @@ export default function ContentBox(props) {
     const [posts, setPosts] = useState([]);
     const [comments, setComments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+    const [render, setRender] = useState(0);
     const [page, setPage] = useState();
     const [lastPage, setLastPage] = useState();
     const page_size = 20;
@@ -30,14 +32,17 @@ export default function ContentBox(props) {
                 setPosts(response.data);
                 setPage(pagination.page);
                 setLastPage(pagination.last_page);
-                setLoading(false);
+                setError(false);
             } catch (error) {
                 notifyError(error);
+                setError(true);
+            } finally {
+                setLoading(false);
             }
         }
 
         fetchData();
-    }, [props.fetchUrl, user.renderFeed])
+    }, [props.fetchUrl, user.renderFeed, render])
 
     async function handleFavoriteButton(e, post, index) {
         e.preventDefault();
@@ -83,58 +88,69 @@ export default function ContentBox(props) {
         }
     }
 
+    function handleReload() {
+        setRender(render + 1);
+        setLoading(true);
+    }
+
     return (
         <div className={`content-box padding-bottom-big ${props.className}`}>
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
-                <>
-                    <h2 className="padding-sides-small margin-top-medium">{props.titleLink ? <Link to={props.titleLink}>{props.title}</Link> : props.title}</h2>
-                    {posts.length === 0 ? <h4 className="padding-sides-small margin-top-medium">Nothing to show yet</h4> :
-                        <ul className="content-list margin-top-medium">
-                            {posts.map((post, index) =>
-                                <li key={post.id} className="background-hover">
-                                    <div className="content-item flex-row padding-medium">
-                                        <Link to={`/users/${post.author.username}/uploads`} ><Avatar name={post.author.name} size="40" round={true} /></Link>
-                                        <Link className="padding-left-small width100 nowrap" to={`/posts/${post.id}/overview`}>
-                                            <div className="flex-column">
-                                                <div className="ellipsis">
-                                                    <span className="font-size-medium bold">{post.author.name}</span> - <span>{post.author.username}</span> - <TimeAgo datetime={post.timestamp + 'Z'} />
+
+                error ?
+                    <div className="flex-row flex-crossaxis-center flex-axis-center padding-big">
+                        <div className="margin-sides-verysmall">Problem loading, try to </div>
+                        <button className="button-primary" onClick={handleReload}>Reload</button>
+                    </div> :
+                    <>
+                        <h2 className="padding-sides-small margin-top-medium">{props.titleLink ? <Link to={props.titleLink}>{props.title}</Link> : props.title}</h2>
+                        {posts.length === 0 ? <h4 className="padding-sides-small margin-top-medium">Nothing to show yet</h4> :
+                            <ul className="content-list margin-top-medium">
+                                {posts.map((post, index) =>
+                                    <li key={post.id} className="background-hover">
+                                        <div className="content-item flex-row padding-medium">
+                                            <Link to={`/users/${post.author.username}/uploads`} ><Avatar name={post.author.name} size="40" round={true} /></Link>
+                                            <Link className="padding-left-small width100 nowrap" to={`/posts/${post.id}/overview`}>
+                                                <div className="flex-column">
+                                                    <div className="ellipsis">
+                                                        <span className="font-size-medium bold">{post.author.name}</span> - <span>{post.author.username}</span> - <TimeAgo datetime={post.timestamp + 'Z'} />
+                                                    </div>
+                                                    <span className="bold ellipsis width100">{post.name}</span>
+                                                    <span className="ellipsis-3 text-box">{post.description}</span>
+                                                    <span className="padding-top-small">
+                                                        <ul className="flex-row ul-padding-sides-not-first">
+                                                            <li><button onClick={e => handleFavoriteButton(e, post, index)}>{post.favorites.includes(user.id) ? <><Favorite /> {post.favorites.length}</> : <><FavoriteBorder /> {post.favorites.length}</>}</button></li>
+                                                            <li><button onClick={e => handleShowCommentsBox(e, post)}><Message /> {post.comments.length}</button></li>
+                                                        </ul>
+                                                        <ul>
+                                                            {
+                                                                comments[post.id] &&
+                                                                <>
+                                                                    {post.comments.map((comment) =>
+                                                                        <li key={post.id + "/" + comment.id}>
+                                                                            {comment.body}
+                                                                        </li>
+                                                                    )}
+                                                                </>
+                                                            }
+                                                        </ul>
+                                                    </span>
                                                 </div>
-                                                <span className="bold ellipsis width100">{post.name}</span>
-                                                <span className="ellipsis-3 text-box">{post.description}</span>
-                                                <span className="padding-top-small">
-                                                    <ul className="flex-row ul-padding-sides-not-first">
-                                                        <li><button onClick={e => handleFavoriteButton(e, post, index)}>{post.favorites.includes(user.id) ? <><Favorite /> {post.favorites.length}</> : <><FavoriteBorder /> {post.favorites.length}</>}</button></li>
-                                                        <li><button onClick={e => handleShowCommentsBox(e, post)}><Message /> {post.comments.length}</button></li>
-                                                    </ul>
-                                                    <ul>
-                                                        {
-                                                            comments[post.id] &&
-                                                            <>
-                                                                {post.comments.map((comment) =>
-                                                                    <li key={post.id + "/" + comment.id}>
-                                                                        {comment.body}
-                                                                    </li>
-                                                                )}
-                                                            </>
-                                                        }
-                                                    </ul>
-                                                </span>
-                                            </div>
-                                        </Link>
-                                    </div>
-                                </li>
-                            )}
-                            {posts.length > 0 && (
-                                page < lastPage ?
-                                    <li className="flex-row flex-crossaxis-center margin-top-small">
-                                        <button className="button-primary" onClick={handleNextPage}>Load more</button>
-                                    </li> :
-                                    <li className="flex-row flex-crossaxis-center margin-top-small">Nothing more to show</li>)
-                            }
-                        </ul>
-                    }
-                </>
+                                            </Link>
+                                        </div>
+                                    </li>
+                                )}
+                                {posts.length > 0 && (
+                                    page < lastPage ?
+                                        <li className="flex-row flex-crossaxis-center margin-top-small">
+                                            <button className="button-primary" onClick={handleNextPage}>Load more</button>
+                                        </li> :
+                                        <li className="flex-row flex-crossaxis-center margin-top-small">Nothing more to show</li>)
+                                }
+                            </ul>
+                        }
+                    </>
             }
         </div>
 
