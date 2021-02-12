@@ -40,7 +40,7 @@ export default function OkaConversationBox() {
                 setReplyUser(resp2.data);
                 setError(false);
             } catch (error) {
-                notifyError(error);
+                notifyError(error, false);
                 setError(true);
             } finally {
                 setLoading(false);

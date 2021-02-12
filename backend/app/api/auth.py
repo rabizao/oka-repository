@@ -1,4 +1,5 @@
 from app import jwt
+from app.errors.handlers import HTTPAbort
 from . import bp
 from app.models import User, Token
 from app.schemas import UserLoginSchema, LoginResponseSchema, ApiTokenSchema
@@ -22,6 +23,10 @@ class Login(MethodView):
     def post(self, args):
         """Login the user"""
         user = User.get_by_username(args['username'])
+
+        if not user.email_confirmed:
+            HTTPAbort.email_not_confirmed()
+
         access_token = create_access_token(identity=args['username'])
         access_jti = get_jti(encoded_token=access_token)
         user.set_revoked_jti_store(access_jti, False)

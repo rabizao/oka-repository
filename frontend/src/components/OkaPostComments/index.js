@@ -33,7 +33,7 @@ export default function OkaPostComments({ postId }) {
                 setComments(response.data);
                 setError(false);
             } catch (error) {
-                notifyError(error);
+                notifyError(error, false);
                 setError(true);
             } finally {
                 setLoading(false);
@@ -72,7 +72,7 @@ export default function OkaPostComments({ postId }) {
             newReplies[commentId] = ''
             setReplies(newReplies);
         } catch (error) {
-            notifyError(error, true);
+            notifyError(error);
         }
     }
 
@@ -98,7 +98,7 @@ export default function OkaPostComments({ postId }) {
             setComments(newComments);
             setNewComment('');
         } catch (error) {
-            notifyError(error, true);
+            notifyError(error);
         }
     }
 

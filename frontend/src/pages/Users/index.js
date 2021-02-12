@@ -117,7 +117,7 @@ export default function Users(props) {
                 setAbout_me(response.data.about_me ? response.data.about_me : '');
                 setError(false);
             } catch (error) {
-                notifyError(error);
+                notifyError(error, false);
                 setError(true);
             } finally {
                 setLoading(false);

@@ -1,6 +1,6 @@
 import { NotificationManager } from 'react-notifications';
 
-export const notifyError = (error, force = false) => {
+export const notifyError = (error, force = true) => {
     const response = {};
     let accessDenied = false;
     if (error && error.response && error.response.data && error.response.data.errors) {

@@ -34,7 +34,7 @@ export default function ContentBox(props) {
                 setLastPage(pagination.last_page);
                 setError(false);
             } catch (error) {
-                notifyError(error);
+                notifyError(error, false);
                 setError(true);
             } finally {
                 setLoading(false);

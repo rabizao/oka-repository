@@ -107,7 +107,7 @@ export default function Posts(props) {
                 setError(false);
             } catch (error) {
                 setError(true);
-                const resp = notifyError(error);
+                const resp = notifyError(error, false);
                 if (resp.accessDenied) {
                     setAccessDenied(true);
                 }

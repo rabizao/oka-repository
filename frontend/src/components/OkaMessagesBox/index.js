@@ -40,7 +40,7 @@ export default function OkaMessagesBox() {
                 setFilteredMessages(response.data);
                 setError(false);
             } catch (error) {
-                notifyError(error);
+                notifyError(error, false);
                 setError(true);
             } finally {
                 setLoading(false);
