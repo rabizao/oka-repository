@@ -68,14 +68,12 @@ export default function OkaPostComments({ postId }) {
             const newComments = [...comments];
             newComments[index].replies.push(response.data); //unshift to put at the beginning
             setComments(newComments);
+            var newReplies = [...replies];
+            newReplies[commentId] = ''
+            setReplies(newReplies);
         } catch (error) {
-            notifyError(error);
+            notifyError(error, true);
         }
-
-        var newReplies = [...replies];
-        newReplies[commentId] = ''
-        setReplies(newReplies);
-
     }
 
     function handleSetReplies(e, commentId) {
@@ -98,10 +96,10 @@ export default function OkaPostComments({ postId }) {
             const newComments = [...comments];
             newComments.unshift(response.data);
             setComments(newComments);
+            setNewComment('');
         } catch (error) {
-            notifyError(error);
+            notifyError(error, true);
         }
-        setNewComment('');
     }
 
     async function handleNextPage() {
