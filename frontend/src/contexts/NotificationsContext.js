@@ -82,7 +82,7 @@ const NotificationsProvider = ({ children }) => {
                         setNotificationsBadgeCount(payload);
                     } else if (notificationName === "unread_message_count") {
                         setMessagesBadgeCount(payload);
-                        if (payload > 0) {
+                        if (payload > 0 && !first) {
                             setNotifyNewMessage(notifyNewMessage + 1);
                             playAlertSound();
                         }

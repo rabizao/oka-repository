@@ -301,7 +301,7 @@ class PostsVisualizeById(MethodView):
     @bp.arguments(VisualizeQuerySchema, location="query")
     def get(self, args, id):
         """
-        Return the visualize of a dataset of a post with id {id}
+        Return the data for visualization of the dataset of the post with id {id}
         """
         logged_user = User.get_by_username(get_jwt_identity())
         post = Post.query.get(id)
@@ -314,23 +314,28 @@ class PostsVisualizeById(MethodView):
 
         tatu = current_app.config['TATU_SERVER']
         data = tatu.fetch(post.data_uuid, lazy=False)
-        data_modified = data >> Sample_(n=min(len(data.X), 500)) * Binarize
-
         datas = []
-        for m in data_modified.Yt[0]:
-            inner = []
-            for k in range(len(data_modified.X)):
-                if m == data_modified.Y[k]:
-                    inner.append(
-                        {
-                            "x": data_modified.X[k, args['x']],
-                            "y": data_modified.X[k, args['y']],
-                        })
-            datas.append(
-                {
-                    "id": m,
-                    "data": inner
-                })
+
+        if args["plt"] == "scatter":
+            data_modified = data >> Sample_(n=min(len(data.X), 500)) * Binarize
+            for m in data_modified.Yt[0]:
+                inner = []
+                for k in range(len(data_modified.X)):
+                    if m == data_modified.Y[k]:
+                        inner.append(
+                            {
+                                "x": data_modified.X[k, args['x']],
+                                "y": data_modified.X[k, args['y']],
+                            })
+                datas.append(
+                    {
+                        "id": m,
+                        "data": inner
+                    })
+        elif args["plt"] == "parallelcoordinates":
+            data_modified = data >> Sample_(n=min(len(data.X), 500))
+        elif args["plt"] == "pearsoncorrelation":
+            data_modified = data >> Sample_(n=min(len(data.X), 500))
 
         return json.dumps(datas)
 

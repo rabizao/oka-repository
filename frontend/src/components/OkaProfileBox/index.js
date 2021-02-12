@@ -15,6 +15,8 @@ export default function OkaProfileBox({ fetch_url }) {
     let location = useLocation();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+    const [render, setRender] = useState(0);
     const loggedUser = useContext(LoginContext);
     const [page, setPage] = useState();
     const [totalPages, setTotalPages] = useState();
@@ -30,13 +32,16 @@ export default function OkaProfileBox({ fetch_url }) {
                 setTotalPages(pagination.total_pages);
                 setLastPage(pagination.last_page);
                 setUsers(response.data);
-                setLoading(false);
+                setError(false);
             } catch (error) {
-                notifyError(error);
+                notifyError(error, false);
+                setError(true);
+            } finally {
+                setLoading(false);
             }
         }
         fetchData();
-    }, [fetch_url])
+    }, [fetch_url, render])
 
     async function handleFollow(index) {
         var newUsers = [...users];
@@ -73,56 +78,71 @@ export default function OkaProfileBox({ fetch_url }) {
         history.push(location.pathname + "?" + queryString.stringify(newParsedQueries));
     }
 
+    function handleReload() {
+        setRender(render + 1);
+        setLoading(true);
+    }
+
     return (
         <div className="content-box margin-very-small">
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
-                users.length > 0 ?
-                    <>
-                        <div className="flex-row padding-sides-small padding-vertical-small">
-                            <span>Rows</span>
-                            <div className="padding-left-small">
-                                <select name="pageSize" id="pageSize" onChange={(e) => handleChangePageSize(e)} value={pageSize}>
-                                    <option value={2}>2</option>
-                                    <option value={10}>10</option>
-                                    <option value={50}>50</option>
-                                    <option value={100}>100</option>
-                                </select>
-                            </div>
-                            <span className="padding-sides-small">{page} of {totalPages}</span>
-                            {
-                                page > 1 ?
-                                    <button onClick={handlePreviousPage}><ArrowLeft /></button> :
-                                    <ArrowLeft className="icon-primary-deactivated" />
-                            }
-                            {
-                                page < lastPage ?
-                                    <button onClick={handleNextPage}><ArrowRight className="icon-primary" /></button> :
-                                    <ArrowRight className="icon-primary-deactivated" />
-                            }
-                        </div>
-                        <div className="flex-wrap flex-crossaxis-center padding-medium">
-                            {
-                                users.map((user, index) =>
-                                    <div key={user.id} className="flex-column flex-axis-center box padding-medium background-hover width-smallest">
-                                        <Link to={`/users/${user.username}/uploads`}><Avatar name={user.name} size="80" round={true} /></Link>
-                                        <h1 className="color-primary margin-top-medium width100 ellipsis text-center"><Link to={`/users/${user.username}/uploads`}>{user.name}</Link></h1>
-                                        <h5 className="color-primary margin-top-very-small width100 ellipsis text-center">{user.about_me}</h5>
-                                        <h6 className="color-primary margin-top-small width100 ellipsis text-center">{user.followed && user.followed.length} following | {user.followers && user.followers.length} followers</h6>
 
-                                        {(user.id !== loggedUser.id) &&
-                                            <button onClick={() => handleFollow(index)} className="button-primary margin-vertical-small">{user.followers && user.followers.includes(loggedUser.id) ? "Unfollow" : "Follow"}</button>
-                                        }
+                error ?
+                    <div className="flex-row flex-crossaxis-center flex-axis-center padding-big">
+                        <div className="margin-sides-verysmall">Problem loading, try to </div>
+                        <button className="button-primary" onClick={handleReload}>Reload</button>
+                    </div> :
+                    <>
+                        {users.length > 0 ?
+                            <>
+                                <div className="flex-row padding-sides-small padding-vertical-small">
+                                    <span>Rows</span>
+                                    <div className="padding-left-small">
+                                        <select name="pageSize" id="pageSize" onChange={(e) => handleChangePageSize(e)} value={pageSize}>
+                                            <option value={2}>2</option>
+                                            <option value={10}>10</option>
+                                            <option value={50}>50</option>
+                                            <option value={100}>100</option>
+                                        </select>
                                     </div>
-                                )
-                            }
-                        </div>
-                    </> :
-                    <div className="flex-row padding-sides-small padding-vertical-small">
-                        {
-                            <h4 className="flex-row flex-axis-center">No results found</h4>
+                                    <span className="padding-sides-small">{page} of {totalPages}</span>
+                                    {
+                                        page > 1 ?
+                                            <button onClick={handlePreviousPage}><ArrowLeft /></button> :
+                                            <ArrowLeft className="icon-primary-deactivated" />
+                                    }
+                                    {
+                                        page < lastPage ?
+                                            <button onClick={handleNextPage}><ArrowRight className="icon-primary" /></button> :
+                                            <ArrowRight className="icon-primary-deactivated" />
+                                    }
+                                </div>
+                                <div className="flex-wrap flex-crossaxis-center padding-medium">
+                                    {
+                                        users.map((user, index) =>
+                                            <div key={user.id} className="flex-column flex-axis-center box padding-medium background-hover width-smallest">
+                                                <Link to={`/users/${user.username}/uploads`}><Avatar name={user.name} size="80" round={true} /></Link>
+                                                <h1 className="color-primary margin-top-medium width100 ellipsis text-center"><Link to={`/users/${user.username}/uploads`}>{user.name}</Link></h1>
+                                                <h5 className="color-primary margin-top-very-small width100 ellipsis text-center">{user.about_me}</h5>
+                                                <h6 className="color-primary margin-top-small width100 ellipsis text-center">{user.followed && user.followed.length} following | {user.followers && user.followers.length} followers</h6>
+
+                                                {(user.id !== loggedUser.id) &&
+                                                    <button onClick={() => handleFollow(index)} className="button-primary margin-vertical-small">{user.followers && user.followers.includes(loggedUser.id) ? "Unfollow" : "Follow"}</button>
+                                                }
+                                            </div>
+                                        )
+                                    }
+                                </div>
+                            </> :
+                            <div className="flex-row padding-sides-small padding-vertical-small">
+                                {
+                                    <h4 className="flex-row flex-axis-center">No results found</h4>
+                                }
+                            </div>
                         }
-                    </div>
+                    </>
+
             }
         </div >
     )

@@ -770,6 +770,10 @@ button, input[type="submit"], input[type="reset"] {
     max-height: 70vh;
 }
 
+.max-height-50vh {
+    max-height: 50vh;
+}
+
 .height-chart {
     height: 500px;
 }

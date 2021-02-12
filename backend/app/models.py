@@ -229,7 +229,8 @@ class User(PaginateMixin, db.Model):
     def accessible_posts(self):
         can_see = self.accessible.filter(Post.active)
         own = Post.query.filter_by(user_id=self.id, active=True)
-        return can_see.union(own)
+        public = Post.query.filter_by(public=True)
+        return can_see.union(own).union(public)
         # return self.accessible.filter(access.c.post_id == post.id).all() and self.posts
 
     def accessible_twin_posts(self, post):
