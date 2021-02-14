@@ -447,10 +447,18 @@ class ApiCase(unittest.TestCase):
         response = self.client.post(f"/api/posts/{post_id}/publish")
         self.assertEqual(response.status_code, 422)
         self.login(create_user=False)
-        # Publish
+        # Can not publish without set meta
         self.assertEqual(post.public, False)
         response = self.client.post(f"/api/posts/{post_id}/publish")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(post.public, False)
+        # Publish
+        post.classification = True
+        post.regression = True
+        post.clustering = True
+        self.assertEqual(post.public, False)
+        response = self.client.post(f"/api/posts/{post_id}/publish")
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(post.public, True)
         # Can not publish twice
         response = self.client.post(f"/api/posts/{post_id}/publish")

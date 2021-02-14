@@ -223,7 +223,7 @@ class PostsFavoriteById(MethodView):
 @bp.route('/posts/<int:id>/publish')
 class PostsPublishById(MethodView):
     @bp.auth_required
-    @bp.response(code=200)
+    @bp.response(code=201)
     def post(self, id):
         """
         Publish post with id {id}
