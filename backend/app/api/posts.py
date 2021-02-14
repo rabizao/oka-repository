@@ -240,7 +240,18 @@ class PostsPublishById(MethodView):
         if post.author != logged_user:
             HTTPAbort.not_authorized()
 
-        # TODO: Verify if the post has all classification variables before next steps
+        metas = ["classification", "regression", "clustering", "other_tasks", "life_sciences",
+                 "physical_sciences", "engineering", "social", "business", "finances", "astronomy", "quantum_mechanics",
+                 "medical", "financial", "other_domains", "categorical", "numerical", "text", "images", "time_series",
+                 "other_features"]
+
+        n_meta = 0
+        for meta in metas:
+            if getattr(post, meta):
+                n_meta = n_meta + 1
+
+        if n_meta < 3 or n_meta > 5:
+            HTTPAbort.not_possible("metas", complement="Post must have between 3 and 5 metafeatures before publish")
 
         post.public = True
         post.publish_timestamp = datetime.utcnow()
@@ -336,6 +347,21 @@ class PostsVisualizeById(MethodView):
             data_modified = data >> Sample_(n=min(len(data.X), 500))
         elif args["plt"] == "pearsoncorrelation":
             data_modified = data >> Sample_(n=min(len(data.X), 500))
+        elif args["plt"] == "histogram":
+            import pandas as pd
+            import numpy as np
+            data_modified = data >> Binarize
+            cut = list(map(float, data_modified.X[:, int(args["x"])]))
+            maximum = max(cut)
+            minimum = min(cut)
+            step = (maximum - minimum) / 10
+            ranges = np.arange(minimum, maximum, step)
+
+            df = pd.DataFrame(cut)
+            df2 = df.groupby(pd.cut(cut, ranges)).count()
+            datas = [{"x": str(k), "count": v}
+                     for k, v in df2.to_dict()[0].items()]
+            # print([{"x": str(k), "count": v} for k, v in df2.to_dict()[0].items()])
 
         return json.dumps(datas)
 
