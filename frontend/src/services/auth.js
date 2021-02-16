@@ -10,18 +10,16 @@ export const isAuthenticated = () => {
 
 export const getUserId = () => Number(localStorage.getItem('id'));
 export const getUserUsername = () => localStorage.getItem('username');
+export const getUserGravatar = () => localStorage.getItem('gravatar');
 export const getUserName = () => localStorage.getItem('name');
 export const getToken = () => localStorage.getItem('token');
-export const getRefreshToken = () => localStorage.getItem('refresh_token');
 
-export const login = (access_token, refresh_token) => {
+export const login = (access_token) => {
     localStorage.setItem('token', access_token);
-    localStorage.setItem('refresh_token', refresh_token);
 }
 
 export const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refresh_token');
+    localStorage.clear();
 }
 
 export const timeStart = () => (new Date(Date.UTC(1970))).toISOString();

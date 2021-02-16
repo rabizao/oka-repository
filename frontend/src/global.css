@@ -458,6 +458,10 @@ button, input[type="submit"], input[type="reset"] {
     border-radius: 10px;
 }
 
+.radius-rounded {
+    border-radius: 50%;
+}
+
 .button-primary:hover {
     color: var(--secondary-color);
 }

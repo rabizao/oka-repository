@@ -24,10 +24,10 @@ export default function Login() {
         try {
             const response = await api.post('auth/login', data);
             localStorage.setItem('token', response.data.access_token);
-            localStorage.setItem('refresh_token', response.data.refresh_token);
             localStorage.setItem('id', response.data.id);
             localStorage.setItem('username', response.data.username);
             localStorage.setItem('name', response.data.name);
+            localStorage.setItem('gravatar', response.data.gravatar);
             loginContext.setLogged(true);
             history.push('/home');
         } catch (error) {

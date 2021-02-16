@@ -57,6 +57,7 @@ class UserBaseSchema(SQLAlchemyAutoSchema):
         validate.Length(min=6, max=36)], required=True)
     followed = auto_field(dump_only=True)
     followers = auto_field(dump_only=True)
+    gravatar = fields.Function(lambda obj: obj.gravatar(), dump_only=True)
 
 
 class CommentBaseSchema(SQLAlchemyAutoSchema):
@@ -243,15 +244,10 @@ class UserRecoverKeySchema(UserBaseSchema):
 
 class LoginResponseSchema(SQLAlchemySchema):
     access_token = fields.String(dump_only=True)
-    refresh_token = fields.String(dump_only=True)
     id = fields.Integer(dump_only=True)
     username = fields.String(dump_only=True)
     name = fields.String(dump_only=True)
-
-
-class RefreshTokenSchema(SQLAlchemySchema):
-    access_token = fields.String(dump_only=True)
-    refresh_token = fields.String(load_only=True)
+    gravatar = fields.String(dump_only=True)
 
 
 class ApiTokenSchema(SQLAlchemySchema):

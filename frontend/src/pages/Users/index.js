@@ -3,7 +3,6 @@ import { useHistory, useLocation } from 'react-router-dom';
 
 import './styles.css';
 
-import Avatar from 'react-avatar';
 import { CircularProgress } from '@material-ui/core';
 import Modal from '@material-ui/core/Modal';
 
@@ -18,6 +17,7 @@ import queryString from 'query-string';
 import { notifyError } from '../../utils';
 import { NotificationManager } from 'react-notifications';
 import OkaProfileBox from '../../components/OkaProfileBox';
+import Gravatar from '../../components/Gravatar';
 
 export default function Users(props) {
     const location = useLocation()
@@ -170,7 +170,7 @@ export default function Users(props) {
             await api.post(`messages/${user.username}`, data);
             setOpenMessage(false);
             setMessage('');
-            NotificationManager.success("Message sent. Click here to follow the conversation", "Sent", 4000, () => { history.push(`/users/${username}/conversation/${user.username}`) })
+            NotificationManager.success("Message sent. Click here to follow your conversations", "Sent", 4000, () => { history.push(`/users/${loggedUser.username}/messages`) })
         } catch (error) {
             notifyError(error);
         }
@@ -257,7 +257,11 @@ export default function Users(props) {
                             <button className="button-secondary" onClick={handleReload}>Reload</button>
                         </div> :
                         <div className="flex-column flex-axis-center padding-medium width-smallest">
-                            <Avatar name={user.name} size="80" round={true} />
+                            {
+                                loggedUser.username === user.username ?
+                                    <a href="http://en.gravatar.com/emails/" target="blank" title="Change your avatar at gravatars' website"><Gravatar link={user.gravatar} rounded={true} /></a> :
+                                    <Gravatar link={user.gravatar} rounded={true} />
+                            }
                             <h1 className="color-tertiary margin-top-medium width100 ellipsis text-center">{name}</h1>
                             <h5 className="color-tertiary margin-top-very-small width100 ellipsis text-center">@{username}</h5>
                             <h5 className="color-tertiary margin-top-very-small width100 ellipsis text-center">{about_me}</h5>

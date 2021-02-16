@@ -34,7 +34,8 @@ class Login(MethodView):
             'access_token': access_token,
             'id': user.id,
             'username': args['username'],
-            'name': user.name
+            'name': user.name,
+            'gravatar': user.gravatar(),
         }
 
         return response

@@ -9,6 +9,8 @@ from werkzeug.security import check_password_hash
 from . import celery, db
 from app.utils import consts
 
+from hashlib import md5
+
 
 followers = db.Table('followers',
                      db.Column('follower_id', db.Integer,
@@ -115,6 +117,11 @@ class User(PaginateMixin, db.Model):
     accessible = db.relationship(
         'Post', secondary=access,
         backref=db.backref('allowed', lazy='dynamic'), lazy='dynamic')
+
+    def gravatar(self):
+        digest = md5(self.email.lower().encode('utf-8')).hexdigest()
+        return 'https://www.gravatar.com/avatar/{}?d=identicon'.format(
+            digest)
 
     def check_password(self, password):
         return check_password_hash(self.password, password)

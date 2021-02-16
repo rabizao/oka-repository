@@ -5,12 +5,12 @@ import { ArrowLeft, ArrowRight, Search } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 import TimeAgo from 'timeago-react';
 import queryString from 'query-string';
-import Avatar from 'react-avatar';
 
 import api from '../../services/api';
 import { notifyError } from '../../utils';
 import { LoginContext } from '../../contexts/LoginContext';
 import { NotificationsContext } from '../../contexts/NotificationsContext';
+import Gravatar from '../Gravatar';
 
 export default function OkaMessagesBox() {
     let location = useLocation();
@@ -137,9 +137,9 @@ export default function OkaMessagesBox() {
                         {filteredMessages.map(
                             (message) =>
                                 <div key={message.id} className="flex-row box-horizontal background-hover padding-sides-small">
-                                    <Link className="flex-row flex-axis-center flex-space-between padding-vertical-small width100" to={`/users/${loggedUser.username}/conversation/${message.author.username === loggedUser.username ? message.recipient.username : message.author.username}`}>
-                                        <div className="bold min-width-big max-width-very-huge ellipsis width100">
-                                            <Avatar name={message.author.username === loggedUser.username ? message.recipient.name : message.author.name} size="24" round={true} />
+                                    <Link className="flex-row flex-space-between padding-vertical-small width100" to={`/users/${loggedUser.username}/conversation/${message.author.username === loggedUser.username ? message.recipient.username : message.author.username}`}>
+                                        <div className="flex-row bold min-width-big max-width-very-huge ellipsis width100">
+                                            <Gravatar link={message.author.username === loggedUser.username ? message.recipient.gravatar : message.author.gravatar} size={24} rounded={true} />
                                             <span className="padding-left-small">{message.author.username === loggedUser.username ? message.recipient.name : message.author.name}</span>
                                         </div>
                                         <div id="small-hide" className="ellipsis padding-sides-small width100">
