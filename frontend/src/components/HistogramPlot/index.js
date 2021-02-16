@@ -5,37 +5,6 @@ import api from '../../services/api';
 import { notifyError } from '../../utils';
 import { CircularProgress } from '@material-ui/core';
 
-const mockData = [
-    {
-        "x": 1,
-        "count": 50,
-    },
-    {
-        "x": 2,
-        "count": 30,
-    },
-    {
-        "x": 3,
-        "count": 10,
-    },
-    {
-        "x": 4,
-        "count": 20,
-    },
-    {
-        "x": 5,
-        "count": 60,
-    },
-    {
-        "x": 6,
-        "count": 60,
-    },
-    {
-        "x": 7,
-        "count": 70,
-    }
-]
-
 export default function HistogramPlot({ postId, attrs }) {
     const [chartData, setChartData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -51,7 +20,7 @@ export default function HistogramPlot({ postId, attrs }) {
                 setChartData(response.data);
                 setError(false);
             } catch (error) {
-                notifyError(error);
+                notifyError(error, false);
                 setError(true);
             } finally {
                 setLoading(false);
@@ -66,7 +35,7 @@ export default function HistogramPlot({ postId, attrs }) {
     }
 
     return (
-        <div className="content-box margin-very-small padding-bottom-big">
+        <div className="content-box margin-very-very-small padding-bottom-big">
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
@@ -78,7 +47,7 @@ export default function HistogramPlot({ postId, attrs }) {
                     <>
                         <div className="flex-column padding-small">
                             <h2>Histogram Plot</h2>
-                            <h5>Description</h5>
+                            <h5>Binarized sample splitted in 10 pieces</h5>
                             {
                                 attrs &&
                                 <>
@@ -101,7 +70,7 @@ export default function HistogramPlot({ postId, attrs }) {
                                                     .map(([key, value]) =>
                                                         <button key={key}
                                                             onClick={() => setX(key)}
-                                                            className={`${x === key ? ("button-negative") : "button-primary"} margin-very-small`}
+                                                            className={`${x === key ? ("button-negative") : "button-primary"} margin-very-very-small`}
                                                         >
                                                             {value}
                                                         </button>
@@ -113,7 +82,7 @@ export default function HistogramPlot({ postId, attrs }) {
                         </div>
                         <div className="height-chart">
                             <ResponsiveBar
-                                data={mockData}
+                                data={chartData}
                                 keys={["count"]}
                                 indexBy="x"
                                 margin={{ top: 50, right: 30, bottom: 50, left: 60 }}

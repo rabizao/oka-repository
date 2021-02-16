@@ -1,6 +1,6 @@
 import { NotificationManager } from 'react-notifications';
 
-export const notifyError = (error) => {
+export const notifyError = (error, force = true) => {
     const response = {};
     let accessDenied = false;
     if (error && error.response && error.response.data && error.response.data.errors) {
@@ -19,7 +19,9 @@ export const notifyError = (error) => {
         }
         response["accessDenied"] = accessDenied
     } else {
-        // NotificationManager.error("Network error. Please try again later", "Error", 4000)
+        if (force) {
+            NotificationManager.error("Network error. Please try again later", "Error", 4000)
+        }
     }
     return response
 }

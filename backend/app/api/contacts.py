@@ -3,7 +3,7 @@ from app.errors.handlers import HTTPAbort
 from . import bp
 from app.api.tasks import send_async_email
 from app.models import Contact, User
-from app.schemas import ContactBaseSchema
+from app.schemas import ContactBaseSchema, ContactQuerySchema
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity
 
@@ -11,7 +11,7 @@ from flask_jwt_extended import get_jwt_identity
 @bp.route('/contacts')
 class Contacts(MethodView):
     @bp.auth_required
-    @bp.arguments(ContactBaseSchema, location="query")
+    @bp.arguments(ContactQuerySchema, location="query")
     @bp.response(ContactBaseSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters):

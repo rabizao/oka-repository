@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 
-import Avatar from 'react-avatar';
 import { CircularProgress } from '@material-ui/core';
 import { ArrowLeft, ArrowRight } from '@material-ui/icons';
 import queryString from 'query-string';
@@ -9,6 +8,7 @@ import queryString from 'query-string';
 import { LoginContext } from '../../contexts/LoginContext';
 import api from '../../services/api';
 import { notifyError } from '../../utils';
+import Gravatar from '../Gravatar';
 
 export default function OkaProfileBox({ fetch_url }) {
     const history = useHistory();
@@ -34,7 +34,7 @@ export default function OkaProfileBox({ fetch_url }) {
                 setUsers(response.data);
                 setError(false);
             } catch (error) {
-                notifyError(error);
+                notifyError(error, false);
                 setError(true);
             } finally {
                 setLoading(false);
@@ -84,7 +84,7 @@ export default function OkaProfileBox({ fetch_url }) {
     }
 
     return (
-        <div className="content-box margin-very-small">
+        <div className="content-box margin-very-very-small">
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
@@ -122,7 +122,7 @@ export default function OkaProfileBox({ fetch_url }) {
                                     {
                                         users.map((user, index) =>
                                             <div key={user.id} className="flex-column flex-axis-center box padding-medium background-hover width-smallest">
-                                                <Link to={`/users/${user.username}/uploads`}><Avatar name={user.name} size="80" round={true} /></Link>
+                                                <Link to={`/users/${user.username}/uploads`}><Gravatar link={user.gravatar} size={80} rounded={true} /></Link>
                                                 <h1 className="color-primary margin-top-medium width100 ellipsis text-center"><Link to={`/users/${user.username}/uploads`}>{user.name}</Link></h1>
                                                 <h5 className="color-primary margin-top-very-small width100 ellipsis text-center">{user.about_me}</h5>
                                                 <h6 className="color-primary margin-top-small width100 ellipsis text-center">{user.followed && user.followed.length} following | {user.followers && user.followers.length} followers</h6>

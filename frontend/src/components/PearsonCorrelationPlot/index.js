@@ -105,131 +105,6 @@ const mockData = [
         "curryColor": "hsl(75, 70%, 50%)",
         "udon": 70,
         "udonColor": "hsl(50, 70%, 50%)"
-    },
-    {
-        "country": "AI",
-        "hot dog": 2,
-        "hot dogColor": "hsl(185, 70%, 50%)",
-        "burger": 71,
-        "burgerColor": "hsl(38, 70%, 50%)",
-        "sandwich": 59,
-        "sandwichColor": "hsl(17, 70%, 50%)",
-        "kebab": 51,
-        "kebabColor": "hsl(356, 70%, 50%)",
-        "fries": 47,
-        "friesColor": "hsl(121, 70%, 50%)",
-        "donut": 95,
-        "donutColor": "hsl(207, 70%, 50%)",
-        "junk": 40,
-        "junkColor": "hsl(163, 70%, 50%)",
-        "sushi": 81,
-        "sushiColor": "hsl(162, 70%, 50%)",
-        "ramen": 80,
-        "ramenColor": "hsl(273, 70%, 50%)",
-        "curry": 6,
-        "curryColor": "hsl(318, 70%, 50%)",
-        "udon": 45,
-        "udonColor": "hsl(199, 70%, 50%)"
-    },
-    {
-        "country": "AL",
-        "hot dog": 83,
-        "hot dogColor": "hsl(194, 70%, 50%)",
-        "burger": 60,
-        "burgerColor": "hsl(51, 70%, 50%)",
-        "sandwich": 18,
-        "sandwichColor": "hsl(302, 70%, 50%)",
-        "kebab": 78,
-        "kebabColor": "hsl(303, 70%, 50%)",
-        "fries": 36,
-        "friesColor": "hsl(215, 70%, 50%)",
-        "donut": 14,
-        "donutColor": "hsl(65, 70%, 50%)",
-        "junk": 80,
-        "junkColor": "hsl(276, 70%, 50%)",
-        "sushi": 31,
-        "sushiColor": "hsl(16, 70%, 50%)",
-        "ramen": 99,
-        "ramenColor": "hsl(16, 70%, 50%)",
-        "curry": 55,
-        "curryColor": "hsl(108, 70%, 50%)",
-        "udon": 29,
-        "udonColor": "hsl(163, 70%, 50%)"
-    },
-    {
-        "country": "AM",
-        "hot dog": 2,
-        "hot dogColor": "hsl(197, 70%, 50%)",
-        "burger": 52,
-        "burgerColor": "hsl(295, 70%, 50%)",
-        "sandwich": 34,
-        "sandwichColor": "hsl(83, 70%, 50%)",
-        "kebab": 38,
-        "kebabColor": "hsl(190, 70%, 50%)",
-        "fries": 19,
-        "friesColor": "hsl(62, 70%, 50%)",
-        "donut": 76,
-        "donutColor": "hsl(203, 70%, 50%)",
-        "junk": 82,
-        "junkColor": "hsl(199, 70%, 50%)",
-        "sushi": 13,
-        "sushiColor": "hsl(132, 70%, 50%)",
-        "ramen": 61,
-        "ramenColor": "hsl(222, 70%, 50%)",
-        "curry": 7,
-        "curryColor": "hsl(239, 70%, 50%)",
-        "udon": 93,
-        "udonColor": "hsl(42, 70%, 50%)"
-    },
-    {
-        "country": "AO",
-        "hot dog": 5,
-        "hot dogColor": "hsl(356, 70%, 50%)",
-        "burger": 2,
-        "burgerColor": "hsl(253, 70%, 50%)",
-        "sandwich": 51,
-        "sandwichColor": "hsl(67, 70%, 50%)",
-        "kebab": 78,
-        "kebabColor": "hsl(86, 70%, 50%)",
-        "fries": 55,
-        "friesColor": "hsl(260, 70%, 50%)",
-        "donut": 72,
-        "donutColor": "hsl(239, 70%, 50%)",
-        "junk": 46,
-        "junkColor": "hsl(166, 70%, 50%)",
-        "sushi": 81,
-        "sushiColor": "hsl(212, 70%, 50%)",
-        "ramen": 35,
-        "ramenColor": "hsl(34, 70%, 50%)",
-        "curry": 93,
-        "curryColor": "hsl(156, 70%, 50%)",
-        "udon": 52,
-        "udonColor": "hsl(78, 70%, 50%)"
-    },
-    {
-        "country": "AQ",
-        "hot dog": 83,
-        "hot dogColor": "hsl(128, 70%, 50%)",
-        "burger": 47,
-        "burgerColor": "hsl(296, 70%, 50%)",
-        "sandwich": 86,
-        "sandwichColor": "hsl(59, 70%, 50%)",
-        "kebab": 89,
-        "kebabColor": "hsl(315, 70%, 50%)",
-        "fries": 57,
-        "friesColor": "hsl(39, 70%, 50%)",
-        "donut": 62,
-        "donutColor": "hsl(111, 70%, 50%)",
-        "junk": 61,
-        "junkColor": "hsl(176, 70%, 50%)",
-        "sushi": 9,
-        "sushiColor": "hsl(235, 70%, 50%)",
-        "ramen": 1,
-        "ramenColor": "hsl(206, 70%, 50%)",
-        "curry": 35,
-        "curryColor": "hsl(148, 70%, 50%)",
-        "udon": 84,
-        "udonColor": "hsl(354, 70%, 50%)"
     }
 ]
 
@@ -246,7 +121,7 @@ export default function PearsonCorrelationPlot({ postId, attrs }) {
                 setChartData(response.data);
                 setError(false);
             } catch (error) {
-                notifyError(error);
+                notifyError(error, false);
                 setError(true);
             } finally {
                 setLoading(false);
@@ -261,7 +136,7 @@ export default function PearsonCorrelationPlot({ postId, attrs }) {
     }
 
     return (
-        <div className="content-box margin-very-small padding-bottom-big">
+        <div className="content-box margin-very-very-small padding-bottom-big">
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 

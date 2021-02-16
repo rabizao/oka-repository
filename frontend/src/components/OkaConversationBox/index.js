@@ -7,12 +7,12 @@ import { CircularProgress } from '@material-ui/core';
 import { ArrowBack } from '@material-ui/icons';
 
 import TimeAgo from 'timeago-react';
-import Avatar from 'react-avatar';
 
 import api from '../../services/api';
 import { notifyError } from '../../utils';
 import { LoginContext } from '../../contexts/LoginContext';
 import { NotificationsContext } from '../../contexts/NotificationsContext';
+import Gravatar from '../Gravatar';
 
 export default function OkaConversationBox() {
     const [messages, setMessages] = useState([]);
@@ -40,7 +40,7 @@ export default function OkaConversationBox() {
                 setReplyUser(resp2.data);
                 setError(false);
             } catch (error) {
-                notifyError(error);
+                notifyError(error, false);
                 setError(true);
             } finally {
                 setLoading(false);
@@ -85,7 +85,7 @@ export default function OkaConversationBox() {
     }
 
     return (
-        <div className="content-box margin-very-small padding-bottom-big">
+        <div className="content-box margin-very-very-small padding-bottom-big">
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
@@ -98,7 +98,7 @@ export default function OkaConversationBox() {
                         <div className="flex-row padding-medium flex-axis-center">
                             <Link to={`/users/${loggedUser.username}/messages`}><ArrowBack /></Link>
                             <div className="padding-left-small">
-                                <Avatar name={replyUser.name} size="40" round={true} />
+                                <Gravatar link={replyUser.gravatar} size={60} rounded={true} />
                             </div>
                             <span className="padding-left-very-small">{replyUser.name}</span>
                         </div>

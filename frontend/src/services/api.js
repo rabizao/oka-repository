@@ -5,6 +5,7 @@ export const url = process.env.REACT_APP_URL ? process.env.REACT_APP_URL : "http
 export const frontendUrl = process.env.REACT_APP_FRONTENDURL ? process.env.REACT_APP_FRONTENDURL : "http://localhost:3000";
 export const dashUrl = process.env.REACT_APP_DASHURL ? process.env.REACT_APP_DASHURL : "http://localhost:8050/view";
 export const downloadsUrl = process.env.REACT_APP_DOWNLOADS_FOLDER ? process.env.REACT_APP_DOWNLOADS_FOLDER : "http://localhost:5000/api/downloads";
+export const recaptchaKey = "6LftpFoaAAAAAJjVDNn3fXe25lWvX262R-FAq0QT";
 
 const api = axios.create({
 	baseURL: `${url}/api/`

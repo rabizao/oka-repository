@@ -69,14 +69,20 @@ class ApiCase(unittest.TestCase):
         self.app_context.pop()
         self.tatu.close()
 
-    def login(self, create_user=True, user=create_user1, long_term=False, admin=False, token=None):
+    def login(self, create_user=True, user=create_user1, long_term=False, admin=False, token=None, confirm_email=True):
         # 1 - Create
         if create_user:
             response = self.client.post("/api/users", json=user)
             self.assertEqual(response.status_code, 201)
             data = response.json
 
-        # 1 - Login
+        # 2 - Confirm email
+        if confirm_email:
+            u = User.get_by_username(user['username'])
+            u.email_confirmed = True
+            db.session.commit()
+
+        # 3 - Login
         login = user.copy()
         del login["email"]
         del login["name"]
@@ -87,8 +93,8 @@ class ApiCase(unittest.TestCase):
         self.client.environ_base["HTTP_AUTHORIZATION"] = "Bearer " + token
 
         if admin:
-            user = User.query.get(data['id'])
-            user.role = consts.get("ROLE_ADMIN")
+            u = User.get_by_username(user['username'])
+            u.role = consts.get("ROLE_ADMIN")
             db.session.commit()
 
         if long_term:
@@ -204,7 +210,7 @@ class ApiCase(unittest.TestCase):
         # 1
         with patch('app.api.tasks.send_async_email.delay'):
             response = self.client.post(
-                "/api/contacts", json={"name": "Test", "email": "test@test.com"})
+                "/api/contacts", json={"name": "Test", "email": "test@test.com", "message": "Ola"})
         self.assertEqual(response.status_code, 201)
         # 2
         self.login(admin=True)
@@ -441,10 +447,18 @@ class ApiCase(unittest.TestCase):
         response = self.client.post(f"/api/posts/{post_id}/publish")
         self.assertEqual(response.status_code, 422)
         self.login(create_user=False)
-        # Publish
+        # Can not publish without set meta
         self.assertEqual(post.public, False)
         response = self.client.post(f"/api/posts/{post_id}/publish")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(post.public, False)
+        # Publish
+        post.classification = True
+        post.regression = True
+        post.clustering = True
+        self.assertEqual(post.public, False)
+        response = self.client.post(f"/api/posts/{post_id}/publish")
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(post.public, True)
         # Can not publish twice
         response = self.client.post(f"/api/posts/{post_id}/publish")
@@ -543,7 +557,8 @@ class ApiCase(unittest.TestCase):
         # Can not get visualize of inexistent post
         response = self.client.get("/api/posts/100/visualize?plt=scatter")
         self.assertEqual(response.status_code, 422)
-        response = self.client.get(f"/api/posts/{post_id}/visualize?plt=scatter")
+        response = self.client.get(
+            f"/api/posts/{post_id}/visualize?plt=scatter")
         self.assertEqual(response.status_code, 200)
         # 14
         result = process_file.run(files, username2)

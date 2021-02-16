@@ -19,7 +19,7 @@ export default function Confirmation(props) {
                 props.location && props.location.state && props.location.state.username && props.location.state.email ? (
                     <>
                         <h6 className="margin-top-small max-width-very-huge">We sent a confirmation key to {props.location.state.email}. Please write it down below in order to confirm your email.</h6>
-                        <form className="form flex-column content-box margin-very-small margin-top-small" onSubmit={handleSubmit}>
+                        <form className="form flex-column content-box margin-very-very-small margin-top-small" onSubmit={handleSubmit}>
                             <input
                                 placeholder="key"
                                 value={key}

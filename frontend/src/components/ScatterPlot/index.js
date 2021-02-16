@@ -22,7 +22,7 @@ export default function ScatterPlot({ postId, attrs }) {
                 setChartData(response.data);
                 setError(false);
             } catch (error) {
-                notifyError(error);
+                notifyError(error, false);
                 setError(true);
             } finally {
                 setLoading(false);
@@ -45,7 +45,7 @@ export default function ScatterPlot({ postId, attrs }) {
     }
 
     return (
-        <div className="content-box margin-very-small padding-bottom-big">
+        <div className="content-box margin-very-very-small padding-bottom-big">
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
@@ -80,7 +80,7 @@ export default function ScatterPlot({ postId, attrs }) {
                                                     .map(([key, value]) =>
                                                         <button key={key}
                                                             onClick={() => handleSelection(key, 0)}
-                                                            className={`${x === key ? ("button-negative") : "button-primary"} margin-very-small`}
+                                                            className={`${x === key ? ("button-negative") : "button-primary"} margin-very-very-small`}
                                                         >
                                                             {value}
                                                         </button>
@@ -108,7 +108,7 @@ export default function ScatterPlot({ postId, attrs }) {
 
                                                         <button key={key}
                                                             onClick={() => handleSelection(key, 1)}
-                                                            className={`${y === key ? ("button-negative") : "button-primary"} margin-very-small`}
+                                                            className={`${y === key ? ("button-negative") : "button-primary"} margin-very-very-small`}
                                                         >
                                                             {value}
                                                         </button>
@@ -122,7 +122,7 @@ export default function ScatterPlot({ postId, attrs }) {
                         <div className="height-chart">
                             <ResponsiveScatterPlot
                                 data={chartData}
-                                margin={{ top: 60, right: 140, bottom: 70, left: 90 }}
+                                margin={{ top: 60, right: 90, bottom: 70, left: 90 }}
                                 xScale={{ type: 'linear', min: 'auto', max: 'auto' }}
                                 xFormat={function (e) { return e }}
                                 yScale={{ type: 'linear', min: 'auto', max: 'auto' }}
@@ -153,7 +153,7 @@ export default function ScatterPlot({ postId, attrs }) {
                                         anchor: 'bottom-right',
                                         direction: 'column',
                                         justify: false,
-                                        translateX: 130,
+                                        translateX: 0,
                                         translateY: 0,
                                         itemWidth: 100,
                                         itemHeight: 12,

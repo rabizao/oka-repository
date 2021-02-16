@@ -48,13 +48,13 @@ export default function OkaClient() {
                 </div>
             </Modal>
             <OkaHeader />
-            <div className="content-box margin-very-small">
+            <div className="content-box margin-very-very-small">
                 <div className="flex-column flex-axis-center padding-sides-small">
                     <h1 className="margin-top-big">OKA Client</h1>
                     <h5 className="margin-top-small">With OKA Client you can have access to all data sets directly from your Machine Learning model code</h5>
                     <div className="flex-row flex-axis-center margin-top-small margin-bottom-big">
                         <button onClick={handleOpenApiToken} className="button-primary">Get Token</button>
-                        <a className="margin-left-small" href="https://rabizao.github.io/oka-repository" target="blank"><button className="button-primary">Documentation</button></a>
+                        <a className="margin-left-small" href="https://rabizao.github.io/oka" target="blank"><button className="button-primary">Documentation</button></a>
                     </div>                    
                 </div>
             </div>

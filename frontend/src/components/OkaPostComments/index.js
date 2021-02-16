@@ -7,10 +7,10 @@ import { Message } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 
 import TimeAgo from 'timeago-react';
-import Avatar from 'react-avatar';
 
 import api from '../../services/api';
 import { notifyError } from '../../utils';
+import Gravatar from '../Gravatar';
 
 export default function OkaPostComments({ postId }) {
     const [comments, setComments] = useState([]);
@@ -33,7 +33,7 @@ export default function OkaPostComments({ postId }) {
                 setComments(response.data);
                 setError(false);
             } catch (error) {
-                notifyError(error);
+                notifyError(error, false);
                 setError(true);
             } finally {
                 setLoading(false);
@@ -68,14 +68,12 @@ export default function OkaPostComments({ postId }) {
             const newComments = [...comments];
             newComments[index].replies.push(response.data); //unshift to put at the beginning
             setComments(newComments);
+            var newReplies = [...replies];
+            newReplies[commentId] = ''
+            setReplies(newReplies);
         } catch (error) {
             notifyError(error);
         }
-
-        var newReplies = [...replies];
-        newReplies[commentId] = ''
-        setReplies(newReplies);
-
     }
 
     function handleSetReplies(e, commentId) {
@@ -98,10 +96,10 @@ export default function OkaPostComments({ postId }) {
             const newComments = [...comments];
             newComments.unshift(response.data);
             setComments(newComments);
+            setNewComment('');
         } catch (error) {
             notifyError(error);
         }
-        setNewComment('');
     }
 
     async function handleNextPage() {
@@ -124,7 +122,7 @@ export default function OkaPostComments({ postId }) {
     }
 
     return (
-        <div className="content-box margin-very-small padding-bottom-big">
+        <div className="content-box margin-very-very-small padding-bottom-big">
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
@@ -147,7 +145,7 @@ export default function OkaPostComments({ postId }) {
                             {comments.map((comment, index) =>
                                 <li key={comment.id} className="flex-column background-hover">
                                     <div className="content-item flex-row padding-medium">
-                                        <div><Link to={`/users/${comment.author.username}/uploads`} ><Avatar name={comment.author.name} size="40" round={true} /></Link></div>
+                                        <div><Link to={`/users/${comment.author.username}/uploads`} ><Gravatar link={comment.author.gravatar} size={40} rounded={true} /></Link></div>
                                         <div className="flex-column padding-sides-small width100">
                                             <div>
                                                 <Link to={`/users/${comment.author.username}/uploads`} ><span className="font-size-medium bold link">{comment.author.name}</span></Link> - <span>{comment.author.username}</span> - <TimeAgo datetime={comment.timestamp + 'Z'} />
@@ -173,7 +171,7 @@ export default function OkaPostComments({ postId }) {
                                                             {comment.replies.map((reply) =>
                                                                 <li key={reply.id} className="box flex-column background-hover-strong">
                                                                     <div className="content-item flex-row padding-medium">
-                                                                        <div><Link to={`/users/${reply.author.username}/uploads`} ><Avatar name={reply.author.name} size="30" round={true} /></Link></div>
+                                                                        <div><Link to={`/users/${reply.author.username}/uploads`} ><Gravatar link={reply.author.gravatar} size={30} rounded={true} /></Link></div>
                                                                         <div className="flex-column padding-sides-small width100">
                                                                             <div>
                                                                                 <Link to={`/users/${reply.author.username}/uploads`} ><span className="font-size-medium bold link">{reply.author.name}</span></Link> - <span>{reply.author.username}</span> - <TimeAgo datetime={reply.timestamp + 'Z'} />

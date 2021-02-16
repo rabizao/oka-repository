@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link, useHistory } from 'react-router-dom';
-import Avatar from 'react-avatar';
 import { Message, Favorite, FavoriteBorder } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 import TimeAgo from 'timeago-react';
@@ -10,6 +9,7 @@ import { LoginContext } from '../../contexts/LoginContext';
 
 import './styles.css';
 import { notifyError } from '../../utils';
+import Gravatar from '../Gravatar';
 
 export default function ContentBox(props) {
     const [posts, setPosts] = useState([]);
@@ -34,7 +34,7 @@ export default function ContentBox(props) {
                 setLastPage(pagination.last_page);
                 setError(false);
             } catch (error) {
-                notifyError(error);
+                notifyError(error, false);
                 setError(true);
             } finally {
                 setLoading(false);
@@ -110,7 +110,7 @@ export default function ContentBox(props) {
                                 {posts.map((post, index) =>
                                     <li key={post.id} className="background-hover">
                                         <div className="content-item flex-row padding-medium">
-                                            <Link to={`/users/${post.author.username}/uploads`} ><Avatar name={post.author.name} size="40" round={true} /></Link>
+                                            <Link to={`/users/${post.author.username}/uploads`} ><Gravatar link={post.author.gravatar} size={40} rounded={true} /></Link>
                                             <Link className="padding-left-small width100 nowrap" to={`/posts/${post.id}/overview`}>
                                                 <div className="flex-column">
                                                     <div className="ellipsis">

@@ -42,7 +42,7 @@ export default function OkaPostsBox({ fetch_url }) {
                 setFilteredPosts(response.data);
                 setError(false);
             } catch (error) {
-                notifyError(error);
+                notifyError(error, false);
                 setError(true);
             } finally {
                 setLoading(false);
@@ -131,7 +131,7 @@ export default function OkaPostsBox({ fetch_url }) {
     }
 
     return (
-        <div className="content-box margin-very-small">
+        <div className="content-box margin-very-very-small">
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
