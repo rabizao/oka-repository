@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
+import ReCAPTCHA from "react-google-recaptcha";
 
 import './styles.css';
 
-import api from '../../services/api';
+import api, {recaptchaKey} from '../../services/api';
 import { notifyError } from '../../utils';
 
 export default function Register() {
@@ -13,6 +14,7 @@ export default function Register() {
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [blockSubmit, setBlockSubmit] = useState(true);
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -25,7 +27,7 @@ export default function Register() {
 
         try {
             await api.post('users', data);
-            history.push({pathname: '/confirmation', state: {username: username, email: email}});
+            history.push({ pathname: '/confirmation', state: { username: username, email: email } });
         } catch (error) {
             notifyError(error);
         }
@@ -35,7 +37,7 @@ export default function Register() {
         <div className="margin-top-big flex-column flex-axis-center">
             <h1><Link to="/home">Oka</Link></h1>
             <h6 className="margin-top-small">Please fill in your data</h6>
-            <form className="form flex-column content-box margin-very-small margin-top-small" onSubmit={handleSubmit}>
+            <form className="form flex-column content-box margin-very-very-small margin-top-small" onSubmit={handleSubmit}>
                 <input
                     placeholder="Your name"
                     value={name}
@@ -58,7 +60,17 @@ export default function Register() {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                 />
-                <button className="button-primary" type="submit">Register</button>
+                <div className="margin-very-small">
+                    <ReCAPTCHA
+                        sitekey={recaptchaKey}
+                        onChange={() => setBlockSubmit(false)}
+                    />
+                </div>
+                {
+                    blockSubmit ?
+                        <button className="button-primary-disabled" value="click" disabled>Register</button> :
+                        <button className="button-primary" type="submit">Register</button>
+                }
             </form>
             <h6 className="margin-top-small">Already registered? <Link className="link-underline" to="/login">Login now!</Link></h6>
         </div>

@@ -30,7 +30,7 @@ export default function AccountRecover() {
         <div className="margin-top-big flex-column flex-axis-center">
             <h1><Link to="/home">Oka</Link></h1>
             <h6 className="margin-top-small max-width-very-huge">Please write down below your email to get instructions about how to recover your account.</h6>
-            <form className="form flex-column content-box margin-very-small margin-top-small" onSubmit={handleSubmit}>
+            <form className="form flex-column content-box margin-very-very-small margin-top-small" onSubmit={handleSubmit}>
                 <input
                     type="email"
                     placeholder="Your email"

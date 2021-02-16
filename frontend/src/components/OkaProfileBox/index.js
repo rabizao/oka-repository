@@ -84,7 +84,7 @@ export default function OkaProfileBox({ fetch_url }) {
     }
 
     return (
-        <div className="content-box margin-very-small">
+        <div className="content-box margin-very-very-small">
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 

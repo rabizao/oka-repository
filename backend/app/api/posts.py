@@ -19,6 +19,9 @@ from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
 from . import bp
 from .tasks import create_post
 
+import pandas as pd
+import numpy as np
+
 
 def save_files(input_files):
     files = []
@@ -251,7 +254,8 @@ class PostsPublishById(MethodView):
                 n_meta = n_meta + 1
 
         if n_meta < 3 or n_meta > 5:
-            HTTPAbort.not_possible("metas", complement="Post must have between 3 and 5 metafeatures before publish")
+            HTTPAbort.not_possible(
+                "metas", complement="Post must have between 3 and 5 metafeatures before publish")
 
         post.public = True
         post.publish_timestamp = datetime.utcnow()
@@ -346,10 +350,13 @@ class PostsVisualizeById(MethodView):
         elif args["plt"] == "parallelcoordinates":
             data_modified = data >> Sample_(n=min(len(data.X), 500))
         elif args["plt"] == "pearsoncorrelation":
-            data_modified = data >> Sample_(n=min(len(data.X), 500))
+            df = pd.DataFrame(data.X)
+
+            for row, v in df.corr().to_dict().items():
+                for column, corr in v.items():
+                    datas.append({"x": row, "y": column, "color": corr})
+
         elif args["plt"] == "histogram":
-            import pandas as pd
-            import numpy as np
             data_modified = data >> Binarize
             cut = list(map(float, data_modified.X[:, int(args["x"])]))
             maximum = max(cut)

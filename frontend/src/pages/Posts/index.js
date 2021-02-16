@@ -296,7 +296,7 @@ export default function Posts(props) {
 
     const textBox = (text) => {
         return (
-            <div className="content-box margin-very-small">
+            <div className="content-box margin-very-very-small">
                 {loading ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
@@ -354,7 +354,7 @@ export default function Posts(props) {
     const overviewBox = (text) => {
 
         return (
-            <div className="content-box margin-very-small">
+            <div className="content-box margin-very-very-small">
                 {loading ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
@@ -432,7 +432,7 @@ export default function Posts(props) {
                                 </div>
                             }
                             <h2 className="padding-small">Description</h2>
-                            <div className="content-box margin-very-small">
+                            <div className="content-box margin-very-very-small">
                                 <div className="padding-sides-small padding-vertical-small text-box">
                                     {editDescription ?
                                         <div className="flex-column">
@@ -503,7 +503,7 @@ export default function Posts(props) {
         }
 
         return (
-            <div className="content-box margin-very-small">
+            <div className="content-box margin-very-very-small">
                 {loading ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
@@ -530,7 +530,7 @@ export default function Posts(props) {
 
     // const visualizer = (uuid) => {
     //     return (
-    //         <div className="content-box margin-very-small">
+    //         <div className="content-box margin-very-very-small">
     //             <iframe title="iframe-dash" className="iframe-dash" src={`${dashUrl}/${uuid}`}></iframe>
     //         </div>
     //     )
@@ -821,7 +821,7 @@ export default function Posts(props) {
                                     <button
                                         key={collaborator.username}
                                         onClick={(e) => handleSubmitCollaborator(e, collaborator.username)}
-                                        className={"button-negative margin-very-small"}
+                                        className={"button-negative margin-very-very-small"}
                                     >
                                         {collaborator.username}
                                     </button>
@@ -999,8 +999,8 @@ export default function Posts(props) {
                                     {
                                         !post.public && post.author && post.author.username === loggedUser.username &&
                                         <div className="flex-row flex-crossaxis-center">
-                                            <button onClick={() => setOpenPublish(true)} className="button-secondary margin-very-small">Publish</button>
-                                            <button onClick={() => setOpenDeletePost(true)} className="button-negative margin-very-small">Remove</button>
+                                            <button onClick={() => setOpenPublish(true)} className="button-secondary margin-very-very-small">Publish</button>
+                                            <button onClick={() => setOpenDeletePost(true)} className="button-negative margin-very-very-small">Remove</button>
                                         </div>
                                     }
 
@@ -1012,7 +1012,7 @@ export default function Posts(props) {
                                                     (
                                                         showHistory ?
                                                             <>
-                                                                <button className="margin-very-small icon-medium" title="Hide History" onClick={() => setShowHistory(!showHistory)}><ChevronLeft className="icon-tertiary" /></button>
+                                                                <button className="margin-very-very-small icon-medium" title="Hide History" onClick={() => setShowHistory(!showHistory)}><ChevronLeft className="icon-tertiary" /></button>
                                                                 {
                                                                     post.history.map((item) =>
                                                                         item.data.step.desc.name &&
@@ -1037,7 +1037,7 @@ export default function Posts(props) {
                                                                     )
                                                                 }
                                                             </> :
-                                                            <button className="margin-very-small icon-medium" title="Expand History" onClick={() => setShowHistory(!showHistory)}><ChevronRight className="icon-tertiary" /></button>
+                                                            <button className="margin-very-very-small icon-medium" title="Expand History" onClick={() => setShowHistory(!showHistory)}><ChevronRight className="icon-tertiary" /></button>
                                                     )
                                                 }
                                             </div>

@@ -443,5 +443,5 @@ class Contact(PaginateMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(140))
     email = db.Column(db.String(140))
-    message = db.Column(db.Text())
+    message = db.Column(db.String(600), nullable=False)
     active = db.Column(db.Boolean, default=True)

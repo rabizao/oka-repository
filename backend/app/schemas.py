@@ -422,6 +422,8 @@ class ContactBaseSchema(SQLAlchemyAutoSchema):
         model = Contact
 
     id = auto_field(dump_only=True)
+    message = auto_field(validate=[
+        validate.Length(min=1, max=600)])
 
 
 class TaskBaseSchema(SQLAlchemyAutoSchema):

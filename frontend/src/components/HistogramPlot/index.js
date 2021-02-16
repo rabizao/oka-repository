@@ -35,7 +35,7 @@ export default function HistogramPlot({ postId, attrs }) {
     }
 
     return (
-        <div className="content-box margin-very-small padding-bottom-big">
+        <div className="content-box margin-very-very-small padding-bottom-big">
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
@@ -70,7 +70,7 @@ export default function HistogramPlot({ postId, attrs }) {
                                                     .map(([key, value]) =>
                                                         <button key={key}
                                                             onClick={() => setX(key)}
-                                                            className={`${x === key ? ("button-negative") : "button-primary"} margin-very-small`}
+                                                            className={`${x === key ? ("button-negative") : "button-primary"} margin-very-very-small`}
                                                         >
                                                             {value}
                                                         </button>

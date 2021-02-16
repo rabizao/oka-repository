@@ -254,6 +254,10 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .margin-very-small {
+    margin: 10px;
+}
+
+.margin-very-very-small {
     margin: 5px;
 }
 

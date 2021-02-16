@@ -120,7 +120,7 @@ export default function Search(props) {
 
     const textBox = (text) => {
         return (
-            <div className="content-box margin-very-small">
+            <div className="content-box margin-very-very-small">
                 <div className="flex-row flex-space-between padding-sides-small padding-vertical-small text-box">
                     {text}
                 </div>
@@ -140,7 +140,7 @@ export default function Search(props) {
 
     const datasets = () => {
         return (
-            <div className="content-box margin-very-small">
+            <div className="content-box margin-very-very-small">
                 <button className={`${filter ? "button-negative" : "button-primary"} margin-small`} onClick={handleFilterButton}>
                     {filter ? "Clear Filters" : "Filter"}
                 </button>
@@ -149,12 +149,12 @@ export default function Search(props) {
                         <div className="flex-column content-box padding-small">
                             {Object.entries(filterOptions).map(([option, obj]) =>
                                 <div key={option}>
-                                    <h3 className="margin-very-small">{option}</h3>
+                                    <h3 className="margin-very-very-small">{option}</h3>
                                     {obj.map((item) =>
                                         <button
                                             key={item.tag}
                                             onClick={() => handleSelection(item.tag)}
-                                            className={`${parsedQueries[item.tag] ? ("button-negative") : "button-primary"} margin-very-small`}
+                                            className={`${parsedQueries[item.tag] ? ("button-negative") : "button-primary"} margin-very-very-small`}
                                         >
                                             {item.title}
                                         </button>

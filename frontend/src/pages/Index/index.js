@@ -1,11 +1,12 @@
 import React, { useContext, useState } from "react";
 import { Link, useHistory } from 'react-router-dom';
+import ReCAPTCHA from "react-google-recaptcha";
 
 import './styles.css';
 
 import { LoginContext } from '../../contexts/LoginContext';
 import PopOver from '../../components/PopOver';
-import api from '../../services/api';
+import api, { recaptchaKey } from '../../services/api';
 
 import uspLogoImg from '../../assets/usp-logo-png.png';
 import okaIconOnImg from '../../assets/okaicon-on.png';
@@ -47,6 +48,7 @@ const StaticMenu = () => {
 export default function Index() {
     const loggedUser = useContext(LoginContext);
     const [okaIconOn, setOkaIconOn] = useState(false);
+    const [blockSubmit, setBlockSubmit] = useState(true);
     // const [okaViewIconOn, setOkaViewIconOn] = useState(false);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -56,7 +58,7 @@ export default function Index() {
     useEffect(() => {
         if (loggedUser.logged) {
             history.push("/home");
-        }        
+        }
     }, [loggedUser.logged, history])
 
     async function handleContactSubmit(e) {
@@ -105,7 +107,17 @@ export default function Index() {
                                     value={message}
                                     onChange={e => setMessage(e.target.value)}
                                 />
-                                <button className="button-primary" type="submit">Submit</button>
+                                <div className="margin-very-small">
+                                    <ReCAPTCHA
+                                        sitekey={recaptchaKey}
+                                        onChange={() => setBlockSubmit(false)}
+                                    />
+                                </div>
+                                {
+                                    blockSubmit ?
+                                        <button className="button-primary-disabled" value="click" disabled>Submit</button> :
+                                        <button className="button-primary" type="submit">Submit</button>
+                                }
                             </form>
                         </div>
                     }
@@ -198,16 +210,16 @@ export default function Index() {
                             <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
                         </div>
                     </Section>
-                    </div>
+                </div>
 
-                    <Section id="whoweare" className="background-primary-color margin-top-big padding-bottom-big padding-top-navbar padding-sides-small text-center">
-                        <div className="flex-column flex-axis-center padding-top-big">
-                            <h1 className="underline-active color-tertiary">Who we are</h1>
-                            <h4 className="padding-top-medium color-tertiary">We are a small (but productive!) team of scientists</h4>
-                            <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
-                        </div>
-                    </Section>
-                
+                <Section id="whoweare" className="background-primary-color margin-top-big padding-bottom-big padding-top-navbar padding-sides-small text-center">
+                    <div className="flex-column flex-axis-center padding-top-big">
+                        <h1 className="underline-active color-tertiary">Who we are</h1>
+                        <h4 className="padding-top-medium color-tertiary">We are a small (but productive!) team of scientists</h4>
+                        <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
+                    </div>
+                </Section>
+
                 <footer className="padding-big flex-wrap flex-crossaxis-center background-primary-color">
                     <h6 className="color-tertiary">CeMEAI - ICMC - University of São Paulo | Av. Trabalhador São Carlense, 200 - São Carlos/SP - Brazil</h6>
                 </footer>

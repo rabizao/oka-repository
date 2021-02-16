@@ -40,7 +40,7 @@ export default function Login() {
             <div className="margin-top-big flex-column flex-axis-center">
                 <h1><Link to="/home">Oka</Link></h1>
                 <h6 className="margin-top-small">Please fill in your data</h6>
-                <form className="form flex-column content-box margin-very-small margin-top-small" onSubmit={handleSubmit}>
+                <form className="form flex-column content-box margin-very-very-small margin-top-small" onSubmit={handleSubmit}>
                     <input
                         placeholder="Username"
                         value={username}

@@ -42,7 +42,7 @@ export default function Users(props) {
 
     const textBox = (text) => {
         return (
-            <div className="content-box margin-very-small">
+            <div className="content-box margin-very-very-small">
                 {loading ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
@@ -268,8 +268,8 @@ export default function Users(props) {
                                     <button onClick={handleOpenEdit} className="button-secondary">Edit</button>
                                 </div> :
                                 <div>
-                                    <button onClick={handleFollow} className="button-secondary margin-very-small">{user.followers && user.followers.includes(loggedUser.id) ? "Unfollow" : "Follow"}</button>
-                                    <button onClick={() => setOpenMessage(true)} className="button-secondary margin-very-small">Message</button>
+                                    <button onClick={handleFollow} className="button-secondary margin-very-very-small">{user.followers && user.followers.includes(loggedUser.id) ? "Unfollow" : "Follow"}</button>
+                                    <button onClick={() => setOpenMessage(true)} className="button-secondary margin-very-very-small">Message</button>
                                 </div>
                             }
                         </div>

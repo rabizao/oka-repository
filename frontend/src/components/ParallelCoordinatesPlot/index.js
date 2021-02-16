@@ -2276,7 +2276,7 @@ export default function ParallelCoordinatesPlot({ postId, attrs }) {
     }
 
     return (
-        <div className="content-box margin-very-small padding-bottom-big">
+        <div className="content-box margin-very-very-small padding-bottom-big">
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
