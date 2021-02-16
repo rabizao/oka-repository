@@ -426,6 +426,15 @@ class ContactBaseSchema(SQLAlchemyAutoSchema):
         validate.Length(min=1, max=600)])
 
 
+class ContactQuerySchema(SQLAlchemySchema):
+    class Meta:
+        unknown = EXCLUDE
+
+    name = fields.String()
+    email = fields.String()
+    message = fields.String()
+
+
 class TaskBaseSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Task

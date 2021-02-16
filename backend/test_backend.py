@@ -210,7 +210,7 @@ class ApiCase(unittest.TestCase):
         # 1
         with patch('app.api.tasks.send_async_email.delay'):
             response = self.client.post(
-                "/api/contacts", json={"name": "Test", "email": "test@test.com"})
+                "/api/contacts", json={"name": "Test", "email": "test@test.com", "message": "Ola"})
         self.assertEqual(response.status_code, 201)
         # 2
         self.login(admin=True)
