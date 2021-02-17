@@ -30,6 +30,7 @@ export default function Users(props) {
     const [user, setUser] = useState({});
     const [openEdit, setOpenEdit] = useState(false);
     const [openMessage, setOpenMessage] = useState(false);
+    const [openAvatar, setOpenAvatar] = useState(false);
     const [message, setMessage] = useState('');
     const [name, setName] = useState('');
     const [about_me, setAbout_me] = useState('');
@@ -247,6 +248,16 @@ export default function Users(props) {
                     </form>
                 </div>
             </Modal>
+            <Modal
+                open={openAvatar}
+                onClose={() => setOpenAvatar(false)}
+            >
+                <div className="modal padding-big flex-column">
+                    <h3 className="margin-top-small">Update your avatar</h3>
+                    <h5 className="margin-top-small">Your avatar is the Gravatar linked to your email</h5>
+                    <a className="flex-row flex-crossaxis-center margin-top-small button-primary" href="https://gravatar.com" target="blank" title="Change your avatar at gravatars' website">Update at Gravatar</a>
+                </div>
+            </Modal>
             <OkaHeader />
             <div className="flex-column flex-axis-center oka-hero-background padding-sides-small padding-top-big">
                 {loading ?
@@ -259,7 +270,7 @@ export default function Users(props) {
                         <div className="flex-column flex-axis-center padding-medium width-smallest">
                             {
                                 loggedUser.username === user.username ?
-                                    <a href="http://en.gravatar.com/emails/" target="blank" title="Change your avatar at gravatars' website"><Gravatar link={user.gravatar} rounded={true} /></a> :
+                                    <button onClick={() => setOpenAvatar(true)}><Gravatar link={user.gravatar} rounded={true} /></button> :
                                     <Gravatar link={user.gravatar} rounded={true} />
                             }
                             <h1 className="color-tertiary margin-top-medium width100 ellipsis text-center">{name}</h1>
