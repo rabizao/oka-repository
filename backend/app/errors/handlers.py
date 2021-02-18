@@ -67,6 +67,13 @@ class HTTPAbort:
         return abort(422, errors={"json": {field: ["Invalid."]}})
 
     @staticmethod
+    def field_wrong(field="password"):
+        """
+        Called when the provided field is wrong
+        """
+        return abort(422, errors={"json": {field: ["Wrong data."]}})
+
+    @staticmethod
     def key_expired():
         """
         Called when logged user is providing an expired key

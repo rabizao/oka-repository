@@ -35,6 +35,8 @@ export default function Users(props) {
     const [name, setName] = useState('');
     const [about_me, setAbout_me] = useState('');
     const [password, setPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [newPasswordRetype, setNewPasswordRetype] = useState('');
     const [nameEdit, setNameEdit] = useState('');
     const [about_meEdit, setAbout_meEdit] = useState('');
     const history = useHistory();
@@ -147,16 +149,23 @@ export default function Users(props) {
         const data = {
             name: nameEdit,
             about_me: about_meEdit,
+            new_password: newPassword,
             password: password
         }
         if (data.password === '') {
             delete data["password"]
+        }
+        if (data.new_password === '') {
+            delete data["new_password"]
         }
         try {
             await api.put(`users/${username}`, data);
             setOpenEdit(false);
             setName(nameEdit);
             setAbout_me(about_meEdit);
+            setPassword('');
+            setNewPassword('');
+            setNewPasswordRetype('');
         } catch (error) {
             notifyError(error);
         }
@@ -218,17 +227,44 @@ export default function Users(props) {
                             />
                         </div>
                         <div className="flex-row flex-axis-center flex-space-between">
-                            <label htmlFor="password">Password</label>
+                            <label htmlFor="old-password">Old Password</label>
                             <input
-                                id="password"
+                                id="old-password"
                                 type="password"
-                                placeholder="Password"
+                                placeholder="Old Password"
                                 value={password}
                                 autoComplete="new-password"
                                 onChange={e => setPassword(e.target.value)}
                             />
                         </div>
-                        <button className="button-primary" type="submit">Save</button>
+                        <div className="flex-row flex-axis-center flex-space-between">
+                            <label htmlFor="password">New Password</label>
+                            <input
+                                id="password"
+                                type="password"
+                                placeholder="New Password"
+                                value={newPassword}
+                                autoComplete="new-password"
+                                onChange={e => setNewPassword(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex-row flex-axis-center flex-space-between">
+                            <label htmlFor="password-retype">Retype New Password</label>
+                            <input
+                                className={`${newPassword !== newPasswordRetype && "border-error"}`}
+                                id="password-retype"
+                                type="password"
+                                placeholder="New Password"
+                                value={newPasswordRetype}
+                                autoComplete="new-password"
+                                onChange={e => setNewPasswordRetype(e.target.value)}
+                            />
+                        </div>
+                        {
+                            newPassword !== newPasswordRetype ?
+                                <button className="button-primary-disabled" value="click" disabled>Save</button> :
+                                <button className="button-primary" type="submit">Save</button>
+                        }
                     </form>
                 </div>
             </Modal>

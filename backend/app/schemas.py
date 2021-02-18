@@ -262,13 +262,18 @@ class UserEditSchema(SQLAlchemySchema):
         validate.Length(min=1, max=128)])
     password = fields.String(validate=[
         validate.Length(min=6, max=36)], load_only=True)
+    new_password = fields.String(validate=[
+        validate.Length(min=6, max=36)], load_only=True)
     about_me = fields.String(validate=[
         validate.Length(max=140)])
 
     @post_load
     def check(self, data, **kwargs):
-        if 'password' in data:
-            data["password"] = generate_password_hash(data["password"])
+        if 'password' in data and 'new_password' not in data:
+            del data['password']
+        if 'new_password' in data and 'password' not in data:
+            raise ValidationError(field_name="Old Password",
+                                  message="Missing.")
 
         return data
 
