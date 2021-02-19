@@ -257,8 +257,8 @@ class User(PaginateMixin, db.Model):
         db.session.add(file)
         return file
 
-    def can_download(self, file):
-        return self.files.filter(file.owner == self).count() > 0
+    # def can_download(self, file):
+    #     return self.files.filter(file.owner == self).count() > 0
 
     def get_file_by_name(self, name):
         return self.files.filter(File.name == name).first()
