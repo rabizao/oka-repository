@@ -1,4 +1,4 @@
-aiuna==0.2102.9
+aiuna==0.2102.10
 akangatu==0.2102.7
 alembic==1.5.1
 amqp==5.0.2
