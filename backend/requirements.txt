@@ -1,5 +1,5 @@
 aiuna==0.2102.10
-akangatu==0.2102.7
+akangatu==0.2102.8
 alembic==1.5.1
 amqp==5.0.2
 apispec==4.0.0
