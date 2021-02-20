@@ -37,7 +37,5 @@ class Downloads(MethodView):
 
         if not os.path.isfile(path) or not file:
             HTTPAbort.not_found("name")
-        if not logged_user.can_download(file):
-            HTTPAbort.not_authorized()
 
         return send_from_directory(current_app.config['TMP_FOLDER'], args['name'], as_attachment=True)

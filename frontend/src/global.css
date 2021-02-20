@@ -9,6 +9,7 @@
     --error-color: #E05853;
     --transition-time: 0.4s;
     --border: 1px solid #e5e5e5;
+    --border-error: 1px solid #E05853;
 }
 
 * {
@@ -444,6 +445,10 @@ button, input[type="submit"], input[type="reset"] {
 
 .color-error {
     color: var(--error-color);
+}
+
+.border-error {
+    border: var(--border-error) !important;
 }
 
 .button-primary {

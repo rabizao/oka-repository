@@ -1,3 +1,4 @@
+from werkzeug.security import generate_password_hash
 from app import db
 from app.errors.handlers import HTTPAbort
 from . import bp
@@ -171,6 +172,13 @@ class UsersById(MethodView):
         if not logged_user.is_admin():
             if logged_user.username != user.username:
                 HTTPAbort.not_authorized()
+        if 'password' in args and not user.check_password(args["password"]):
+            HTTPAbort.field_wrong()
+
+        if 'new_password' in args:
+            args["password"] = generate_password_hash(args["new_password"])
+            del args["new_password"]
+
         user.update(args)
         db.session.commit()
 
