@@ -19,6 +19,8 @@ migrate = Migrate()
 mail = Mail()
 celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
 jwt = JWTManager()
+# engine = create_engine(Config.TATU_URL)
+# tatuserver = Tatu(url=engine, threaded=False)
 
 
 class FlaskWrapper(Flask):
@@ -38,6 +40,7 @@ def create_app(config_class=Config):
 
     app.config.from_object(config_class)
     app.config['TATU_SERVER'] = Tatu(url=app.config['TATU_URL'], threaded=True)
+    # app.config['TATU_SERVER'] = tatuserver
 
     db.init_app(app)
     migrate.init_app(app, db)
