@@ -186,6 +186,7 @@ def run_step(self, post_id, step_asdict, username):
 
     _set_job_progress(self, 0)
     data = tatu.fetch(post.data_uuid, lazy=False) >> step
+    tatu.store(data)
 
     # minhas mudanças antes de dar pull no dev do rabizao ==============
     # tatu.store(data, lazy=False, ignoredup=True)

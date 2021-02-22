@@ -21,10 +21,13 @@ def get_attrs(uuid):
 def past(post):
     tatu = current_app.config['TATU_SERVER']
     data = tatu.fetch(post.data_uuid, lazy=False)
+
+    print("sssss", data, post.data_uuid)
     if not data:
         return []  # REMINDER: The history exists, but is not accessible through data.fetch()
     lst = []
     userid = post.author.id
+
     for k, d in list(data.past.items())[:-1]:
         if d["step"]["desc"]["name"][:3] not in ["B", "Rev", "In", "Aut", "E"]:
             post = Post.query.filter_by(data_uuid=k, user_id=userid).first()
