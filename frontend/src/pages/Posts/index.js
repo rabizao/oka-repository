@@ -391,7 +391,7 @@ export default function Posts(props) {
                                 showData &&
                                 <div className="padding-sides-small padding-bottom-medium padding-top-small">
                                     <div className="content-box padding-small">
-                                        <h4>Showing the first 10 rows and columns</h4>
+                                        <h4>Showing the first 10 rows and columns (field X and field Y)</h4>
                                         <div className="flex-row-nowrap overflow-x-auto">
                                             <table className="width100 text-center">
                                                 <tbody>

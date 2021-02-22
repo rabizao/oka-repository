@@ -10,6 +10,7 @@ from app import db
 from app.models import User, Post, Comment, Contact, Notification, Task, Message
 from garoupa.avatar23 import colors
 # from kururu.tool.manipulation.slice import Slice
+import numpy as np
 
 
 def get_attrs(uuid):
@@ -41,7 +42,7 @@ def get_head(uuid):
         return []  # REMINDER: The history exists, but is not accessible through data.fetch()
     # TODO: data >>= Slice(last=10)
 
-    return [data.Xd] + data.X[0:10:, 0:10].tolist()
+    return [data.Xd + data.Yd] + np.concatenate((data.X[0:10:, 0:10], data.Y[0:10:, 0:10]), axis=1).tolist()
 
 
 def get_fields(uuid):
@@ -323,7 +324,8 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     downloads = fields.Function(
         lambda obj: obj.get_unique_download_count(), dump_only=True)
     head = fields.Function(lambda obj: get_head(obj.data_uuid), dump_only=True)
-    fields = fields.Function(lambda obj: get_fields(obj.data_uuid), dump_only=True)
+    fields = fields.Function(
+        lambda obj: get_fields(obj.data_uuid), dump_only=True)
 
 
 class PostEditSchema(SQLAlchemyAutoSchema):
