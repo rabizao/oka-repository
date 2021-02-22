@@ -678,7 +678,7 @@ export default function Posts(props) {
         try {
             const r = await api.get(`sync?cat=data&fetch=false&uuids=${data_uuid}&empty=false`);
             if (r.data["has"] === false) {
-                NotificationManager.info("This Data was not stored yet!", "NoData");
+                NotificationManager.info("This Data has not been stored yet!", "NoData");
             } else {
                 await api.put(`posts/activate`, { "data_uuid": data_uuid });
                 const response = await api.get(`posts/${postId}`);

@@ -48,5 +48,5 @@ class Config(object):
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=15)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=15)
 
-    RATELIMIT_DEFAULT = "10/second"
+    RATELIMIT_DEFAULT = "2000/second"
     RATELIMIT_DEFAULTS_EXEMPT_WHEN = is_browser
