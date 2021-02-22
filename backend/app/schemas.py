@@ -18,11 +18,10 @@ def get_attrs(uuid):
     return data.Xd if data else {}
 
 
-def past(post):
+def get_history(post):
     tatu = current_app.config['TATU_SERVER']
     data = tatu.fetch(post.data_uuid, lazy=False)
 
-    print("sssss", data, post.data_uuid)
     if not data:
         return []  # REMINDER: The history exists, but is not accessible through data.fetch()
     lst = []
@@ -35,14 +34,23 @@ def past(post):
     return lst
 
 
-def head(uuid):
+def get_head(uuid):
     tatu = current_app.config['TATU_SERVER']
     data = tatu.fetch(uuid, lazy=False)
     if not data:
         return []  # REMINDER: The history exists, but is not accessible through data.fetch()
-    # data >>= Slice(last=10)
+    # TODO: data >>= Slice(last=10)
 
     return [data.Xd] + data.X[0:10:, 0:10].tolist()
+
+
+def get_fields(uuid):
+    tatu = current_app.config['TATU_SERVER']
+    data = tatu.fetch(uuid, lazy=False)
+    if not data:
+        return []  # REMINDER: The history exists, but is not accessible through data.fetch()
+
+    return list(data.asdict.keys())
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -311,10 +319,11 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
         lambda obj: colors(obj.data_uuid), dump_only=True)
     attrs = fields.Function(lambda obj: get_attrs(
         obj.data_uuid), dump_only=True)
-    history = fields.Function(lambda obj: past(obj), dump_only=True)
+    history = fields.Function(lambda obj: get_history(obj), dump_only=True)
     downloads = fields.Function(
         lambda obj: obj.get_unique_download_count(), dump_only=True)
-    head = fields.Function(lambda obj: head(obj.data_uuid), dump_only=True)
+    head = fields.Function(lambda obj: get_head(obj.data_uuid), dump_only=True)
+    fields = fields.Function(lambda obj: get_fields(obj.data_uuid), dump_only=True)
 
 
 class PostEditSchema(SQLAlchemyAutoSchema):

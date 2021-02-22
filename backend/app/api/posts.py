@@ -368,7 +368,6 @@ class PostsVisualizeById(MethodView):
             df2 = df.groupby(pd.cut(cut, ranges)).count()
             datas = [{"x": str(k), "count": v}
                      for k, v in df2.to_dict()[0].items()]
-            # print([{"x": str(k), "count": v} for k, v in df2.to_dict()[0].items()])
 
         return json.dumps(datas)
 

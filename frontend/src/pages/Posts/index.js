@@ -251,6 +251,7 @@ export default function Posts(props) {
     const [showAlgorithms, setShowAlgorithms] = useState(false);
     const [showParameters, setShowParameters] = useState(false);
     const [showMeta, setShowMeta] = useState(false);
+    const [showFields, setShowFields] = useState(false);
     const [metaSet, setMetaSet] = useState([]);
     const [showData, setShowData] = useState(false);
     const [name, setName] = useState('');
@@ -286,7 +287,6 @@ export default function Posts(props) {
                 if (resp.accessDenied) {
                     setAccessDenied(true);
                 }
-
             } finally {
                 setLoading(false);
             }
@@ -309,7 +309,6 @@ export default function Posts(props) {
                         <div className="flex-row padding-sides-small padding-vertical-small text-box">
                             {text}
                         </div>
-
                 }
             </div>
         )
@@ -364,6 +363,9 @@ export default function Posts(props) {
                             <button className="button-primary" onClick={handleReload}>Reload</button>
                         </div> :
                         <>
+                            <button className={`${showFields ? "button-negative" : "button-primary"} margin-small`} onClick={() => setShowFields(!showFields)}>
+                                {showFields ? "Hide Fields" : "Show Fields"}
+                            </button>
                             <button className={`${showData ? "button-negative" : "button-primary"} margin-small`} onClick={() => setShowData(!showData)}>
                                 {showData ? "Hide Data" : "Show Data"}
                             </button>
@@ -371,10 +373,25 @@ export default function Posts(props) {
                                 {showMeta ? "Hide Meta" : "Show Meta"}
                             </button>
                             {
+                                showFields &&
+                                <div className="padding-sides-small padding-bottom-medium padding-top-small">
+                                    <div className="content-box padding-small">
+                                        <h4>The dataset has the following fields which can be accessed after generating the Data object, i.e. using data.field:</h4>
+                                        <div className="margin-top-small">
+                                            {
+                                                post.fields.map((field, index) =>
+                                                    <span key={index} className="bold"> {field}{(index !== post.fields.length - 1) && ", "}</span>
+                                                )
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            {
                                 showData &&
                                 <div className="padding-sides-small padding-bottom-medium padding-top-small">
-                                    <div className="content-box padding-very-small">
-                                        <span>Showing the first 10 rows and columns</span>
+                                    <div className="content-box padding-small">
+                                        <h4>Showing the first 10 rows and columns</h4>
                                         <div className="flex-row-nowrap overflow-x-auto">
                                             <table className="width100 text-center">
                                                 <tbody>
@@ -1078,7 +1095,7 @@ export default function Posts(props) {
                                     <h6 className="color-tertiary">OID: <span className="font-courier color-tertiary">{post.data_uuid}</span></h6>
                                     <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
                                     <h6 className="color-tertiary">{post.downloads} downloads | {post.favorites.length} favorited</h6>
-                                    {post.public && <h6 className="color-tertiary">Published {<TimeAgo className="color-tertiary" datetime={post.publish_timestamp + 'Z'}/>}</h6>}
+                                    {post.public && <h6 className="color-tertiary">Published {<TimeAgo className="color-tertiary" datetime={post.publish_timestamp + 'Z'} />}</h6>}
                                     <div className="margin-top-very-small" >
                                         <button className="icon-normal" title="Download" onClick={handleDownload}><CloudDownload className="icon-secondary" /></button>
                                         {post.favorites && post.favorites.includes(loggedUser.id) ? <button className="icon-normal margin-left-very-small" title="Unfavorite" onClick={handleFavorite}><Favorite className="icon-secondary" /></button> : <button title="Favorite" className="icon-normal margin-left-very-small" onClick={handleFavorite}><FavoriteBorder className="icon-secondary" /></button>}
