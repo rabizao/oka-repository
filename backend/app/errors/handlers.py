@@ -15,6 +15,11 @@ def internal_error(error):
     return jsonify(errors={"json": {"server": ["Internal error."]}}), 500
 
 
+@bp.app_errorhandler(429)
+def too_many_requests(error):
+    return jsonify(errors={"json": {"server": ["Too many requests."]}}), 429
+
+
 @jwt.revoked_token_loader
 def revoked_token_callback():
     return jsonify(errors={"json": {"token": ["Your token is invalid."]}}), 401
@@ -60,6 +65,13 @@ class HTTPAbort:
         Called when the provided field is invalid
         """
         return abort(422, errors={"json": {field: ["Invalid."]}})
+
+    @staticmethod
+    def field_wrong(field="password"):
+        """
+        Called when the provided field is wrong
+        """
+        return abort(422, errors={"json": {field: ["Wrong data."]}})
 
     @staticmethod
     def key_expired():

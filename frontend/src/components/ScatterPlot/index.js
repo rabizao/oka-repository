@@ -45,7 +45,7 @@ export default function ScatterPlot({ postId, attrs }) {
     }
 
     return (
-        <div className="content-box margin-very-small padding-bottom-big">
+        <div className="content-box margin-very-very-small padding-bottom-big">
             {loading ?
                 <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
@@ -80,7 +80,7 @@ export default function ScatterPlot({ postId, attrs }) {
                                                     .map(([key, value]) =>
                                                         <button key={key}
                                                             onClick={() => handleSelection(key, 0)}
-                                                            className={`${x === key ? ("button-negative") : "button-primary"} margin-very-small`}
+                                                            className={`${x === key ? ("button-negative") : "button-primary"} margin-very-very-small`}
                                                         >
                                                             {value}
                                                         </button>
@@ -108,7 +108,7 @@ export default function ScatterPlot({ postId, attrs }) {
 
                                                         <button key={key}
                                                             onClick={() => handleSelection(key, 1)}
-                                                            className={`${y === key ? ("button-negative") : "button-primary"} margin-very-small`}
+                                                            className={`${y === key ? ("button-negative") : "button-primary"} margin-very-very-small`}
                                                         >
                                                             {value}
                                                         </button>

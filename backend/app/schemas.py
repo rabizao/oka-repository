@@ -57,6 +57,7 @@ class UserBaseSchema(SQLAlchemyAutoSchema):
         validate.Length(min=6, max=36)], required=True)
     followed = auto_field(dump_only=True)
     followers = auto_field(dump_only=True)
+    gravatar = fields.Function(lambda obj: obj.gravatar(), dump_only=True)
 
 
 class CommentBaseSchema(SQLAlchemyAutoSchema):
@@ -243,15 +244,10 @@ class UserRecoverKeySchema(UserBaseSchema):
 
 class LoginResponseSchema(SQLAlchemySchema):
     access_token = fields.String(dump_only=True)
-    refresh_token = fields.String(dump_only=True)
     id = fields.Integer(dump_only=True)
     username = fields.String(dump_only=True)
     name = fields.String(dump_only=True)
-
-
-class RefreshTokenSchema(SQLAlchemySchema):
-    access_token = fields.String(dump_only=True)
-    refresh_token = fields.String(load_only=True)
+    gravatar = fields.String(dump_only=True)
 
 
 class ApiTokenSchema(SQLAlchemySchema):
@@ -266,13 +262,18 @@ class UserEditSchema(SQLAlchemySchema):
         validate.Length(min=1, max=128)])
     password = fields.String(validate=[
         validate.Length(min=6, max=36)], load_only=True)
+    new_password = fields.String(validate=[
+        validate.Length(min=6, max=36)], load_only=True)
     about_me = fields.String(validate=[
         validate.Length(max=140)])
 
     @post_load
     def check(self, data, **kwargs):
-        if 'password' in data:
-            data["password"] = generate_password_hash(data["password"])
+        if 'password' in data and 'new_password' not in data:
+            del data['password']
+        if 'new_password' in data and 'password' not in data:
+            raise ValidationError(field_name="Old Password",
+                                  message="Missing.")
 
         return data
 
@@ -422,6 +423,17 @@ class ContactBaseSchema(SQLAlchemyAutoSchema):
         model = Contact
 
     id = auto_field(dump_only=True)
+    message = auto_field(validate=[
+        validate.Length(min=1, max=600)])
+
+
+class ContactQuerySchema(SQLAlchemySchema):
+    class Meta:
+        unknown = EXCLUDE
+
+    name = fields.String()
+    email = fields.String()
+    message = fields.String()
 
 
 class TaskBaseSchema(SQLAlchemyAutoSchema):

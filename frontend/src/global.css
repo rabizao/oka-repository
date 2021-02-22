@@ -9,6 +9,7 @@
     --error-color: #E05853;
     --transition-time: 0.4s;
     --border: 1px solid #e5e5e5;
+    --border-error: 1px solid #E05853;
 }
 
 * {
@@ -254,6 +255,10 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 .margin-very-small {
+    margin: 10px;
+}
+
+.margin-very-very-small {
     margin: 5px;
 }
 
@@ -442,6 +447,10 @@ button, input[type="submit"], input[type="reset"] {
     color: var(--error-color);
 }
 
+.border-error {
+    border: var(--border-error) !important;
+}
+
 .button-primary {
     background-color: var(--primary-color);
     color: var(--tertiary-color);
@@ -452,6 +461,10 @@ button, input[type="submit"], input[type="reset"] {
 
 .radius {
     border-radius: 10px;
+}
+
+.radius-rounded {
+    border-radius: 50%;
 }
 
 .button-primary:hover {

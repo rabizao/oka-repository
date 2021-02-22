@@ -9,6 +9,8 @@ from werkzeug.security import check_password_hash
 from . import celery, db
 from app.utils import consts
 
+from hashlib import md5
+
 
 followers = db.Table('followers',
                      db.Column('follower_id', db.Integer,
@@ -115,6 +117,11 @@ class User(PaginateMixin, db.Model):
     accessible = db.relationship(
         'Post', secondary=access,
         backref=db.backref('allowed', lazy='dynamic'), lazy='dynamic')
+
+    def gravatar(self):
+        digest = md5(self.email.lower().encode('utf-8')).hexdigest()
+        return 'https://www.gravatar.com/avatar/{}?d=identicon'.format(
+            digest)
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
@@ -250,8 +257,8 @@ class User(PaginateMixin, db.Model):
         db.session.add(file)
         return file
 
-    def can_download(self, file):
-        return self.files.filter(file.owner == self).count() > 0
+    # def can_download(self, file):
+    #     return self.files.filter(file.owner == self).count() > 0
 
     def get_file_by_name(self, name):
         return self.files.filter(File.name == name).first()
@@ -443,5 +450,5 @@ class Contact(PaginateMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(140))
     email = db.Column(db.String(140))
-    message = db.Column(db.Text())
+    message = db.Column(db.String(600), nullable=False)
     active = db.Column(db.Boolean, default=True)

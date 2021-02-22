@@ -23,6 +23,7 @@ import ParallelCoordinatesPlot from '../../components/ParallelCoordinatesPlot';
 import HistogramPlot from '../../components/HistogramPlot';
 import PearsonCorrelationPlot from '../../components/PearsonCorrelationPlot';
 import NotFound from '../NotFound';
+import TimeAgo from 'timeago-react';
 
 
 const categories = [
@@ -57,6 +58,178 @@ const categories = [
     }
 ]
 
+const metas = {
+    General: [
+        {
+            title: "Features",
+            variable: "number_of_features",
+            tag: "features",
+            type: "numeric",
+            editable: false
+        },
+        {
+            title: "Instances",
+            variable: "number_of_instances",
+            tag: "instances",
+            type: "numeric",
+            editable: false
+        },
+        {
+            title: "Targets",
+            variable: "number_of_targets",
+            tag: "targets",
+            type: "numeric",
+            editable: false
+        },
+        {
+            title: "Classes",
+            variable: "number_of_classes",
+            tag: "classes",
+            type: "numeric",
+            editable: false
+        },
+    ],
+    Tasks: [
+        {
+            title: "Classification",
+            variable: "classification",
+            tag: "classification",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Regression",
+            variable: "regression",
+            tag: "regression",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Clustering",
+            variable: "clustering",
+            tag: "clustering",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Other Tasks",
+            variable: "other_tasks",
+            tag: "other_tasks",
+            type: "boolean",
+            editable: true
+        }
+    ],
+    Domains: [
+        {
+            title: "Life Sciences",
+            variable: "life_sciences",
+            tag: "life_sciences",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Physical Sciences",
+            variable: "physical_sciences",
+            tag: "physical_sciences",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Engineering",
+            variable: "engineering",
+            tag: "engineering",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Social",
+            variable: "social",
+            tag: "social",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Business",
+            variable: "business",
+            tag: "business",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Finances",
+            variable: "finances",
+            tag: "finances",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Astronomy",
+            variable: "astronomy",
+            tag: "astronomy",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Medical",
+            variable: "medical",
+            tag: "medical",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Other Domains",
+            variable: "other_domains",
+            tag: "other_domains",
+            type: "boolean",
+            editable: true
+        }
+    ],
+    Features: [
+        {
+            title: "Categorical",
+            variable: "categorical",
+            tag: "categorical",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Numerical",
+            variable: "numerical",
+            tag: "numerical",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Text",
+            variable: "text",
+            tag: "text",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Images",
+            variable: "images",
+            tag: "images",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Time Series",
+            variable: "time_series",
+            tag: "time_series",
+            type: "boolean",
+            editable: true
+        },
+        {
+            title: "Other Features",
+            variable: "other_features",
+            tag: "other_features",
+            type: "boolean",
+            editable: true
+        }
+    ]
+}
+
 
 export default function Posts(props) {
     const id = props.match.params.id;
@@ -78,6 +251,7 @@ export default function Posts(props) {
     const [showAlgorithms, setShowAlgorithms] = useState(false);
     const [showParameters, setShowParameters] = useState(false);
     const [showMeta, setShowMeta] = useState(false);
+    const [metaSet, setMetaSet] = useState([]);
     const [showData, setShowData] = useState(false);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -105,6 +279,7 @@ export default function Posts(props) {
                 setDescription(response.data.description ? response.data.description : '');
                 setDescriptionEdit(response.data.description ? response.data.description : '');
                 setError(false);
+                handleSetMetas(response.data);
             } catch (error) {
                 setError(true);
                 const resp = notifyError(error, false);
@@ -119,181 +294,9 @@ export default function Posts(props) {
         fetchPost();
     }, [id, reloadPost, render])
 
-    const metas = {
-        General: [
-            {
-                title: "Features",
-                variable: post.number_of_features || null,
-                tag: "features",
-                type: "numeric",
-                editable: false
-            },
-            {
-                title: "Instances",
-                variable: post.number_of_instances || null,
-                tag: "instances",
-                type: "numeric",
-                editable: false
-            },
-            {
-                title: "Targets",
-                variable: post.number_of_targets || null,
-                tag: "targets",
-                type: "numeric",
-                editable: false
-            },
-            {
-                title: "Classes",
-                variable: post.number_of_classes || null,
-                tag: "classes",
-                type: "numeric",
-                editable: false
-            },
-        ],
-        Tasks: [
-            {
-                title: "Classification",
-                variable: post.classification || null,
-                tag: "classification",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Regression",
-                variable: post.regression || null,
-                tag: "regression",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Clustering",
-                variable: post.clustering || null,
-                tag: "clustering",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Others",
-                variable: post.other_tasks || null,
-                tag: "other_tasks",
-                type: "boolean",
-                editable: true
-            }
-        ],
-        Domains: [
-            {
-                title: "Life Sciences",
-                variable: post.life_sciences || null,
-                tag: "life_sciences",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Physical Sciences",
-                variable: post.physical_sciences || null,
-                tag: "physical_sciences",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Engineering",
-                variable: post.engineering || null,
-                tag: "engineering",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Social",
-                variable: post.social || null,
-                tag: "social",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Business",
-                variable: post.business || null,
-                tag: "business",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Finances",
-                variable: post.finances || null,
-                tag: "finances",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Astronomy",
-                variable: post.astronomy || null,
-                tag: "astronomy",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Medical",
-                variable: post.medical || null,
-                tag: "medical",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Others",
-                variable: post.other_domains || null,
-                tag: "other_domains",
-                type: "boolean",
-                editable: true
-            }
-        ],
-        Features: [
-            {
-                title: "Categorical",
-                variable: post.categorical || null,
-                tag: "categorical",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Numerical",
-                variable: post.numerical || null,
-                tag: "numerical",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Text",
-                variable: post.text || null,
-                tag: "text",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Images",
-                variable: post.images || null,
-                tag: "images",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Time Series",
-                variable: post.time_series || null,
-                tag: "time_series",
-                type: "boolean",
-                editable: true
-            },
-            {
-                title: "Others",
-                variable: post.other_features || null,
-                tag: "other_features",
-                type: "boolean",
-                editable: true
-            }
-        ]
-    }
-
     const textBox = (text) => {
         return (
-            <div className="content-box margin-very-small">
+            <div className="content-box margin-very-very-small">
                 {loading ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
@@ -316,6 +319,16 @@ export default function Posts(props) {
         element.style.height = (element.scrollHeight) + "px";
     }
 
+    function handleSetMetas(p) {
+        var metasSet = [];
+        Object.entries(metas).map(([, obj]) =>
+            obj.map((item) =>
+                item.editable && (p[item.variable] && metasSet.push(item.tag))
+            )
+        )
+        setMetaSet(metasSet);
+    }
+
     async function handlePostMetaUpdate(tag, state) {
 
         const data = {
@@ -327,6 +340,7 @@ export default function Posts(props) {
             var newPost = { ...post };
             newPost[tag] = !state;
             setPost(newPost);
+            handleSetMetas(newPost)
         } catch (error) {
             notifyError(error);
         }
@@ -340,7 +354,7 @@ export default function Posts(props) {
     const overviewBox = (text) => {
 
         return (
-            <div className="content-box margin-very-small">
+            <div className="content-box margin-very-very-small">
                 {loading ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
@@ -363,15 +377,17 @@ export default function Posts(props) {
                                         <span>Showing the first 10 rows and columns</span>
                                         <div className="flex-row-nowrap overflow-x-auto">
                                             <table className="width100 text-center">
-                                                {post.head.map((row, index) =>
-                                                    <tr>
-                                                        {row.map((data) =>
-                                                            index === 0 ?
-                                                                <th className="padding-very-small box">{data}</th> :
-                                                                <td className="padding-very-small box">{data}</td>
-                                                        )}
-                                                    </tr>
-                                                )}
+                                                <tbody>
+                                                    {post.head.map((row, index) =>
+                                                        <tr key={index}>
+                                                            {row.map((data, index2) =>
+                                                                index === 0 ?
+                                                                    <th key={index2} className="padding-very-small box">{data}</th> :
+                                                                    <td key={index2} className="padding-very-small box">{data}</td>
+                                                            )}
+                                                        </tr>
+                                                    )}
+                                                </tbody>
                                             </table>
                                         </div>
                                     </div>
@@ -391,20 +407,20 @@ export default function Posts(props) {
                                                             loggedUser.username === post.author.username && !post.public ? (
                                                                 item.editable ? (
                                                                     item.type === "boolean" && (
-                                                                        <button className={`icon-medium ${!item.variable && "icon-error"}`} onClick={() => handlePostMetaUpdate(item.tag, item.variable)}>{item.variable ? <ToggleOn /> : <ToggleOff />}</button>
+                                                                        <button className={`icon-medium ${!post[item.variable] && "icon-error"}`} onClick={() => handlePostMetaUpdate(item.tag, post[item.variable])}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</button>
                                                                     )
                                                                 ) : (
                                                                         item.type === "boolean" ? (
-                                                                            <div className={`icon-medium ${!item.variable && "color-error"}`}>{item.variable ? <ToggleOn /> : <ToggleOff />}</div>
+                                                                            <div className={`icon-medium ${!post[item.variable] && "color-error"}`}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</div>
                                                                         ) : (
-                                                                                <div className={"padding-sides-small"}>{item.variable}</div>
+                                                                                <div className={"padding-sides-small"}>{post[item.variable]}</div>
                                                                             )
                                                                     )
                                                             ) : (
                                                                     item.type === "boolean" ? (
-                                                                        <div className={`icon-medium ${!item.variable && "icon-error"}`}>{item.variable ? <ToggleOn /> : <ToggleOff />}</div>
+                                                                        <div className={`icon-medium ${!post[item.variable] && "icon-error"}`}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</div>
                                                                     ) : (
-                                                                            <div className={"padding-sides-small"}>{item.variable}</div>
+                                                                            <div className={"padding-sides-small"}>{post[item.variable]}</div>
                                                                         )
                                                                 )
                                                         }
@@ -416,7 +432,7 @@ export default function Posts(props) {
                                 </div>
                             }
                             <h2 className="padding-small">Description</h2>
-                            <div className="content-box margin-very-small">
+                            <div className="content-box margin-very-very-small">
                                 <div className="padding-sides-small padding-vertical-small text-box">
                                     {editDescription ?
                                         <div className="flex-column">
@@ -487,7 +503,7 @@ export default function Posts(props) {
         }
 
         return (
-            <div className="content-box margin-very-small">
+            <div className="content-box margin-very-very-small">
                 {loading ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
@@ -514,7 +530,7 @@ export default function Posts(props) {
 
     // const visualizer = (uuid) => {
     //     return (
-    //         <div className="content-box margin-very-small">
+    //         <div className="content-box margin-very-very-small">
     //             <iframe title="iframe-dash" className="iframe-dash" src={`${dashUrl}/${uuid}`}></iframe>
     //         </div>
     //     )
@@ -662,7 +678,7 @@ export default function Posts(props) {
         try {
             const r = await api.get(`sync?cat=data&fetch=false&uuids=${data_uuid}&empty=false`);
             if (r.data["has"] === false) {
-                NotificationManager.info("This Data was not stored yet!", "NoData");
+                NotificationManager.info("This Data has not been stored yet!", "NoData");
             } else {
                 await api.put(`posts/activate`, { "data_uuid": data_uuid });
                 const response = await api.get(`posts/${postId}`);
@@ -805,7 +821,7 @@ export default function Posts(props) {
                                     <button
                                         key={collaborator.username}
                                         onClick={(e) => handleSubmitCollaborator(e, collaborator.username)}
-                                        className={"button-negative margin-very-small"}
+                                        className={"button-negative margin-very-very-small"}
                                     >
                                         {collaborator.username}
                                     </button>
@@ -916,31 +932,57 @@ export default function Posts(props) {
                         onClose={() => setOpenPublish(false)}
                     >
                         <div className="modal padding-big">
-                            <h3>Publish your post</h3>
-                            <h5 className="margin-top-small">You can not undo this action. Please note that after publishing your post it will be available to everyone forever. If you want to make this post available to a specific group of people please use share button instead.
+                            <h3>Publish your dataset</h3>
+                            <h5 className="margin-top-small"><span className="color-error bold">You can not undo this action.</span> Please note that after publishing your dataset it will be available to everyone forever. If you want to make this dataset available to a specific group of people please use share button instead.
                     </h5>
                             <h4 className="margin-top-small bold">Publication Details to be displayed on the published page</h4>
-                            <div className="flex-column margin-top-small">
+                            <div className="flex-column">
                                 <h5>Title: {post.name}</h5>
                                 <h5>Author: {post.author && post.author.name}</h5>
                                 {
-                                    post && post.allowed &&
+                                    post && post.allowed && post.allowed.length > 0 &&
                                     <h5>Collaborators:
                                 {
                                             post.allowed.map((collaborator, index) =>
-                                                <span key={index}> {collaborator.name}{(index !== post.allowed.length - 1) && ","}</span>
+                                                <span key={index}> {collaborator.name}{(index !== post.allowed.length - 1) && ", "}</span>
                                             )
                                         }
                                     </h5>
                                 }
                             </div>
-                            <h4 className="margin-top-small bold color-error">If any of the information above is wrong please correct before proceed</h4>
-                            <h4 className="margin-top-small bold">Type {name} bellow to proceed</h4>
-                            <input
-                                placeholder={name}
-                                onChange={e => setPublishConfirmationWord(e.target.value)}
-                            />
-                            <button onClick={handlePublish} className={`button-primary margin-top-small ${name === publishConfirmationWord ? "active" : "inactive"}`}>I want to make {post.name} of author {post.author && post.author.name} available to everyone forever!</button>
+                            <h4 className="margin-top-small bold">Metafeatures to be used in the dataset search</h4>
+                            {
+                                post &&
+                                <h5>
+                                    {
+                                        metaSet.length > 0 ?
+                                            metaSet.map((meta, index) =>
+                                                <span key={index}>{meta}{(index !== metaSet.length - 1) && ", "}</span>) :
+                                            <span className="color-error bold">No metafeatures set so far. Please set then before publish. To do so go to overview tab and click on "Show Meta" button.</span>
+                                    }
+                                </h5>
+                            }
+
+                            {
+                                post && (
+                                    (metaSet.length >= 3 && metaSet.length <= 5) ?
+                                        (
+                                            <>
+                                                <h4 className="margin-top-small bold color-error">If any of the information above is wrong please correct before proceed</h4>
+                                                <h4 className="margin-top-small bold">Type {name} bellow to proceed</h4>
+                                                <input
+                                                    placeholder={name}
+                                                    onChange={e => setPublishConfirmationWord(e.target.value)}
+                                                />
+                                                <button onClick={handlePublish} className={`button-primary margin-top-small ${name === publishConfirmationWord ? "active" : "inactive"}`}>I want to make {post.name} of author {post.author && post.author.name} available to everyone forever!</button>
+                                            </>
+                                        ) :
+                                        <h5 className="color-error bold">Please provide minimum 3 and maximum 5 metafeatures before proceed.</h5>
+                                )
+
+                            }
+
+
                         </div>
                     </Modal>
                     <OkaHeader />
@@ -957,8 +999,8 @@ export default function Posts(props) {
                                     {
                                         !post.public && post.author && post.author.username === loggedUser.username &&
                                         <div className="flex-row flex-crossaxis-center">
-                                            <button onClick={() => setOpenPublish(true)} className="button-secondary margin-very-small">Publish</button>
-                                            <button onClick={() => setOpenDeletePost(true)} className="button-negative margin-very-small">Remove</button>
+                                            <button onClick={() => setOpenPublish(true)} className="button-secondary margin-very-very-small">Publish</button>
+                                            <button onClick={() => setOpenDeletePost(true)} className="button-negative margin-very-very-small">Remove</button>
                                         </div>
                                     }
 
@@ -970,7 +1012,7 @@ export default function Posts(props) {
                                                     (
                                                         showHistory ?
                                                             <>
-                                                                <button className="margin-very-small icon-medium" title="Hide History" onClick={() => setShowHistory(!showHistory)}><ChevronLeft className="icon-tertiary" /></button>
+                                                                <button className="margin-very-very-small icon-medium" title="Hide History" onClick={() => setShowHistory(!showHistory)}><ChevronLeft className="icon-tertiary" /></button>
                                                                 {
                                                                     post.history.map((item) =>
                                                                         item.data.step.desc.name &&
@@ -995,7 +1037,7 @@ export default function Posts(props) {
                                                                     )
                                                                 }
                                                             </> :
-                                                            <button className="margin-very-small icon-medium" title="Expand History" onClick={() => setShowHistory(!showHistory)}><ChevronRight className="icon-tertiary" /></button>
+                                                            <button className="margin-very-very-small icon-medium" title="Expand History" onClick={() => setShowHistory(!showHistory)}><ChevronRight className="icon-tertiary" /></button>
                                                     )
                                                 }
                                             </div>
@@ -1036,6 +1078,7 @@ export default function Posts(props) {
                                     <h6 className="color-tertiary">OID: <span className="font-courier color-tertiary">{post.data_uuid}</span></h6>
                                     <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
                                     <h6 className="color-tertiary">{post.downloads} downloads | {post.favorites.length} favorited</h6>
+                                    {post.public && <h6 className="color-tertiary">Published {<TimeAgo className="color-tertiary" datetime={post.publish_timestamp + 'Z'}/>}</h6>}
                                     <div className="margin-top-very-small" >
                                         <button className="icon-normal" title="Download" onClick={handleDownload}><CloudDownload className="icon-secondary" /></button>
                                         {post.favorites && post.favorites.includes(loggedUser.id) ? <button className="icon-normal margin-left-very-small" title="Unfavorite" onClick={handleFavorite}><Favorite className="icon-secondary" /></button> : <button title="Favorite" className="icon-normal margin-left-very-small" onClick={handleFavorite}><FavoriteBorder className="icon-secondary" /></button>}

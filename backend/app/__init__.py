@@ -10,6 +10,8 @@ from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_smorest import Api
 from flask_sqlalchemy import SQLAlchemy
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 from tatu import Tatu
 from .config import Config
@@ -19,6 +21,9 @@ migrate = Migrate()
 mail = Mail()
 celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
 jwt = JWTManager()
+# engine = create_engine(Config.TATU_URL)
+# tatuserver = Tatu(url=engine, threaded=False)
+limiter = Limiter(key_func=get_remote_address)
 
 
 class FlaskWrapper(Flask):
@@ -38,6 +43,7 @@ def create_app(config_class=Config):
 
     app.config.from_object(config_class)
     app.config['TATU_SERVER'] = Tatu(url=app.config['TATU_URL'], threaded=True)
+    # app.config['TATU_SERVER'] = tatuserver
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -45,6 +51,7 @@ def create_app(config_class=Config):
     mail.init_app(app)
     celery.conf.update(app.config)
     jwt.init_app(app)
+    limiter.init_app(app)
 
     api = Api(app)
     api.spec.components.security_scheme(

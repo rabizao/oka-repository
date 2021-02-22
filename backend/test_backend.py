@@ -87,7 +87,8 @@ class ApiCase(unittest.TestCase):
         del login["email"]
         del login["name"]
         response = self.client.post("/api/auth/login", json=login)
-        self.assertEqual(response.status_code, 200)
+        if not response.status_code == 200:
+            return response.json
         data = response.json
         token = token if token else data["access_token"]
         self.client.environ_base["HTTP_AUTHORIZATION"] = "Bearer " + token
@@ -164,10 +165,17 @@ class ApiCase(unittest.TestCase):
 
     def test_login(self):
         """
-            1 - Create an user
-            2 - Login user
+            1 - Try to login without confirming email
+            2 - Confirm email and access feed
         """
-        self.login()
+        # 1
+        response = self.login(confirm_email=False)
+        self.assertEqual(response["code"], 422)
+        # 2
+        username = self.login(create_user=False, confirm_email=True)[
+            'username']
+        response = self.client.get(f"/api/users/{username}/feed")
+        self.assertEqual(response.status_code, 200)
 
     def test_create_api_token(self):
         """
@@ -210,7 +218,7 @@ class ApiCase(unittest.TestCase):
         # 1
         with patch('app.api.tasks.send_async_email.delay'):
             response = self.client.post(
-                "/api/contacts", json={"name": "Test", "email": "test@test.com"})
+                "/api/contacts", json={"name": "Test", "email": "test@test.com", "message": "Ola"})
         self.assertEqual(response.status_code, 201)
         # 2
         self.login(admin=True)
@@ -421,6 +429,20 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         result = download_data.run([post_id], username, "127.0.0.1")
         self.assertEqual(result['state'], 'SUCCESS')
+        # Can not download inexistent file
+        response = self.client.get("/api/downloads/data?name=inexistent")
+        self.assertEqual(response.status_code, 422)
+        # User2 does not have access to file
+        self.login(create_user=False, user=create_user2)
+        response = self.client.get(
+            f"/api/downloads/data?name={json.loads(result['result'])}")
+        self.assertEqual(response.status_code, 422)
+        # User1 can download file
+        self.login(create_user=False)
+        response = self.client.get(
+            f"/api/downloads/data?name={json.loads(result['result'])}")
+        self.assertEqual(response.status_code, 200)
+        # Check downloads count
         self.assertEqual(post.get_unique_download_count(), 1)
         result = download_data.run([post_id], username, "127.0.0.1")
         self.assertEqual(result['state'], 'SUCCESS')
@@ -438,6 +460,11 @@ class ApiCase(unittest.TestCase):
         # Can not favorite an inexistent post
         response = self.client.post("/api/posts/100/favorite")
         self.assertEqual(response.status_code, 422)
+        # User2 can not favorite post
+        self.login(create_user=False, user=create_user2)
+        response = self.client.post(f"/api/posts/{post_id}/favorite")
+        self.assertEqual(response.status_code, 422)
+        self.login(create_user=False)
         # 8
         # Can not publish inexistent post
         response = self.client.post("/api/posts/100/publish")
@@ -447,10 +474,18 @@ class ApiCase(unittest.TestCase):
         response = self.client.post(f"/api/posts/{post_id}/publish")
         self.assertEqual(response.status_code, 422)
         self.login(create_user=False)
-        # Publish
+        # Can not publish without set meta
         self.assertEqual(post.public, False)
         response = self.client.post(f"/api/posts/{post_id}/publish")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(post.public, False)
+        # Publish
+        post.classification = True
+        post.regression = True
+        post.clustering = True
+        self.assertEqual(post.public, False)
+        response = self.client.post(f"/api/posts/{post_id}/publish")
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(post.public, True)
         # Can not publish twice
         response = self.client.post(f"/api/posts/{post_id}/publish")
@@ -494,7 +529,16 @@ class ApiCase(unittest.TestCase):
         response = self.client.post(
             f"/api/posts/{post_id}/comments", json={"text": "Comment 1"})
         self.assertEqual(response.status_code, 200)
-        # List post
+        # User2 can not comment
+        self.login(create_user=False, user=create_user2)
+        response = self.client.post(
+            f"/api/posts/{post_id}/comments", json={"text": "Comment 1"})
+        self.assertEqual(response.status_code, 422)
+        # User2 can not list comments
+        response = self.client.get(f"/api/posts/{post_id}/comments")
+        self.assertEqual(response.status_code, 422)
+        self.login(create_user=False)
+        # List comments
         response = self.client.get(f"/api/posts/{post_id}/comments")
         self.assertEqual(len(response.json), 1)
         comment_id = response.json[0]['id']
@@ -552,6 +596,21 @@ class ApiCase(unittest.TestCase):
         response = self.client.get(
             f"/api/posts/{post_id}/visualize?plt=scatter")
         self.assertEqual(response.status_code, 200)
+        response = self.client.get(
+            f"/api/posts/{post_id}/visualize?plt=parallelcoordinates")
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(
+            f"/api/posts/{post_id}/visualize?plt=pearsoncorrelation")
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(
+            f"/api/posts/{post_id}/visualize?plt=histogram")
+        self.assertEqual(response.status_code, 200)
+        # User2 can not access visualization data
+        self.login(create_user=False, user=create_user2)
+        response = self.client.get(
+            f"/api/posts/{post_id}/visualize?plt=histogram")
+        self.assertEqual(response.status_code, 422)
+        self.login(create_user=False)
         # 14
         result = process_file.run(files, username2)
         self.assertEqual(result['state'], 'SUCCESS')
@@ -596,6 +655,14 @@ class ApiCase(unittest.TestCase):
             response = self.client.post(
                 "/api/posts/100/run", json=step)
         self.assertEqual(response.status_code, 422)
+        # User3 can not run
+        self.login(user=create_user3)
+        with patch('app.api.tasks.User.launch_task'):
+            response = self.client.post(
+                f"/api/posts/{post_id}/run", json=step)
+        self.assertEqual(response.status_code, 422)
+        self.login(create_user=False, user=create_user2)
+        # Run task
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(
                 f"/api/posts/{post_id}/run", json=step)
@@ -833,6 +900,49 @@ class ApiCase(unittest.TestCase):
         response = self.client.put("/api/posts", json={'data_uuid': iris.id})
         self.assertEqual(response.status_code, 422,
                          msg=response.json and response.json["errors"])
+
+    def test_deployment(self):
+        """
+            1 - Send deployment request
+        """
+        response = self.client.post("/api/deployment")
+        self.assertEqual(response.status_code, 422)
+        with patch('app.api.deployment.has_auth'):
+            response = self.client.post("/api/deployment")
+        self.assertEqual(response.status_code, 422)
+        with patch('app.api.deployment.has_auth'):
+            with patch('app.api.deployment.subprocess.run'):
+                response = self.client.post("/api/deployment")
+        self.assertEqual(response.status_code, 201)
+
+    def test_email_confirmation_key(self):
+        """
+            1 - Create user without confirm email
+            2 - Ask new email confirmation key
+            3 - Can not ask recovery key to already confirmed email
+            4 - Can not ask recovery key to inexistent email
+        """
+        # 1
+        self.login(confirm_email=False)
+        user = User.get_by_username(create_user1['username'])
+        # 2
+        with patch('app.api.tasks.send_async_email.delay'):
+            response = self.client.post(
+                "/api/users/recover/key", json={"email": user.email})
+        self.assertEqual(response.status_code, 200)
+        # 3
+        user.email_confirmed = True
+        db.session.commit()
+        # 4
+        with patch('app.api.tasks.send_async_email.delay'):
+            response = self.client.post(
+                "/api/users/recover/key", json={"email": user.email})
+        self.assertEqual(response.status_code, 422)
+        # 5
+        with patch('app.api.tasks.send_async_email.delay'):
+            response = self.client.post(
+                "/api/users/recover/key", json={"email": "inexistent@email.com"})
+        self.assertEqual(response.status_code, 422)
 
 
 if __name__ == '__main__':

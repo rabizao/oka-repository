@@ -19,6 +19,9 @@ from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
 from . import bp
 from .tasks import create_post
 
+import pandas as pd
+import numpy as np
+
 
 def save_files(input_files):
     files = []
@@ -223,7 +226,7 @@ class PostsFavoriteById(MethodView):
 @bp.route('/posts/<int:id>/publish')
 class PostsPublishById(MethodView):
     @bp.auth_required
-    @bp.response(code=200)
+    @bp.response(code=201)
     def post(self, id):
         """
         Publish post with id {id}
@@ -240,7 +243,19 @@ class PostsPublishById(MethodView):
         if post.author != logged_user:
             HTTPAbort.not_authorized()
 
-        # TODO: Verify if the post has all classification variables before next steps
+        metas = ["classification", "regression", "clustering", "other_tasks", "life_sciences",
+                 "physical_sciences", "engineering", "social", "business", "finances", "astronomy", "quantum_mechanics",
+                 "medical", "financial", "other_domains", "categorical", "numerical", "text", "images", "time_series",
+                 "other_features"]
+
+        n_meta = 0
+        for meta in metas:
+            if getattr(post, meta):
+                n_meta = n_meta + 1
+
+        if n_meta < 3 or n_meta > 5:
+            HTTPAbort.not_possible(
+                "metas", complement="Post must have between 3 and 5 metafeatures before publish")
 
         post.public = True
         post.publish_timestamp = datetime.utcnow()
@@ -335,7 +350,25 @@ class PostsVisualizeById(MethodView):
         elif args["plt"] == "parallelcoordinates":
             data_modified = data >> Sample_(n=min(len(data.X), 500))
         elif args["plt"] == "pearsoncorrelation":
-            data_modified = data >> Sample_(n=min(len(data.X), 500))
+            df = pd.DataFrame(data.X)
+
+            for row, v in df.corr().to_dict().items():
+                for column, corr in v.items():
+                    datas.append({"x": row, "y": column, "color": corr})
+
+        elif args["plt"] == "histogram":
+            data_modified = data >> Binarize
+            cut = list(map(float, data_modified.X[:, int(args["x"])]))
+            maximum = max(cut)
+            minimum = min(cut)
+            step = (maximum - minimum) / 10
+            ranges = np.arange(minimum, maximum, step)
+
+            df = pd.DataFrame(cut)
+            df2 = df.groupby(pd.cut(cut, ranges)).count()
+            datas = [{"x": str(k), "count": v}
+                     for k, v in df2.to_dict()[0].items()]
+            # print([{"x": str(k), "count": v} for k, v in df2.to_dict()[0].items()])
 
         return json.dumps(datas)
 

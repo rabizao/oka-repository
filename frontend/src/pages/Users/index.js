@@ -3,7 +3,6 @@ import { useHistory, useLocation } from 'react-router-dom';
 
 import './styles.css';
 
-import Avatar from 'react-avatar';
 import { CircularProgress } from '@material-ui/core';
 import Modal from '@material-ui/core/Modal';
 
@@ -18,6 +17,7 @@ import queryString from 'query-string';
 import { notifyError } from '../../utils';
 import { NotificationManager } from 'react-notifications';
 import OkaProfileBox from '../../components/OkaProfileBox';
+import Gravatar from '../../components/Gravatar';
 
 export default function Users(props) {
     const location = useLocation()
@@ -30,10 +30,13 @@ export default function Users(props) {
     const [user, setUser] = useState({});
     const [openEdit, setOpenEdit] = useState(false);
     const [openMessage, setOpenMessage] = useState(false);
+    const [openAvatar, setOpenAvatar] = useState(false);
     const [message, setMessage] = useState('');
     const [name, setName] = useState('');
     const [about_me, setAbout_me] = useState('');
     const [password, setPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [newPasswordRetype, setNewPasswordRetype] = useState('');
     const [nameEdit, setNameEdit] = useState('');
     const [about_meEdit, setAbout_meEdit] = useState('');
     const history = useHistory();
@@ -42,7 +45,7 @@ export default function Users(props) {
 
     const textBox = (text) => {
         return (
-            <div className="content-box margin-very-small">
+            <div className="content-box margin-very-very-small">
                 {loading ?
                     <div className="flex-row flex-crossaxis-center padding-big"><CircularProgress /></div> :
 
@@ -146,16 +149,23 @@ export default function Users(props) {
         const data = {
             name: nameEdit,
             about_me: about_meEdit,
+            new_password: newPassword,
             password: password
         }
         if (data.password === '') {
             delete data["password"]
+        }
+        if (data.new_password === '') {
+            delete data["new_password"]
         }
         try {
             await api.put(`users/${username}`, data);
             setOpenEdit(false);
             setName(nameEdit);
             setAbout_me(about_meEdit);
+            setPassword('');
+            setNewPassword('');
+            setNewPasswordRetype('');
         } catch (error) {
             notifyError(error);
         }
@@ -170,7 +180,7 @@ export default function Users(props) {
             await api.post(`messages/${user.username}`, data);
             setOpenMessage(false);
             setMessage('');
-            NotificationManager.success("Message sent. Click here to follow the conversation", "Sent", 4000, () => { history.push(`/users/${username}/conversation/${user.username}`) })
+            NotificationManager.success("Message sent. Click here to follow your conversations", "Sent", 4000, () => { history.push(`/users/${loggedUser.username}/messages`) })
         } catch (error) {
             notifyError(error);
         }
@@ -217,17 +227,44 @@ export default function Users(props) {
                             />
                         </div>
                         <div className="flex-row flex-axis-center flex-space-between">
-                            <label htmlFor="password">Password</label>
+                            <label htmlFor="old-password">Old Password</label>
                             <input
-                                id="password"
+                                id="old-password"
                                 type="password"
-                                placeholder="Password"
+                                placeholder="Old Password"
                                 value={password}
                                 autoComplete="new-password"
                                 onChange={e => setPassword(e.target.value)}
                             />
                         </div>
-                        <button className="button-primary" type="submit">Save</button>
+                        <div className="flex-row flex-axis-center flex-space-between">
+                            <label htmlFor="password">New Password</label>
+                            <input
+                                id="password"
+                                type="password"
+                                placeholder="New Password"
+                                value={newPassword}
+                                autoComplete="new-password"
+                                onChange={e => setNewPassword(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex-row flex-axis-center flex-space-between">
+                            <label htmlFor="password-retype">Retype New Password</label>
+                            <input
+                                className={`${newPassword !== newPasswordRetype && "border-error"}`}
+                                id="password-retype"
+                                type="password"
+                                placeholder="New Password"
+                                value={newPasswordRetype}
+                                autoComplete="new-password"
+                                onChange={e => setNewPasswordRetype(e.target.value)}
+                            />
+                        </div>
+                        {
+                            newPassword !== newPasswordRetype ?
+                                <button className="button-primary-disabled" value="click" disabled>Save</button> :
+                                <button className="button-primary" type="submit">Save</button>
+                        }
                     </form>
                 </div>
             </Modal>
@@ -247,6 +284,16 @@ export default function Users(props) {
                     </form>
                 </div>
             </Modal>
+            <Modal
+                open={openAvatar}
+                onClose={() => setOpenAvatar(false)}
+            >
+                <div className="modal padding-big flex-column">
+                    <h3 className="margin-top-small">Update your avatar</h3>
+                    <h5 className="margin-top-small">Your avatar is the Gravatar linked to your email</h5>
+                    <a className="flex-row flex-crossaxis-center margin-top-small button-primary" href="https://gravatar.com" target="blank" title="Change your avatar at gravatars' website">Update at Gravatar</a>
+                </div>
+            </Modal>
             <OkaHeader />
             <div className="flex-column flex-axis-center oka-hero-background padding-sides-small padding-top-big">
                 {loading ?
@@ -257,7 +304,11 @@ export default function Users(props) {
                             <button className="button-secondary" onClick={handleReload}>Reload</button>
                         </div> :
                         <div className="flex-column flex-axis-center padding-medium width-smallest">
-                            <Avatar name={user.name} size="80" round={true} />
+                            {
+                                loggedUser.username === user.username ?
+                                    <button onClick={() => setOpenAvatar(true)}><Gravatar link={user.gravatar} rounded={true} /></button> :
+                                    <Gravatar link={user.gravatar} rounded={true} />
+                            }
                             <h1 className="color-tertiary margin-top-medium width100 ellipsis text-center">{name}</h1>
                             <h5 className="color-tertiary margin-top-very-small width100 ellipsis text-center">@{username}</h5>
                             <h5 className="color-tertiary margin-top-very-small width100 ellipsis text-center">{about_me}</h5>
@@ -268,8 +319,8 @@ export default function Users(props) {
                                     <button onClick={handleOpenEdit} className="button-secondary">Edit</button>
                                 </div> :
                                 <div>
-                                    <button onClick={handleFollow} className="button-secondary margin-very-small">{user.followers && user.followers.includes(loggedUser.id) ? "Unfollow" : "Follow"}</button>
-                                    <button onClick={() => setOpenMessage(true)} className="button-secondary margin-very-small">Message</button>
+                                    <button onClick={handleFollow} className="button-secondary margin-very-very-small">{user.followers && user.followers.includes(loggedUser.id) ? "Unfollow" : "Follow"}</button>
+                                    <button onClick={() => setOpenMessage(true)} className="button-secondary margin-very-very-small">Message</button>
                                 </div>
                             }
                         </div>

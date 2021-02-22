@@ -2,15 +2,20 @@ import os
 from datetime import timedelta
 from dotenv import load_dotenv
 
+from app.utils import is_browser
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '../.env'))
 
 
 class Config(object):
     SECRET_KEY = os.environ.get('FLASK_SECRET_KEY') or 'you-guess'
-    DEPLOYMENT_SECRET_KEY = os.environ.get('DEPLOYMENT_SECRET_KEY') or 'deploy-not-set'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'app.db')
-    TATU_URL = os.environ.get('TATU_URL') or 'sqlite://' + os.path.join(basedir, 'tatu')
+    DEPLOYMENT_SECRET_KEY = os.environ.get(
+        'DEPLOYMENT_SECRET_KEY') or 'deploy-not-set'
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        'DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'app.db')
+    TATU_URL = os.environ.get('TATU_URL') or 'sqlite://' + \
+        os.path.join(basedir, 'tatu')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or 587)
@@ -42,3 +47,6 @@ class Config(object):
     JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=15)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=15)
+
+    RATELIMIT_DEFAULT = "2000/second"
+    RATELIMIT_DEFAULTS_EXEMPT_WHEN = is_browser
