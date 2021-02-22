@@ -237,9 +237,9 @@ def download_data(self, pids, username, ip):
                 'No name', 'No description'))
             if data.hasstream:
                 datas = tatu.fetchstream(post.data_uuid, lazy=False)
-                for dat, i in enumerate(datas):
-                    zipped_file.writestr(f'{pid}-{i}.arff', dat.arff(
-                        'No name', 'No description'))
+                for i, dat in enumerate(datas):
+                    # zipped_file.writestr(f'{pid}-{i}-train.arff', dat.inner.arff('No name', 'No description'))
+                    zipped_file.writestr(f'{pid}-{i}-test.arff', dat.arff('No name', 'No description'))
     return _set_job_progress(self, 100, result=f'{filename_server_zip}')
 
 
