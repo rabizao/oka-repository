@@ -180,12 +180,13 @@ def run_step(self, post_id, step_asdict, username):
     '''
     post = Post.query.get(post_id)
     logged_user = User.get_by_username(username)
-    tatu = current_app.config['TATU_SERVER']
+    tatu = current_app.config['TATU_SERVER']()
 
     step = Step.fromdict(step_asdict)
 
     _set_job_progress(self, 0)
     data = tatu.fetch(post.data_uuid, lazy=False) >> step
+    tatu.store(data)
 
     # minhas mudanças antes de dar pull no dev do rabizao ==============
     # tatu.store(data, lazy=False, ignoredup=True)
@@ -212,7 +213,7 @@ def download_data(self, pids, username, ip):
     logged_user = User.get_by_username(username)
     if not logged_user:
         raise Exception(f'Username {username} not found!')
-    tatu = current_app.config['TATU_SERVER']
+    tatu = current_app.config['TATU_SERVER']()
     filename_server_zip = str(u.uuid4()) + '.zip'
     path_server_zip = f'{current_app.config["TMP_FOLDER"]}/{filename_server_zip}'
     with ZipFile(path_server_zip, 'w') as zipped_file:
@@ -234,6 +235,11 @@ def download_data(self, pids, username, ip):
             db.session.commit()
             zipped_file.writestr(f'{pid}.arff', data.arff(
                 'No name', 'No description'))
+            if data.hasstream:
+                datas = tatu.fetchstream(post.data_uuid, lazy=False)
+                for i, dat in enumerate(datas):
+                    # zipped_file.writestr(f'{pid}-{i}-train.arff', dat.inner.arff('No name', 'No description'))
+                    zipped_file.writestr(f'{pid}-{i}-test.arff', dat.arff('No name', 'No description'))
     return _set_job_progress(self, 100, result=f'{filename_server_zip}')
 
 
@@ -246,7 +252,7 @@ def process_file(self, files, username):
     if not logged_user:
         raise Exception(f'Username {username} not found!')
     result = []
-    tatu = current_app.config['TATU_SERVER']
+    tatu = current_app.config['TATU_SERVER']()
 
     for file in files:
         actual_index = files.index(file)
