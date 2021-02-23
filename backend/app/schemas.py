@@ -14,13 +14,13 @@ import numpy as np
 
 
 def get_attrs(uuid):
-    tatu = current_app.config['TATU_SERVER']
+    tatu = current_app.config['TATU_SERVER']()
     data = tatu.fetch(uuid, lazy=False)
     return data.Xd if data else {}
 
 
 def get_history(post):
-    tatu = current_app.config['TATU_SERVER']
+    tatu = current_app.config['TATU_SERVER']()
     data = tatu.fetch(post.data_uuid, lazy=False)
 
     if not data:
@@ -36,7 +36,7 @@ def get_history(post):
 
 
 def get_head(uuid):
-    tatu = current_app.config['TATU_SERVER']
+    tatu = current_app.config['TATU_SERVER']()
     data = tatu.fetch(uuid, lazy=False)
     if not data:
         return []  # REMINDER: The history exists, but is not accessible through data.fetch()
@@ -46,7 +46,7 @@ def get_head(uuid):
 
 
 def get_fields(uuid):
-    tatu = current_app.config['TATU_SERVER']
+    tatu = current_app.config['TATU_SERVER']()
     data = tatu.fetch(uuid, lazy=False)
     if not data:
         return []  # REMINDER: The history exists, but is not accessible through data.fetch()

@@ -327,7 +327,7 @@ class PostsVisualizeById(MethodView):
         if not logged_user.has_access(post):
             HTTPAbort.not_authorized()
 
-        tatu = current_app.config['TATU_SERVER']
+        tatu = current_app.config['TATU_SERVER']()
         data = tatu.fetch(post.data_uuid, lazy=False)
         datas = []
 
