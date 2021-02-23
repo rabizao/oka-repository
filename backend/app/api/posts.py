@@ -327,7 +327,7 @@ class PostsVisualizeById(MethodView):
         if not logged_user.has_access(post):
             HTTPAbort.not_authorized()
 
-        tatu = current_app.config['TATU_SERVER']
+        tatu = current_app.config['TATU_SERVER']()
         data = tatu.fetch(post.data_uuid, lazy=False)
         datas = []
 
@@ -368,7 +368,6 @@ class PostsVisualizeById(MethodView):
             df2 = df.groupby(pd.cut(cut, ranges)).count()
             datas = [{"x": str(k), "count": v}
                      for k, v in df2.to_dict()[0].items()]
-            # print([{"x": str(k), "count": v} for k, v in df2.to_dict()[0].items()])
 
         return json.dumps(datas)
 
