@@ -16,13 +16,12 @@ from flask_limiter.util import get_remote_address
 from tatu import Tatu
 from .config import Config
 
+RECONNECTMODE_TATU = True
 db = SQLAlchemy()
 migrate = Migrate()
 mail = Mail()
 celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)
 jwt = JWTManager()
-# engine = create_engine(Config.TATU_URL)
-# tatuserver = Tatu(url=engine, threaded=False)
 limiter = Limiter(key_func=get_remote_address)
 
 
@@ -30,9 +29,9 @@ class FlaskWrapper(Flask):
     """https://stackoverflow.com/a/57231282/9681577"""
 
     def run(self, host=None, port=None, debug=None, load_dotenv=True, **options):
-        if not self.debug or os.getenv('WERKZEUG_RUN_MAIN') == 'true':
+        if not RECONNECTMODE_TATU and (not self.debug or os.getenv('WERKZEUG_RUN_MAIN') == 'true'):
             with self.app_context():
-                self.config['TATU_SERVER'].open()
+                self.config['TATU_SERVER']().open()
         super(FlaskWrapper, self).run(host=host, port=port,
                                       debug=debug, load_dotenv=load_dotenv, **options)
 
@@ -42,8 +41,14 @@ def create_app(config_class=Config):
                        static_folder='media')
 
     app.config.from_object(config_class)
-    app.config['TATU_SERVER'] = Tatu(url=app.config['TATU_URL'], threaded=True)
-    # app.config['TATU_SERVER'] = tatuserver
+    if RECONNECTMODE_TATU:
+        def f():
+            return Tatu(url=app.config['TATU_URL'], threaded=False, close_when_idle=True)
+
+        app.config['TATU_SERVER'] = f
+    else:
+        tatu = Tatu(url=app.config['TATU_URL'], threaded=True)
+        app.config['TATU_SERVER'] = lambda: tatu
 
     db.init_app(app)
     migrate.init_app(app, db)

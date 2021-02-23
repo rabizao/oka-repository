@@ -180,7 +180,7 @@ def run_step(self, post_id, step_asdict, username):
     '''
     post = Post.query.get(post_id)
     logged_user = User.get_by_username(username)
-    tatu = current_app.config['TATU_SERVER']
+    tatu = current_app.config['TATU_SERVER']()
 
     step = Step.fromdict(step_asdict)
 
@@ -213,7 +213,7 @@ def download_data(self, pids, username, ip):
     logged_user = User.get_by_username(username)
     if not logged_user:
         raise Exception(f'Username {username} not found!')
-    tatu = current_app.config['TATU_SERVER']
+    tatu = current_app.config['TATU_SERVER']()
     filename_server_zip = str(u.uuid4()) + '.zip'
     path_server_zip = f'{current_app.config["TMP_FOLDER"]}/{filename_server_zip}'
     with ZipFile(path_server_zip, 'w') as zipped_file:
@@ -252,7 +252,7 @@ def process_file(self, files, username):
     if not logged_user:
         raise Exception(f'Username {username} not found!')
     result = []
-    tatu = current_app.config['TATU_SERVER']
+    tatu = current_app.config['TATU_SERVER']()
 
     for file in files:
         actual_index = files.index(file)
