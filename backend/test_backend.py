@@ -59,7 +59,7 @@ class ApiCase(unittest.TestCase):
         self.app_context.push()
         self.client = self.app.test_client()
         db.create_all()
-        self.tatu = self.app.config['TATU_SERVER']
+        self.tatu = self.app.config['TATU_SERVER']()
         # if os.path.exists('testdb.db'):
         #     os.remove('testdb.db')
 
