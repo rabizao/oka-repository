@@ -376,11 +376,11 @@ export default function Posts(props) {
                                 showFields &&
                                 <div className="padding-sides-small padding-bottom-medium padding-top-small">
                                     <div className="content-box padding-small">
-                                        <h4>The dataset has the following fields which can be accessed after generating the Data object, i.e. using data.field:</h4>
+                                        <h2 className="padding-small">Fields</h2>
                                         <div className="margin-top-small">
                                             {
                                                 post.fields.map((field, index) =>
-                                                    <span key={index} className="bold"> {field}{(index !== post.fields.length - 1) && ", "}</span>
+                                                    <span key={index}> {field}{(index !== post.fields.length - 1) && ", "}</span>
                                                 )
                                             }
                                         </div>
