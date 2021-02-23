@@ -37,6 +37,8 @@ def f(conn):
         conn.send(str(e))
 
 
+start = time.time()
+
 parent_conn, child_conn = multiprocessing.Pipe()
 n_processes = 50
 pool = mp.ProcessPool(n_processes)
@@ -63,4 +65,6 @@ if error:
     print(last_error)
     print("ERROR")
 else:
-    print("OK")
+    end = time.time()
+    print("OK", end - start, "s")
+

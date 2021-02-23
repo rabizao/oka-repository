@@ -18,6 +18,7 @@ from app.api.tasks import process_file, download_data, run_step
 from app.config import Config
 from app.models import User, Token, Notification, Post
 from app.utils import consts
+import app
 
 create_user1 = {
     "username": "user1111",
@@ -54,12 +55,13 @@ class ApiCase(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter(
             'ignore', (DeprecationWarning, UserWarning, ImportWarning))  # checar se SAWarning do SQLAlchemy é relevante
+        app.RECONNECTMODE_TATU = False
         self.app = create_app(TestConfig)
         self.app_context = self.app.app_context()
         self.app_context.push()
         self.client = self.app.test_client()
         db.create_all()
-        self.tatu = self.app.config['TATU_SERVER']
+        self.tatu = self.app.config['TATU_SERVER']()
         # if os.path.exists('testdb.db'):
         #     os.remove('testdb.db')
 

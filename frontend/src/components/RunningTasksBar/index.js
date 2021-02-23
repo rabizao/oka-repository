@@ -8,7 +8,7 @@ export default function RunningTasksBar() {
 
     return (
         runningTasksBarContext.show &&
-        <div className="background-primary-color width-huge fixed-bottom-right margin-sides-verysmall">
+        <div className="background-primary-color width-huge fixed-bottom-right">
             <div className={`${!runningTasksBarContext.active && "inactive"} flex-column content-box width100 max-height-70vh overflow-y-auto`}>
                 {
                     Object.keys(runningTasksBarContext.tasks).length === 0 ?

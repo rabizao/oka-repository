@@ -14,7 +14,7 @@ class SyncCheck(MethodView):
     @bp.arguments(SyncCheckBaseSchema, location="query")
     @bp.response(SyncCheckResponseSchema)
     def get(self, args):  # return None or a row from one of the tables ("cat"s): data, step
-        tatu = current_app.config['TATU_SERVER']
+        tatu = current_app.config['TATU_SERVER']()
         uuid = args["uuids"][0]  # TODO: Implement get/has multiple data, steps, streams.
         if args['cat'] == "data":
             # jsonify allows to return None or a dict, which is compatible with the posterior SQL usage of this result
@@ -33,7 +33,7 @@ class SyncCheck(MethodView):
     @bp.arguments(SyncPostSchema)
     @bp.response(SuccessResponseSchema)
     def post(self, args, argsQuery):  # insert a dict in one of the tables ("cat"s): data, step
-        tatu = current_app.config['TATU_SERVER']
+        tatu = current_app.config['TATU_SERVER']()
         kwargs = argsQuery['kwargs']
         if args['cat'] == "data":
             return {"success": tatu.putdata(**kwargs)}
@@ -48,7 +48,7 @@ class SyncLock(MethodView):
     @bp.auth_required
     @bp.response(SuccessResponseSchema)
     def put(self, uuid):  # return if insertion of a locked data row succeeded
-        tatu = current_app.config['TATU_SERVER']
+        tatu = current_app.config['TATU_SERVER']()
         response = {
             "success": tatu.lock(uuid)
         }
@@ -60,7 +60,7 @@ class SyncUnlock(MethodView):
     @bp.auth_required
     @bp.response(SuccessResponseSchema)
     def put(self, uuid):  # return if deletion of a locked data row succeeded
-        tatu = current_app.config['TATU_SERVER']
+        tatu = current_app.config['TATU_SERVER']()
         response = {
             "success": tatu.unlock(uuid)
         }
@@ -73,7 +73,7 @@ class Sync(MethodView):
     @bp.auth_required
     @bp.response(SyncResponseSchema)
     def get(self):  # return uuid of tatu-server
-        tatu = current_app.config['TATU_SERVER']
+        tatu = current_app.config['TATU_SERVER']()
         response = {"uuid": tatu.id}
         return response
 
@@ -83,7 +83,7 @@ class SyncFieldsByUuid(MethodView):
     @bp.auth_required
     @bp.response(code=200)
     def get(self, uuid):  # given a data-uuid, return dict of binaries   /  still not used
-        # tatu =     current_app.config['TATU_SERVER']
+        # tatu =     current_app.config['TATU_SERVER']()
 
         # input: no body, response:
         response = {
@@ -104,7 +104,7 @@ class SyncFields(MethodView):
     @bp.arguments(SyncFieldsQuerySchema, location="query")
     @bp.response(NumberResponseSchema)
     def post(self, args, argsQuery):
-        tatu = current_app.config['TATU_SERVER']
+        tatu = current_app.config['TATU_SERVER']()
         if argsQuery["cat"] == "fields":
             return {"n": tatu.putfields(args['rows'], argsQuery['ignoredup'])}
         if argsQuery["cat"] == "stream":
@@ -118,7 +118,7 @@ class SyncFields(MethodView):
 class SyncContentByUuid(MethodView):
     @bp.auth_required
     def get(self, uuid):  # return binary [OK]
-        tatu = current_app.config['TATU_SERVER']
+        tatu = current_app.config['TATU_SERVER']()
         ret = tatu.getcontent(uuid)
         return make_response(ret) if ret else jsonify(None)
 
@@ -127,7 +127,7 @@ class SyncContentByUuid(MethodView):
     @bp.arguments(SyncContentQuerySchema, location="query")
     @bp.response(SuccessResponseSchema)
     def post(self, argFiles, argsQuery, uuid):  # ok
-        tatu = current_app.config['TATU_SERVER']
+        tatu = current_app.config['TATU_SERVER']()
         response = {
             "success": tatu.putcontent(uuid, argFiles['bina'].read(), argsQuery['ignoredup'])
         }
