@@ -105,7 +105,6 @@ def create_post(logged_user, data, name, description, filename=None, active=True
 class BaseTask(celery.Task):
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
-        print("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
         current_app.logger.error(
             'Unhandled exception', exc_info=sys.exc_info())
         task = Task.query.get(task_id)
