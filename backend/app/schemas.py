@@ -1,21 +1,21 @@
 from datetime import datetime
 
+# from kururu.tool.manipulation.slice import Slice
+import numpy as np
+from app import db
+from app.models import User, Post, Comment, Contact, Notification, Task, Message
 from flask import current_app
 from flask_smorest.fields import Upload
+from garoupa.avatar23 import colors
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
 from werkzeug.security import generate_password_hash
-
-from app import db
-from app.models import User, Post, Comment, Contact, Notification, Task, Message
-from garoupa.avatar23 import colors
-# from kururu.tool.manipulation.slice import Slice
-import numpy as np
 
 
 def get_attrs(uuid):
     tatu = current_app.config['TATU_SERVER']()
     data = tatu.fetch(uuid, lazy=False)
+    tatu.close()
     return data.Xd if data else {}
 
 
@@ -32,6 +32,7 @@ def get_history(post):
         if d["step"]["desc"]["name"][:3] not in ["B", "Rev", "In", "Aut", "E"]:
             post = Post.query.filter_by(data_uuid=k, user_id=userid).first()
             lst.append({"id": k, "data": d, "post": post and post.id})
+    tatu.close()
     return lst
 
 
@@ -42,7 +43,9 @@ def get_head(uuid):
         return []  # REMINDER: The history exists, but is not accessible through data.fetch()
     # TODO: data >>= Slice(last=10)
 
-    return [data.Xd + data.Yd] + np.concatenate((data.X[0:10:, 0:10], data.Y[0:10:, 0:10]), axis=1).tolist()
+    ret = [data.Xd + data.Yd] + np.concatenate((data.X[0:10:, 0:10], data.Y[0:10:, 0:10]), axis=1).tolist()
+    tatu.close()
+    return ret
 
 
 def get_fields(uuid):
@@ -51,7 +54,9 @@ def get_fields(uuid):
     if not data:
         return []  # REMINDER: The history exists, but is not accessible through data.fetch()
 
-    return list(data.asdict.keys())
+    ret = list(data.asdict.keys())
+    tatu.close()
+    return ret
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -224,7 +229,6 @@ class UserLoginSchema(UserBaseSchema):
 
 
 class UserRecoverKeySubmitSchema(SQLAlchemySchema):
-
     email = fields.Email(validate=[
         validate.Length(min=6, max=36)], load_only=True, required=True)
 

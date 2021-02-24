@@ -4,17 +4,17 @@ import uuid as u
 from os import sys
 from zipfile import ZipFile
 
-from celery.signals import worker_init
-from flask import current_app
-from flask.views import MethodView
-from flask_mail import Message
-
 from aiuna.content.data import Data
 from aiuna.step.file import File
 from akangatu.transf.step import Step
 from app import celery, db, mail
 from app.models import Post, Task, User
 from app.schemas import TaskStatusBaseSchema
+from celery.signals import worker_init
+from flask import current_app
+from flask.views import MethodView
+from flask_mail import Message
+
 from . import bp
 
 
@@ -200,7 +200,7 @@ def run_step(self, post_id, step_asdict, username):
                   f"into {post.name} with config {step_asdict['desc']['config']}"
 
     result = create_post(logged_user, data, name, description, notify=False)
-
+    tatu.close()
     return _set_job_progress(self, 100, result=result)
 
 
@@ -222,12 +222,15 @@ def download_data(self, pids, username, ip):
             _set_job_progress(self, actual_index / len(pids) * 100)
             post = Post.query.get(pid)
             if not post:
+                tatu.close()
                 raise Exception(f'Download failed: post {pid} not found!')
             if not logged_user.has_access(post):
+                tatu.close()
                 raise Exception(
                     f'Download failed. You do not have access to post {pid}!')
             data = tatu.fetch(post.data_uuid, lazy=False)
             if data is None:
+                tatu.close()
                 raise Exception(
                     f'Download failed: data {post.data_uuid} not found!')
             post.add_download(ip)
@@ -240,6 +243,7 @@ def download_data(self, pids, username, ip):
                 for i, dat in enumerate(datas):
                     # zipped_file.writestr(f'{pid}-{i}-train.arff', dat.inner.arff('No name', 'No description'))
                     zipped_file.writestr(f'{pid}-{i}-test.arff', dat.arff('No name', 'No description'))
+    tatu.close()
     return _set_job_progress(self, 100, result=f'{filename_server_zip}')
 
 
@@ -267,6 +271,7 @@ def process_file(self, files, username):
         result.append(create_post(logged_user, f.data, name,
                                   description, file['original_name']))
 
+    tatu.close()
     return _set_job_progress(self, 100, result=result)
 
 
