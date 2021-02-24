@@ -26,8 +26,8 @@ def get_history(post):
     tatu = current_app.config['TATU_SERVER']()
     data = tatu.fetch(post.data_uuid, lazy=False)
 
-    if not data:
-        return []  # REMINDER: The history exists, but is not accessible through data.fetch()
+    if not data:  # REMINDER: The history exists, but is not accessible through data.fetch()
+        return []
     lst = []
     userid = post.author.id
 
@@ -42,11 +42,11 @@ def get_history(post):
 def get_head(uuid):
     tatu = current_app.config['TATU_SERVER']()
     data = tatu.fetch(uuid, lazy=False)
-    if not data:
-        return []  # REMINDER: The history exists, but is not accessible through data.fetch()
+    if not data:  # REMINDER: Data registry exists, but can be empty.
+        return []
     sliced = data >> Slice(":10,:10") * Cache(tatu)
-
-    ret = [data.Xd[:10] + data.Yd[:10]] + np.concatenate((sliced.X, sliced.Y), axis=1).tolist()
+    table = np.concatenate((sliced.X, sliced.Y), axis=1).tolist()
+    ret = [data.Xd[:10] + data.Yd[:10]] + table
     tatu.close()
     return ret
 
@@ -54,8 +54,8 @@ def get_head(uuid):
 def get_fields(uuid):
     tatu = current_app.config['TATU_SERVER']()
     data = tatu.fetch(uuid, lazy=False)
-    if not data:
-        return []  # REMINDER: The history exists, but is not accessible through data.fetch()
+    if not data:  # REMINDER: Data registry exists, but can be empty.
+        return []
 
     ret = list(data.asdict.keys())
     tatu.close()

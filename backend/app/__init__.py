@@ -16,9 +16,9 @@ from tatu import Tatu
 
 from .config import Config
 
-DEBUG_TATU = False
-RECONNECTMODE_TATU = True
-LAZY_TATU = True
+DEBUG_TATU = False  # Must be True for test_backend.
+RECONNECTMODE_TATU = True  # Must be True to avoid concurrency problems.
+LAZY_TATU = True  # Must be True to enable faster access to Data fields while showing posts.
 db = SQLAlchemy()
 migrate = Migrate()
 mail = Mail()
