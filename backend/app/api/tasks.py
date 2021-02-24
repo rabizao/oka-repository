@@ -160,7 +160,7 @@ def _set_job_progress(job, progress, failure=False, result={}):
     return {'progress': progress, 'status': status, 'state': state, 'result': report}
 
 
-@celery.task
+@celery.task(base=BaseTask)
 def send_async_email(message):
     '''
     Background task to send an email
