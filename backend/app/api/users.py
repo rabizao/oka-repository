@@ -39,7 +39,7 @@ class Users(MethodView):
                     into our website and want to remove your email from \
                         our database please click <a href='{link}&confirm=false'>here</a>. \
                             <br><br><br>{current_app.config['WEB_TITLE']}"
-        send_async_email.delay(message)
+        send_async_email.delay(message, recipients=[user.email])
         print(message)
         db.session.add(user)
         db.session.commit()
@@ -69,7 +69,7 @@ class UsersRecoverKey(MethodView):
                     into our website and want to remove your email from \
                         our database please click <a href='{link}&confirm=false'>here</a>. \
                             <br><br><br>{current_app.config['WEB_TITLE']}"
-        send_async_email.delay(message)
+        send_async_email.delay(message, recipients=[user.email])
         print(message)
         db.session.commit()
         response = {"username": user.username, "email": user.email}
@@ -99,7 +99,7 @@ class UsersRecoverAccount(MethodView):
                     <a href='{link}'>{link}</a><br><br>If you did not asked this \
                         you do not need to do anything and your account still safe. \
                                 <br><br><br>{current_app.config['WEB_TITLE']}"
-        send_async_email.delay(message)
+        send_async_email.delay(message, recipients=[user.email])
         print(message)
         db.session.commit()
 

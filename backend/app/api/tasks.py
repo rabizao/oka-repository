@@ -161,12 +161,12 @@ def _set_job_progress(job, progress, failure=False, result={}):
 
 
 @celery.task(base=BaseTask)
-def send_async_email(message):
+def send_async_email(message, recipients=None):
     '''
     Background task to send an email
     '''
     msg = Message('[Oka - Contato]', sender=current_app.config['ADMINS'][0],
-                  recipients=[*current_app.config['ADMINS']])
+                  recipients=recipients if recipients else current_app.config['ADMINS'])
     msg.html = message
 
     with current_app.app_context():
