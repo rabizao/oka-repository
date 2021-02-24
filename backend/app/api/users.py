@@ -3,7 +3,7 @@ from app import db
 from app.errors.handlers import HTTPAbort
 from . import bp
 from app.models import User, Post
-# from app.api.tasks import send_async_email
+from app.api.tasks import send_async_email
 from app.schemas import UserBaseSchema, UserQuerySchema, UserRecoverKeySubmitNewPassSchema, UserRegisterSchema, \
     UserEditSchema, PostQuerySchema, PostBaseSchema, UserConfirmationSchema, UserRecoverKeySchema, \
     UserRecoverKeySubmitSchema
@@ -39,7 +39,7 @@ class Users(MethodView):
                     into our website and want to remove your email from \
                         our database please click <a href='{link}&confirm=false'>here</a>. \
                             <br><br><br>{current_app.config['WEB_TITLE']}"
-        # send_async_email.delay(message)
+        send_async_email.delay(message)
         print(message)
         db.session.add(user)
         db.session.commit()
@@ -69,7 +69,7 @@ class UsersRecoverKey(MethodView):
                     into our website and want to remove your email from \
                         our database please click <a href='{link}&confirm=false'>here</a>. \
                             <br><br><br>{current_app.config['WEB_TITLE']}"
-        # send_async_email.delay(message)
+        send_async_email.delay(message)
         print(message)
         db.session.commit()
         response = {"username": user.username, "email": user.email}
@@ -99,7 +99,7 @@ class UsersRecoverAccount(MethodView):
                     <a href='{link}'>{link}</a><br><br>If you did not asked this \
                         you do not need to do anything and your account still safe. \
                                 <br><br><br>{current_app.config['WEB_TITLE']}"
-        # send_async_email.delay(message)
+        send_async_email.delay(message)
         print(message)
         db.session.commit()
 
