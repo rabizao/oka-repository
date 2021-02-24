@@ -15,8 +15,9 @@ from werkzeug.security import generate_password_hash
 def get_attrs(uuid):
     tatu = current_app.config['TATU_SERVER']()
     data = tatu.fetch(uuid, lazy=False)
+    ret = data.Xd if data else {}
     tatu.close()
-    return data.Xd if data else {}
+    return ret
 
 
 def get_history(post):
@@ -41,7 +42,7 @@ def get_head(uuid):
     data = tatu.fetch(uuid, lazy=False)
     if not data:
         return []  # REMINDER: The history exists, but is not accessible through data.fetch()
-    # TODO: data >>= Slice(last=10)
+    # TODO: data >>= Slice(last=10)   and cache it
 
     ret = [data.Xd + data.Yd] + np.concatenate((data.X[0:10:, 0:10], data.Y[0:10:, 0:10]), axis=1).tolist()
     tatu.close()

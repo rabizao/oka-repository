@@ -18,6 +18,7 @@ from .config import Config
 
 DEBUG_TATU = False
 RECONNECTMODE_TATU = True
+LAZY_TATU = True
 db = SQLAlchemy()
 migrate = Migrate()
 mail = Mail()
@@ -44,9 +45,13 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     if RECONNECTMODE_TATU:
         def f():
-            return Tatu(url=app.config['TATU_URL'], threaded=False, close_when_idle=True, disable_close=DEBUG_TATU)
+            return Tatu(url=app.config['TATU_URL'],
+                        threaded=False,
+                        close_when_idle=True,
+                        disable_close=DEBUG_TATU,
+                        force_lazyfetch=LAZY_TATU)
     else:
-        tatu = Tatu(url=app.config['TATU_URL'], threaded=True)
+        tatu = Tatu(url=app.config['TATU_URL'], threaded=True, force_lazyfetch=LAZY_TATU)
 
         def f():
             tatu.disable_close = DEBUG_TATU
