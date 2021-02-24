@@ -7,6 +7,8 @@ from app.models import User, Post, Comment, Contact, Notification, Task, Message
 from flask import current_app
 from flask_smorest.fields import Upload
 from garoupa.avatar23 import colors
+from kururu.tool.communication.lazycache import Cache
+from kururu.tool.manipulation.slice import Slice
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
 from werkzeug.security import generate_password_hash
@@ -42,9 +44,9 @@ def get_head(uuid):
     data = tatu.fetch(uuid, lazy=False)
     if not data:
         return []  # REMINDER: The history exists, but is not accessible through data.fetch()
-    # TODO: data >>= Slice(last=10)   and cache it
+    sliced = data >> Slice(":10,:10") * Cache(tatu)
 
-    ret = [data.Xd + data.Yd] + np.concatenate((data.X[0:10:, 0:10], data.Y[0:10:, 0:10]), axis=1).tolist()
+    ret = [data.Xd[:10] + data.Yd[:10]] + np.concatenate((sliced.X, sliced.Y), axis=1).tolist()
     tatu.close()
     return ret
 
