@@ -26,9 +26,9 @@ def f(conn):
     try:
         i = 0
         print("s", end='')
-        while i < 50 and run:
-            response = requests.get('http://data.analytics.icmc.usp.br/api/posts/1', headers=headers)
-            response.json()
+        while i < 100 and run:
+            requests.get('http://data.analytics.icmc.usp.br/api/posts/5',
+                         headers=headers).json()
             print(".", end='', flush=True)
             i += 1
     except JSONDecodeError as e:
@@ -39,7 +39,7 @@ def f(conn):
 start = time.time()
 
 parent_conn, child_conn = multiprocessing.Pipe()
-n_processes = 50
+n_processes = 100
 pool = mp.ProcessPool(n_processes)
 results = pool.amap(f, [child_conn] * n_processes)
 error = False

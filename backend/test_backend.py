@@ -75,7 +75,8 @@ class ApiCase(unittest.TestCase):
     def login(self, create_user=True, user=create_user1, long_term=False, admin=False, token=None, confirm_email=True):
         # 1 - Create
         if create_user:
-            response = self.client.post("/api/users", json=user)
+            with patch('app.api.tasks.send_async_email.delay'):
+                response = self.client.post("/api/users", json=user)
             self.assertEqual(response.status_code, 201)
             data = response.json
 
