@@ -2,13 +2,8 @@ import json
 import uuid as u
 from datetime import datetime
 
-from flask import current_app
-from flask.views import MethodView
-from flask_jwt_extended import get_jwt_identity
-from flask_smorest import abort
-from kururu.tool.enhancement.attribute.binarize import Binarize
-from kururu.tool.enhancement.instance.sampling.under.sample import Sample_
-
+import numpy as np
+import pandas as pd
 from app import db
 from app.errors.handlers import HTTPAbort
 from app.models import Comment, Post, User
@@ -16,11 +11,15 @@ from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
                          PostEditSchema, PostFilesSchema, PostQuerySchema,
                          RunSchema, TaskBaseSchema, UserBaseSchema, VisualizeQuerySchema, PostCreateSchema,
                          PostActivateSchema)
+from flask import current_app
+from flask.views import MethodView
+from flask_jwt_extended import get_jwt_identity
+from flask_smorest import abort
+from kururu.tool.enhancement.attribute.binarize import Binarize
+from kururu.tool.enhancement.instance.sampling.under.sample import Sample_
+
 from . import bp
 from .tasks import create_post
-
-import pandas as pd
-import numpy as np
 
 
 def save_files(input_files):
@@ -369,6 +368,7 @@ class PostsVisualizeById(MethodView):
             datas = [{"x": str(k), "count": v}
                      for k, v in df2.to_dict()[0].items()]
 
+        tatu.close()
         return json.dumps(datas)
 
 

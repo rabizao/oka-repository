@@ -5,6 +5,7 @@ from app.schemas import (SyncCheckBaseSchema, SyncCheckResponseSchema, SyncPostS
                          SuccessResponseSchema, NumberResponseSchema, SyncContentQuerySchema)
 from flask import make_response, current_app, jsonify
 from flask.views import MethodView
+
 from . import bp
 
 
@@ -18,15 +19,21 @@ class SyncCheck(MethodView):
         uuid = args["uuids"][0]  # TODO: Implement get/has multiple data, steps, streams.
         if args['cat'] == "data":
             # jsonify allows to return None or a dict, which is compatible with the posterior SQL usage of this result
-            return jsonify(
+            ret = jsonify(
                 tatu.getdata(uuid, args['empty']) if args['fetch'] else {"has": tatu.hasdata(uuid, args['empty'])}
             )
-        if args['cat'] == "step":
-            return jsonify(tatu.getstep(uuid) if args['fetch'] else {"has": tatu.hasstep(uuid)})
-        if args['cat'] == "content":
-            return jsonify(tatu.getcontent(uuid) if args['fetch'] else {"has": tatu.hascontent(args["uuids"])})
-        if args['cat'] == "stream":
-            return jsonify(tatu.getstream(uuid) if args['fetch'] else {"has": tatu.hasstream(uuid)})
+        elif args['cat'] == "step":
+            ret = jsonify(tatu.getstep(uuid) if args['fetch'] else {"has": tatu.hasstep(uuid)})
+        elif args['cat'] == "content":
+            ret = jsonify(tatu.getcontent(uuid) if args['fetch'] else {"has": tatu.hascontent(args["uuids"])})
+        elif args['cat'] == "stream":
+            ret = jsonify(tatu.getstream(uuid) if args['fetch'] else {"has": tatu.hasstream(uuid)})
+        else:
+            print("W: Unexpected condition.")
+            tatu.close()
+            return
+        tatu.close()
+        return ret
 
     @bp.auth_required
     @bp.arguments(SyncPostQuerySchema, location="query")
@@ -36,11 +43,17 @@ class SyncCheck(MethodView):
         tatu = current_app.config['TATU_SERVER']()
         kwargs = argsQuery['kwargs']
         if args['cat'] == "data":
-            return {"success": tatu.putdata(**kwargs)}
-        if args['cat'] == "step":
-            return {"success": tatu.putstep(**kwargs)}
-        if args['cat'] == "content":
-            return {"success": tatu.putcontent(**kwargs)}
+            ret = {"success": tatu.putdata(**kwargs)}
+        elif args['cat'] == "step":
+            ret = {"success": tatu.putstep(**kwargs)}
+        elif args['cat'] == "content":
+            ret = {"success": tatu.putcontent(**kwargs)}
+        else:
+            print("W: Unexpected condition.")
+            tatu.close()
+            return
+        tatu.close()
+        return ret
 
 
 @bp.route("/sync/<string:uuid>/lock")
@@ -52,6 +65,7 @@ class SyncLock(MethodView):
         response = {
             "success": tatu.lock(uuid)
         }
+        tatu.close()
         return response
 
 
@@ -64,6 +78,7 @@ class SyncUnlock(MethodView):
         response = {
             "success": tatu.unlock(uuid)
         }
+        tatu.close()
         return response
 
 
@@ -75,6 +90,7 @@ class Sync(MethodView):
     def get(self):  # return uuid of tatu-server
         tatu = current_app.config['TATU_SERVER']()
         response = {"uuid": tatu.id}
+        tatu.close()
         return response
 
 
@@ -106,12 +122,18 @@ class SyncFields(MethodView):
     def post(self, args, argsQuery):
         tatu = current_app.config['TATU_SERVER']()
         if argsQuery["cat"] == "fields":
-            return {"n": tatu.putfields(args['rows'], argsQuery['ignoredup'])}
-        if argsQuery["cat"] == "stream":
+            ret = {"n": tatu.putfields(args['rows'], argsQuery['ignoredup'])}
+        elif argsQuery["cat"] == "stream":
             # try:
-            return {"n": tatu.putstream(args['rows'], argsQuery['ignoredup'])}
+            ret = {"n": tatu.putstream(args['rows'], argsQuery['ignoredup'])}
             # except Exception as e:
             #     print(e)
+        else:
+            print("W: Unexpected condition.")
+            tatu.close()
+            return
+        tatu.close()
+        return ret
 
 
 @bp.route("/sync/<string:uuid>/content")
@@ -120,6 +142,7 @@ class SyncContentByUuid(MethodView):
     def get(self, uuid):  # return binary [OK]
         tatu = current_app.config['TATU_SERVER']()
         ret = tatu.getcontent(uuid)
+        tatu.close()
         return make_response(ret) if ret else jsonify(None)
 
     @bp.auth_required
@@ -131,4 +154,5 @@ class SyncContentByUuid(MethodView):
         response = {
             "success": tatu.putcontent(uuid, argFiles['bina'].read(), argsQuery['ignoredup'])
         }
+        tatu.close()
         return response
