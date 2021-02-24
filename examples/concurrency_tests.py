@@ -19,16 +19,18 @@ headers = {'Authorization': 'Bearer ' + access_token}
 
 run = True
 last_error = None
+response = None
 
 
 def f(conn):
-    global run, last_error
+    global run, last_error, response
     try:
         i = 0
         print("s", end='')
         while i < 100 and run:
-            requests.get('http://data.analytics.icmc.usp.br/api/posts/5',
-                         headers=headers).json()
+            response = requests.get('http://data.analytics.icmc.usp.br/api/posts/5',
+                                    headers=headers)
+            response.json()
             print(".", end='', flush=True)
             i += 1
     except JSONDecodeError as e:
