@@ -492,18 +492,18 @@ export default function Posts(props) {
                 "title": "Scatter",
                 "component": <ScatterPlot postId={id} attrs={post.attrs} />
             },
-            parallelcoordinates: {
-                "title": "Parallel Coordinates",
-                "component": <ParallelCoordinatesPlot postId={id} attrs={post.attrs} />
-            },
             histogram: {
                 "title": "Histogram",
                 "component": <HistogramPlot postId={id} attrs={post.attrs} />
             },
-            pearsoncorrelation: {
-                "title": "Pearson Correlation",
-                "component": <PearsonCorrelationPlot postId={id} attrs={post.attrs} />
-            }
+            // parallelcoordinates: {
+            //     "title": "Parallel Coordinates",
+            //     "component": <ParallelCoordinatesPlot postId={id} attrs={post.attrs} />
+            // },
+            // pearsoncorrelation: {
+            //     "title": "Pearson Correlation",
+            //     "component": <PearsonCorrelationPlot postId={id} attrs={post.attrs} />
+            // }
             //boxplot
         };
 
