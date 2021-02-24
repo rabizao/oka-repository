@@ -105,6 +105,7 @@ def create_post(logged_user, data, name, description, filename=None, active=True
 class BaseTask(celery.Task):
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
+        print("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
         current_app.logger.error(
             'Unhandled exception', exc_info=sys.exc_info())
         task = Task.query.get(task_id)
@@ -160,7 +161,7 @@ def _set_job_progress(job, progress, failure=False, result={}):
     return {'progress': progress, 'status': status, 'state': state, 'result': report}
 
 
-@celery.task
+@celery.task(base=BaseTask)
 def send_async_email(message):
     '''
     Background task to send an email
