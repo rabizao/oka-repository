@@ -6,16 +6,17 @@ from celery import Celery
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_smorest import Api
 from flask_sqlalchemy import SQLAlchemy
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-
 from tatu import Tatu
+
 from .config import Config
 
+DEBUG_TATU = False
 RECONNECTMODE_TATU = True
 db = SQLAlchemy()
 migrate = Migrate()
@@ -43,12 +44,15 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     if RECONNECTMODE_TATU:
         def f():
-            return Tatu(url=app.config['TATU_URL'], threaded=False, close_when_idle=True)
-
-        app.config['TATU_SERVER'] = f
+            return Tatu(url=app.config['TATU_URL'], threaded=False, close_when_idle=True, disable_close=DEBUG_TATU)
     else:
         tatu = Tatu(url=app.config['TATU_URL'], threaded=True)
-        app.config['TATU_SERVER'] = lambda: tatu
+
+        def f():
+            tatu.disable_close = DEBUG_TATU
+            return tatu
+
+    app.config['TATU_SERVER'] = f
 
     db.init_app(app)
     migrate.init_app(app, db)

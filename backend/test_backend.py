@@ -1,24 +1,24 @@
 import json
 import unittest
 import warnings
-from unittest.mock import patch
-from io import BytesIO
 from datetime import timedelta
-from time import sleep
+from io import BytesIO
+from unittest.mock import patch
 
+from aiuna.compression import pack
+from aiuna.step.dataset import Dataset
+from aiuna.step.let import Let
+from time import sleep
 # import os
 from werkzeug.datastructures import FileStorage
 
-from aiuna.step.dataset import Dataset
-from aiuna.step.let import Let
-from aiuna.compression import pack
+import app
 from app import create_app, db
 from app.api.posts import save_files
 from app.api.tasks import process_file, download_data, run_step
 from app.config import Config
 from app.models import User, Token, Notification, Post
 from app.utils import consts
-import app
 
 create_user1 = {
     "username": "user1111",
@@ -56,6 +56,7 @@ class ApiCase(unittest.TestCase):
         warnings.simplefilter(
             'ignore', (DeprecationWarning, UserWarning, ImportWarning))  # checar se SAWarning do SQLAlchemy é relevante
         app.RECONNECTMODE_TATU = False
+        app.DEBUG_TATU = True
         self.app = create_app(TestConfig)
         self.app_context = self.app.app_context()
         self.app_context.push()
@@ -69,7 +70,7 @@ class ApiCase(unittest.TestCase):
         db.session.remove()
         db.drop_all()
         self.app_context.pop()
-        self.tatu.close()
+        self.tatu.close(force=True)
 
     def login(self, create_user=True, user=create_user1, long_term=False, admin=False, token=None, confirm_email=True):
         # 1 - Create
