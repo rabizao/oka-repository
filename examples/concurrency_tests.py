@@ -6,14 +6,13 @@ from getpass import getpass
 import requests
 from simplejson import JSONDecodeError
 
-
 print("Lembrar de inserir um iris.arff pela web")
 username = input("Username to connect to OKA: ")
 password = getpass("Password to connect to OKA: ")
 data = {"username": username, "password": password}
 # Only SQLALchemy
 response_login = requests.post(
-    'http://localhost:5000/api/auth/login', json=data)
+    'http://data.analytics.icmc.usp.br/api/auth/login', json=data)
 print(response_login)
 access_token = response_login.json()['access_token']
 headers = {'Authorization': 'Bearer ' + access_token}
@@ -28,13 +27,13 @@ def f(conn):
         i = 0
         print("s", end='')
         while i < 50 and run:
-            requests.get('http://localhost:5000/api/posts/1',
-                         headers=headers).json()
+            response = requests.get('http://data.analytics.icmc.usp.br/api/posts/1', headers=headers)
+            response.json()
             print(".", end='', flush=True)
             i += 1
     except JSONDecodeError as e:
         print("X", end='', flush=True)
-        conn.send(str(e))
+        conn.send(str(e) + " <----- " + response.text)
 
 
 start = time.time()
@@ -67,4 +66,3 @@ if error:
 else:
     end = time.time()
     print("OK", end - start, "s")
-
