@@ -26,7 +26,7 @@ def save_files(input_files):
     files = []
     for file in input_files:
         full_path = current_app.config['TMP_FOLDER'] + \
-            str(u.uuid4()) + file.filename[-10:]
+                    str(u.uuid4()) + file.filename[-10:]
         file.save(full_path)
         files.append({"path": full_path, "original_name": file.filename})
     return files
@@ -329,9 +329,9 @@ class PostsVisualizeById(MethodView):
         tatu = current_app.config['TATU_SERVER']()
         data = tatu.fetch(post.data_uuid, lazy=False)
         datas = []
-
+        # TODO: replace all data transformation by cacheable results and avoid evaluating heavy fields like X
         if args["plt"] == "scatter":
-            data_modified = data >> Sample_(n=min(len(data.X), 500)) * Binarize
+            data_modified = data >> Sample_(n=500, ignore_badarg=True) * Binarize
             for m in data_modified.Yt[0]:
                 inner = []
                 for k in range(len(data_modified.X)):
@@ -347,8 +347,9 @@ class PostsVisualizeById(MethodView):
                         "data": inner
                     })
         elif args["plt"] == "parallelcoordinates":
-            data_modified = data >> Sample_(n=min(len(data.X), 500))
+            data_modified = data >> Sample_(n=500, ignore_badarg=True)
         elif args["plt"] == "pearsoncorrelation":
+            # TODO: create step Corr to be able to cache it, and avoid evaluating X?
             df = pd.DataFrame(data.X)
 
             for row, v in df.corr().to_dict().items():
@@ -356,6 +357,7 @@ class PostsVisualizeById(MethodView):
                     datas.append({"x": row, "y": column, "color": corr})
 
         elif args["plt"] == "histogram":
+            # TODO: create step Hist to be able to cache it, and avoid evaluating X?
             data_modified = data >> Binarize
             cut = list(map(float, data_modified.X[:, int(args["x"])]))
             maximum = max(cut)
