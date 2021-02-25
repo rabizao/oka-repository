@@ -3,7 +3,6 @@ import React from 'react';
 import './global.css';
 
 import Routes from './routes';
-import { ConfigProvider } from 'react-avatar';
 import { NotificationContainer } from 'react-notifications';
 
 import LoginProvider from './contexts/LoginContext';
@@ -17,9 +16,7 @@ function App() {
             <LoginProvider>
                 <RunningTasksBarProvider>
                     <NotificationsProvider>
-                        <ConfigProvider colors={['gainsboro', 'cornsilk', 'cadetblue', 'cyan', 'lavender', 'pink']}>
-                            <Routes />
-                        </ConfigProvider>
+                        <Routes />
                     </NotificationsProvider>
                 </RunningTasksBarProvider>
             </LoginProvider>

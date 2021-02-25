@@ -219,7 +219,7 @@ export default function OkaPostsBox({ fetch_url }) {
                                             {post.name}
                                         </div>
                                         <div id="small-hide" className="ellipsis padding-sides-small width100">
-                                            {post.description}
+                                            {post.description.replace(/<[^>]*>/g, '')}
                                         </div>
                                         <div className="padding-sides-small">
                                             <TimeAgo className="nowrap" datetime={post.timestamp + 'Z'} />
