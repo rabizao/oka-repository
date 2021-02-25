@@ -117,7 +117,7 @@ export default function ContentBox(props) {
                                                         <span className="font-size-medium bold">{post.author.name}</span> - <span>{post.author.username}</span> - <TimeAgo datetime={post.timestamp + 'Z'} />
                                                     </div>
                                                     <span className="bold ellipsis width100">{post.name}</span>
-                                                    <span className="ellipsis-3 text-box">{post.description}</span>
+                                                    <span className="ellipsis-3 text-box">{post.description.replace(/<[^>]*>/g, '')}</span>
                                                     <span className="padding-top-small">
                                                         <ul className="flex-row ul-padding-sides-not-first">
                                                             <li><button onClick={e => handleFavoriteButton(e, post, index)}>{post.favorites.includes(user.id) ? <><Favorite /> {post.favorites.length}</> : <><FavoriteBorder /> {post.favorites.length}</>}</button></li>

@@ -7,6 +7,9 @@ import { NotificationManager } from 'react-notifications';
 import { CloudDownload, Favorite, FavoriteBorder, ChevronLeft, ChevronRight, FormatQuote, Share, PlayArrow, Edit, Clear, Save, ToggleOn, ToggleOff } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 import Modal from '@material-ui/core/Modal';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { Markup } from 'interweave';
 
 import OkaHeader from '../../components/OkaHeader';
 import OkaNavBar from '../../components/OkaNavBar';
@@ -314,10 +317,6 @@ export default function Posts(props) {
         )
     }
 
-    function handleTextAreaAdjust(element) {
-        element.style.height = (element.scrollHeight) + "px";
-    }
-
     function handleSetMetas(p) {
         var metasSet = [];
         Object.entries(metas).map(([, obj]) =>
@@ -450,22 +449,31 @@ export default function Posts(props) {
                             }
                             <h2 className="padding-small">Description</h2>
                             <div className="content-box margin-very-very-small">
-                                <div className="padding-sides-small padding-vertical-small text-box">
+                                <div className="padding-sides-small padding-vertical-small">
                                     {editDescription ?
+
                                         <div className="flex-column">
                                             <div className="flex-row">
                                                 <button className="icon-normal" onClick={() => setEditDescription(false)}><Clear className="icon-secondary" /></button>
                                                 <button className="icon-normal" onClick={handleEditDescriptionSubmit}><Save className="icon-secondary" /></button>
                                             </div>
-                                            <form className="form-edit-description">
-                                                <textarea
-                                                    onKeyUp={e => handleTextAreaAdjust(e.target)}
-                                                    onClick={e => handleTextAreaAdjust(e.target)}
-                                                    placeholder={description}
-                                                    value={descriptionEdit}
-                                                    onChange={e => setDescriptionEdit(e.target.value)}
-                                                />
-                                            </form>
+                                            <ReactQuill
+                                                modules={{ toolbar: [
+                                                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                                                    ['bold', 'italic', 'underline'],
+                                                    ['blockquote', 'code-block'],
+                                                    [{ 'script': 'sub' }, { 'script': 'super' }],
+                                                    ['link', 'image', 'video'],
+                                                    [{ 'indent': '-1' }, { 'indent': '+1' }],
+                                                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                                    [{ 'direction': 'rtl' }],
+                                                    ['clean']
+                                                ] }}
+                                                theme="snow"
+                                                value={descriptionEdit}
+                                                toolbarOptions={{}}
+                                                onChange={setDescriptionEdit}
+                                            />
                                         </div> :
                                         <div className="flex-column">
                                             {!post.public &&
@@ -473,7 +481,7 @@ export default function Posts(props) {
                                                     <button className="icon-normal" onClick={() => setEditDescription(true)}><Edit className="icon-secondary" /></button>
                                                 </div>
                                             }
-                                            <>{text}</>
+                                            <Markup content={text} />
                                         </div>
                                     }
                                 </div>
@@ -492,18 +500,18 @@ export default function Posts(props) {
                 "title": "Scatter",
                 "component": <ScatterPlot postId={id} attrs={post.attrs} />
             },
-            parallelcoordinates: {
-                "title": "Parallel Coordinates",
-                "component": <ParallelCoordinatesPlot postId={id} attrs={post.attrs} />
-            },
             histogram: {
                 "title": "Histogram",
                 "component": <HistogramPlot postId={id} attrs={post.attrs} />
             },
-            pearsoncorrelation: {
-                "title": "Pearson Correlation",
-                "component": <PearsonCorrelationPlot postId={id} attrs={post.attrs} />
-            }
+            // parallelcoordinates: {
+            //     "title": "Parallel Coordinates",
+            //     "component": <ParallelCoordinatesPlot postId={id} attrs={post.attrs} />
+            // },
+            // pearsoncorrelation: {
+            //     "title": "Pearson Correlation",
+            //     "component": <PearsonCorrelationPlot postId={id} attrs={post.attrs} />
+            // }
             //boxplot
         };
 
@@ -996,7 +1004,6 @@ export default function Posts(props) {
                                         ) :
                                         <h5 className="color-error bold">Please provide minimum 3 and maximum 5 metafeatures before proceed.</h5>
                                 )
-
                             }
 
 

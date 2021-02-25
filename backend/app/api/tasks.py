@@ -165,7 +165,7 @@ def send_async_email(message, recipients=None):
     '''
     Background task to send an email
     '''
-    msg = Message('[Oka - Contato]', sender=current_app.config['ADMINS'][0],
+    msg = Message(f"[{current_app.config['WEB_TITLE']}]", sender=current_app.config['ADMINS'][0],
                   recipients=recipients if recipients else current_app.config['ADMINS'])
     msg.html = message
 
