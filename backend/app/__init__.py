@@ -45,11 +45,14 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     if RECONNECTMODE_TATU:
         def f():
-            return Tatu(url=app.config['TATU_URL'],
+            tatu = Tatu(url=app.config['TATU_URL'],
                         threaded=False,
                         close_when_idle=True,
                         disable_close=DEBUG_TATU,
                         force_lazyfetch=LAZY_TATU)
+            tatu.open()
+            return tatu
+
     else:
         tatu = Tatu(url=app.config['TATU_URL'], threaded=True, force_lazyfetch=LAZY_TATU)
 
