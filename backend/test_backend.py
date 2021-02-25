@@ -56,6 +56,7 @@ class ApiCase(unittest.TestCase):
         warnings.simplefilter(
             'ignore', (DeprecationWarning, UserWarning, ImportWarning))  # checar se SAWarning do SQLAlchemy é relevante
         app.RECONNECTMODE_TATU = False
+        app.THREADED_TATU = False
         app.DEBUG_TATU = True
         self.app = create_app(TestConfig)
         self.app_context = self.app.app_context()

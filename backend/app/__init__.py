@@ -19,6 +19,8 @@ from .config import Config
 DEBUG_TATU = False  # Must be True for test_backend.
 RECONNECTMODE_TATU = True  # Must be True to avoid concurrency problems.
 LAZY_TATU = True  # Must be True to enable faster access to Data fields while showing posts.
+THREADED_TATU = True  # Must be False for backend_tests
+
 db = SQLAlchemy()
 migrate = Migrate()
 mail = Mail()
@@ -45,13 +47,16 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     if RECONNECTMODE_TATU:
         def f():
-            return Tatu(url=app.config['TATU_URL'],
+            tatu = Tatu(url=app.config['TATU_URL'],
                         threaded=False,
                         close_when_idle=True,
                         disable_close=DEBUG_TATU,
                         force_lazyfetch=LAZY_TATU)
+            tatu.open()
+            return tatu
+
     else:
-        tatu = Tatu(url=app.config['TATU_URL'], threaded=True, force_lazyfetch=LAZY_TATU)
+        tatu = Tatu(url=app.config['TATU_URL'], threaded=THREADED_TATU, force_lazyfetch=LAZY_TATU)
 
         def f():
             tatu.disable_close = DEBUG_TATU
