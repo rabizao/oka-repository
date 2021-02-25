@@ -43,6 +43,7 @@ def get_head(uuid):
     tatu = current_app.config['TATU_SERVER']()
     data = tatu.fetch(uuid, lazy=False)
     if not data:  # REMINDER: Data registry exists, but can be empty.
+        tatu.close()
         return []
     sliced = data >> Slice(":10,:10") * Cache(tatu)
     table = np.concatenate((sliced.X, sliced.Y), axis=1).tolist()
