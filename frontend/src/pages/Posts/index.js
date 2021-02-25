@@ -452,7 +452,7 @@ export default function Posts(props) {
                                 <div className="padding-sides-small padding-vertical-small">
                                     {editDescription ?
 
-                                        <div className="flex-column">
+                                        <div className="flex-column text-box">
                                             <div className="flex-row">
                                                 <button className="icon-normal" onClick={() => setEditDescription(false)}><Clear className="icon-secondary" /></button>
                                                 <button className="icon-normal" onClick={handleEditDescriptionSubmit}><Save className="icon-secondary" /></button>
