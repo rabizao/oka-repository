@@ -54,13 +54,13 @@ printf "____FRONTEND____\n" | tee -a ~/deploy_log.txt
 
 printf "____Install NPM packages____\n" | tee -a ~/deploy_log.txt
 cd ../frontend
-npm set progress=false
+#npm set progress=false
 #npm i -g pnpm
-npm install --prefer-offline --force | tee -a ~/deploy_log.txt 
+yarn install | tee -a ~/deploy_log.txt 
 printf "____Install NPM packages____ FINISHED \n\n" | tee -a ~/deploy_log.txt
 
 printf "____Build static frontend____\n" | tee -a ~/deploy_log.txt
-npm run-script build | tee -a ~/deploy_log.txt
+yarn build | tee -a ~/deploy_log.txt
 printf "____Build static frontend____ FINISHED \n\n" | tee -a ~/deploy_log.txt
 
 cd
