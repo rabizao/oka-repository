@@ -32,9 +32,14 @@ printf "____FILES____ FINISHED \n\n" | tee -a ~/deploy.log
 printf "\n\n\n\n\n==============================================================================\n" | tee -a ~/deploy.log
 printf "____BACKEND____\n" | tee -a ~/deploy.log
 cd backend
-source venv/bin/activate
+
+printf "____Create venv if needed____\n" | tee -a ~/deploy.log
+[ ! -f venv ] && python3 -m venv venv
+printf "____Create venv if needed____ FINISHED \n\n" | tee -a ~/deploy.log
 
 printf "____Updating venv____\n" | tee -a ~/deploy.log
+source venv/bin/activate
+pip install --upgrade pip
 pip install -r requirements.txt
 printf "____Updating venv____ FINISHED \n\n" | tee -a ~/deploy.log
 
