@@ -39,6 +39,7 @@ printf "____Create venv if needed____ FINISHED \n\n" | tee -a ~/deploy.log
 
 printf "____Updating venv____\n" | tee -a ~/deploy.log
 source venv/bin/activate
+pip install --upgrade pip
 pip install -r requirements.txt
 printf "____Updating venv____ FINISHED \n\n" | tee -a ~/deploy.log
 
