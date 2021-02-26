@@ -11,7 +11,7 @@ from datetime import datetime
 class Notifications(MethodView):
     @bp.auth_required
     @bp.arguments(NotificationQuerySchema, location="query")
-    @bp.response(NotificationBaseSchema(many=True))
+    @bp.response(200, NotificationBaseSchema(many=True))
     def get(self, args):
         """Return all notifications of the logged user since the requested time"""
 
@@ -25,7 +25,7 @@ class Notifications(MethodView):
 @bp.route('/notifications/read')
 class NotificationsReadTime(MethodView):
     @bp.auth_required
-    @bp.response(code=201)
+    @bp.response(201)
     def put(self):
         """Update the last read time of notifications"""
         logged_user = User.get_by_username(get_jwt_identity())

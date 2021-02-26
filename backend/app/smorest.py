@@ -10,7 +10,7 @@ class Blueprint(FSBlueprint):
 
     @staticmethod
     def auth_required(func):
-        func = jwt_required(func)
+        func = jwt_required()(func)
         getattr(func, "_apidoc", {})["auth"] = True
         return func
 

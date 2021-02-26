@@ -4,9 +4,9 @@ from app.errors.handlers import HTTPAbort
 from . import bp
 from app.models import User, Post
 from app.api.tasks import send_async_email
-from app.schemas import UserBaseSchema, UserQuerySchema, UserRecoverKeySubmitNewPassSchema, UserRegisterSchema, \
-    UserEditSchema, PostQuerySchema, PostBaseSchema, UserConfirmationSchema, UserRecoverKeySchema, \
-    UserRecoverKeySubmitSchema
+from app.schemas import PostSimplifiedSchema, UserBaseSchema, UserQuerySchema, UserRecoverKeySubmitNewPassSchema, \
+    UserRegisterSchema, UserEditSchema, PostQuerySchema, PostBaseSchema, UserConfirmationSchema, \
+    UserRecoverKeySchema, UserRecoverKeySubmitSchema
 from flask import current_app
 from flask.views import MethodView
 from flask_smorest import abort
@@ -17,7 +17,7 @@ from flask_jwt_extended import get_jwt_identity
 class Users(MethodView):
     @bp.auth_required
     @bp.arguments(UserQuerySchema, location="query")
-    @bp.response(UserBaseSchema(many=True))
+    @bp.response(200, UserBaseSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters):
         """List all users"""
@@ -26,7 +26,7 @@ class Users(MethodView):
         return data
 
     @bp.arguments(UserRegisterSchema)
-    @bp.response(UserRegisterSchema, code=201)
+    @bp.response(201, UserRegisterSchema)
     def post(self, user):
         """
         Create a new user from a json object
@@ -49,7 +49,7 @@ class Users(MethodView):
 @bp.route('/users/recover/key')
 class UsersRecoverKey(MethodView):
     @bp.arguments(UserRecoverKeySubmitSchema)
-    @bp.response(UserRecoverKeySchema)
+    @bp.response(201, UserRecoverKeySchema)
     def post(self, args):
         """
         Resend confirmation key to users' email
@@ -73,14 +73,13 @@ class UsersRecoverKey(MethodView):
         print(message)
         db.session.commit()
         response = {"username": user.username, "email": user.email}
-        print(response)
         return response
 
 
 @bp.route('/users/recover/account')
 class UsersRecoverAccount(MethodView):
     @bp.arguments(UserRecoverKeySubmitSchema)
-    @bp.response(code=201)
+    @bp.response(201)
     def post(self, args):
         """
         Resend reset key and info to users' email
@@ -104,7 +103,7 @@ class UsersRecoverAccount(MethodView):
         db.session.commit()
 
     @bp.arguments(UserRecoverKeySubmitNewPassSchema)
-    @bp.response(code=200)
+    @bp.response(203)
     def put(self, args):
         """
         Resend reset key and info to users' email
@@ -125,7 +124,7 @@ class UsersRecoverAccount(MethodView):
 @bp.route('/users/<string:username>/confirm-email')
 class UsersConfirmationSubmit(MethodView):
     @bp.arguments(UserConfirmationSchema, location="query")
-    @bp.response(code=201)
+    @bp.response(201)
     def post(self, args, username):
         """
         Confirm users' email or delete the account from the database
@@ -147,7 +146,7 @@ class UsersConfirmationSubmit(MethodView):
 
 @bp.route('/users/<string:username>')
 class UsersById(MethodView):
-    @bp.response(UserBaseSchema)
+    @bp.response(200, UserBaseSchema)
     def get(self, username):
         """
         Show info about the user with username {username}
@@ -159,7 +158,7 @@ class UsersById(MethodView):
 
     @bp.auth_required
     @bp.arguments(UserEditSchema)
-    @bp.response(UserBaseSchema)
+    @bp.response(201, UserBaseSchema)
     def put(self, args, username):
         """
         Update an existing user. Available only for that user
@@ -185,7 +184,7 @@ class UsersById(MethodView):
         return user
 
     @bp.auth_required
-    @bp.response(code=200)
+    @bp.response(203)
     def delete(self, username):
         """
         Delete an existing user. Available only for that user
@@ -209,7 +208,7 @@ class UsersById(MethodView):
 class UsersPosts(MethodView):
     @bp.auth_required
     @bp.arguments(PostQuerySchema, location="query")
-    @bp.response(PostBaseSchema(many=True))
+    @bp.response(200, PostBaseSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters, username):
         """
@@ -233,7 +232,7 @@ class UsersPosts(MethodView):
 class UsersFavorites(MethodView):
     @bp.auth_required
     @bp.arguments(PostQuerySchema, location="query")
-    @bp.response(PostBaseSchema(many=True))
+    @bp.response(200, PostBaseSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters, username):
         """
@@ -254,7 +253,7 @@ class UsersFavorites(MethodView):
 class UsersFeed(MethodView):
     @bp.auth_required
     @bp.arguments(PostQuerySchema, location="query")
-    @bp.response(PostBaseSchema(many=True))
+    @bp.response(200, PostSimplifiedSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters, username):
         """
@@ -279,7 +278,7 @@ class UsersFeed(MethodView):
 @bp.route('/users/<string:username>/follow')
 class UsersFollow(MethodView):
     @bp.auth_required
-    @bp.response(code=200)
+    @bp.response(201)
     def post(self, username):
         """
         Logged user follow/unfollow user with username {username}
@@ -302,7 +301,7 @@ class UsersFollow(MethodView):
 class UsersFollowingByUsername(MethodView):
     @bp.auth_required
     @bp.arguments(UserQuerySchema, location="query")
-    @bp.response(UserBaseSchema(many=True))
+    @bp.response(200, UserBaseSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters, username):
         """List users who username is following"""
@@ -318,7 +317,7 @@ class UsersFollowingByUsername(MethodView):
 class UsersFollowersByUsername(MethodView):
     @bp.auth_required
     @bp.arguments(UserQuerySchema, location="query")
-    @bp.response(UserBaseSchema(many=True))
+    @bp.response(200, UserBaseSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters, username):
         """List users who follow username"""

@@ -13,7 +13,7 @@ from flask_jwt_extended import get_jwt_identity
 class Downloads(MethodView):
     @bp.auth_required
     @bp.arguments(DownloadQuerySchema, location="query")
-    @bp.response(TaskBaseSchema)
+    @bp.response(201, TaskBaseSchema)
     def post(self, args):
         """Launch a task to download a zipped file containing all the requested datasets"""
         pids = sorted(args['pids'])
