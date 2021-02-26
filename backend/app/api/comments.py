@@ -10,7 +10,7 @@ from flask_jwt_extended import get_jwt_identity
 @bp.route('/comments/<int:id>/replies')
 class CommentsRepliesById(MethodView):
     @bp.auth_required
-    @bp.response(CommentBaseSchema(many=True))
+    @bp.response(200, CommentBaseSchema(many=True))
     @bp.paginate()
     def get(self, pagination_parameters, id):
         """
@@ -27,7 +27,7 @@ class CommentsRepliesById(MethodView):
 
     @bp.auth_required
     @bp.arguments(CommentBaseSchema)
-    @bp.response(CommentBaseSchema)
+    @bp.response(201, CommentBaseSchema)
     def post(self, args, id):
         """
         Create a new reply for the comment with id {id}

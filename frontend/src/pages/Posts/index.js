@@ -16,7 +16,7 @@ import OkaNavBar from '../../components/OkaNavBar';
 import OkaPostComments from '../../components/OkaPostComments';
 import OkaPostsBox from '../../components/OkaPostsBox';
 import ScatterPlot from '../../components/ScatterPlot';
-import api from '../../services/api'; // , { dashUrl }
+import api from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
 import { RunningTasksBarContext } from '../../contexts/RunningTasksBarContext';
 import { NotificationsContext } from '../../contexts/NotificationsContext';
@@ -552,14 +552,6 @@ export default function Posts(props) {
             </div>
         )
     }
-
-    // const visualizer = (uuid) => {
-    //     return (
-    //         <div className="content-box margin-very-very-small">
-    //             <iframe title="iframe-dash" className="iframe-dash" src={`${dashUrl}/${uuid}`}></iframe>
-    //         </div>
-    //     )
-    // }
 
     const navItems = {
         empty: {

@@ -324,14 +324,23 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     allowed = fields.Nested(UserBaseSchema(only=["username", "name"]),
                             many=True, dump_only=True)
     favorites = auto_field(dump_only=True)
-    data_uuid_colors = fields.Function(lambda obj: colors(obj.data_uuid), dump_only=True)
-    attrs = fields.Function(lambda obj: get_attrs(obj.data_uuid), dump_only=True)
+    data_uuid_colors = fields.Function(
+        lambda obj: colors(obj.data_uuid), dump_only=True)
+    attrs = fields.Function(lambda obj: get_attrs(
+        obj.data_uuid), dump_only=True)
     history = fields.Function(lambda obj: get_history(obj), dump_only=True)
     downloads = fields.Function(
         lambda obj: obj.get_unique_download_count(), dump_only=True)
     head = fields.Function(lambda obj: get_head(obj.data_uuid), dump_only=True)
     fields = fields.Function(
         lambda obj: get_fields(obj.data_uuid), dump_only=True)
+
+
+class PostSimplifiedSchema(PostBaseSchema):
+    class Meta:
+        model = Post
+        fields = ["id", "author", "comments", "allowed",
+                  "favorites", "name", "description"]
 
 
 class PostEditSchema(SQLAlchemyAutoSchema):

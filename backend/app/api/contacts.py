@@ -12,7 +12,7 @@ from flask_jwt_extended import get_jwt_identity
 class Contacts(MethodView):
     @bp.auth_required
     @bp.arguments(ContactQuerySchema, location="query")
-    @bp.response(ContactBaseSchema(many=True))
+    @bp.response(200, ContactBaseSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters):
         """
@@ -29,7 +29,7 @@ class Contacts(MethodView):
         return data
 
     @bp.arguments(ContactBaseSchema)
-    @bp.response(code=201)
+    @bp.response(201)
     def post(self, args):
         """
         This route should receive the info of the contact form, store and
@@ -47,7 +47,7 @@ class Contacts(MethodView):
 @bp.route('/contacts/<int:id>')
 class ContactsById(MethodView):
     @bp.auth_required
-    @bp.response(ContactBaseSchema)
+    @bp.response(200, ContactBaseSchema)
     def get(self, id):
         """
         This route should return a json object containing the contact with id <id> in the database.

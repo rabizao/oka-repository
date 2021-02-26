@@ -26,7 +26,7 @@ def save_files(input_files):
     files = []
     for file in input_files:
         full_path = current_app.config['TMP_FOLDER'] + \
-                    str(u.uuid4()) + file.filename[-10:]
+            str(u.uuid4()) + file.filename[-10:]
         file.save(full_path)
         files.append({"path": full_path, "original_name": file.filename})
     return files
@@ -37,7 +37,7 @@ def save_files(input_files):
 class Posts(MethodView):
     @bp.auth_required
     @bp.arguments(PostQuerySchema, location="query")
-    @bp.response(PostBaseSchema(many=True))
+    @bp.response(200, PostBaseSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters):
         """
@@ -52,7 +52,7 @@ class Posts(MethodView):
 
     @bp.auth_required
     @bp.arguments(PostFilesSchema, location="files")
-    @bp.response(TaskBaseSchema)
+    @bp.response(201, TaskBaseSchema)
     def post(self, argsFiles):
         """
         Create a new post to the logged user
@@ -70,7 +70,7 @@ class Posts(MethodView):
 
     @bp.auth_required
     @bp.arguments(PostCreateSchema)
-    @bp.response(code=200)
+    @bp.response(201)
     def put(self, args):
         """
         Create inactive post (and without Data for a while), and parents.
@@ -87,7 +87,7 @@ class Posts(MethodView):
 class PostsActivate(MethodView):
     @bp.auth_required
     @bp.arguments(PostActivateSchema)
-    @bp.response(code=200)
+    @bp.response(201)
     def put(self, args):
         """
         Activate post with id {id}
@@ -104,7 +104,7 @@ class PostsActivate(MethodView):
 @bp.route('/posts/<int:id>')
 class PostsById(MethodView):
     @bp.auth_required
-    @bp.response(PostBaseSchema)
+    @bp.response(200, PostBaseSchema)
     def get(self, id):
         """
         Show info about the post with id {id}
@@ -122,7 +122,7 @@ class PostsById(MethodView):
 
     @bp.auth_required
     @bp.arguments(PostEditSchema)
-    @bp.response(code=200)
+    @bp.response(201)
     def put(self, args, id):
         """
         Edit post with id {id}
@@ -145,7 +145,7 @@ class PostsById(MethodView):
         db.session.commit()
 
     @bp.auth_required
-    @bp.response(code=200)
+    @bp.response(203)
     def delete(self, id):
         """
         Delete post with id {id}
@@ -170,7 +170,7 @@ class PostsById(MethodView):
 class PostsCollaboratorsById(MethodView):
     @bp.auth_required
     @bp.arguments(UserBaseSchema(only=["username"]))
-    @bp.response(code=201)
+    @bp.response(201)
     def post(self, args, id):
         """
         Grant/Deny access to a collaborator to the post with id {id}
@@ -202,7 +202,7 @@ class PostsCollaboratorsById(MethodView):
 @bp.route('/posts/<int:id>/favorite')
 class PostsFavoriteById(MethodView):
     @bp.auth_required
-    @bp.response(code=200)
+    @bp.response(201)
     def post(self, id):
         """
         Favorite/unfavorite post with id {id}
@@ -225,7 +225,7 @@ class PostsFavoriteById(MethodView):
 @bp.route('/posts/<int:id>/publish')
 class PostsPublishById(MethodView):
     @bp.auth_required
-    @bp.response(code=201)
+    @bp.response(201)
     def post(self, id):
         """
         Publish post with id {id}
@@ -265,7 +265,7 @@ class PostsPublishById(MethodView):
 class PostsCommentsById(MethodView):
     @bp.auth_required
     @bp.arguments(CommentQuerySchema, location="query")
-    @bp.response(CommentBaseSchema(many=True))
+    @bp.response(200, CommentBaseSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters, id):
         """
@@ -290,7 +290,7 @@ class PostsCommentsById(MethodView):
 
     @bp.auth_required
     @bp.arguments(CommentBaseSchema)
-    @bp.response(CommentBaseSchema)
+    @bp.response(201, CommentBaseSchema)
     def post(self, args, id):
         """
         Create a new comment for the post with id {id}
@@ -331,7 +331,8 @@ class PostsVisualizeById(MethodView):
         datas = []
         # TODO: replace all data transformation by cacheable results and avoid evaluating heavy fields like X
         if args["plt"] == "scatter":
-            data_modified = data >> Sample_(n=500, ignore_badarg=True) * Binarize
+            data_modified = data >> Sample_(
+                n=500, ignore_badarg=True) * Binarize
             for m in data_modified.Yt[0]:
                 inner = []
                 for k in range(len(data_modified.X)):
@@ -378,7 +379,7 @@ class PostsVisualizeById(MethodView):
 class PostsTwinsById(MethodView):
     @bp.auth_required
     @bp.arguments(PostQuerySchema, location="query")
-    @bp.response(PostBaseSchema(many=True))
+    @bp.response(200, PostBaseSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters, id):
         """
@@ -400,7 +401,7 @@ class PostsTwinsById(MethodView):
 class PostsTransformById(MethodView):
     @bp.auth_required
     @bp.arguments(RunSchema)
-    @bp.response(TaskBaseSchema)
+    @bp.response(201, TaskBaseSchema)
     def post(self, args, id):
         """
         Return the twins of a post with id {id}
