@@ -14,7 +14,7 @@ from datetime import datetime
 class MessagesByUsername(MethodView):
     @bp.auth_required
     @bp.arguments(MessageListSchema, location="query")
-    @bp.response(MessageListSchema(many=True))
+    @bp.response(200, MessageListSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters, username):
         """
@@ -33,7 +33,7 @@ class MessagesByUsername(MethodView):
 
     @bp.auth_required
     @bp.arguments(MessageBaseSchema)
-    @bp.response(MessageBaseSchema)
+    @bp.response(201, MessageBaseSchema)
     def post(self, args, username):
         """
         Send a message from logged user to the user with username {username}
@@ -58,7 +58,7 @@ class MessagesByUsername(MethodView):
 class MessagesConversationByUsername(MethodView):
     @bp.auth_required
     @bp.arguments(MessageListSchema, location="query")
-    @bp.response(MessageListSchema(many=True))
+    @bp.response(200, MessageListSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters, username):
         """
@@ -86,7 +86,7 @@ class MessagesConversationByUsername(MethodView):
 class MessagesLastsByUsername(MethodView):
     @bp.auth_required
     @bp.arguments(MessageListSchema, location="query")
-    @bp.response(MessageListSchema(many=True))
+    @bp.response(200, MessageListSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters, username):
         """
@@ -126,7 +126,7 @@ class MessagesLastsByUsername(MethodView):
 @bp.route('/messages/<int:id>')
 class MessagesById(MethodView):
     @bp.auth_required
-    @bp.response(MessageListSchema)
+    @bp.response(200, MessageListSchema)
     def get(self, id):
         """
         This route should return a json object containing the contact with id <id> in the database.

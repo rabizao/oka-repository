@@ -17,7 +17,7 @@ def has_auth(headers):
 
 @bp.route('/deployment')
 class Deployment(MethodView):
-    @bp.response(code=201)
+    @bp.response(201)
     def post(self):
         """
         Deploy the application using github webhook

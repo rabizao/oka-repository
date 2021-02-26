@@ -21,7 +21,7 @@ def too_many_requests(error):
 
 
 @jwt.revoked_token_loader
-def revoked_token_callback():
+def revoked_token_callback(jwt_header, jwt_payload):
     return jsonify(errors={"json": {"token": ["Your token is invalid."]}}), 401
 
 
@@ -31,7 +31,7 @@ def invalid_token_callback(invalid_token):
 
 
 @jwt.expired_token_loader
-def expired_token_callback(expired_token):
+def expired_token_callback(jwt_header, jwt_payload):
     return jsonify(errors={"json": {"token": ["Your token has expired."]}}), 401
 
 

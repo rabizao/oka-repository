@@ -279,7 +279,7 @@ def process_file(self, files, username):
 @bp.route('tasks/<string:task_id>/status')
 class TasksStatusById(MethodView):
     @bp.auth_required
-    @bp.response(TaskStatusBaseSchema)
+    @bp.response(200, TaskStatusBaseSchema)
     def get(self, task_id):
         # TODO: Access limitations
         job = celery.AsyncResult(task_id)

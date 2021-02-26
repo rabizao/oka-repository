@@ -92,7 +92,7 @@ class ApiCase(unittest.TestCase):
         del login["email"]
         del login["name"]
         response = self.client.post("/api/auth/login", json=login)
-        if not response.status_code == 200:
+        if not response.status_code == 201:
             return response.json
         data = response.json
         token = token if token else data["access_token"]
@@ -196,7 +196,7 @@ class ApiCase(unittest.TestCase):
         """
         self.login()
         response = self.client.delete("/api/auth/logout")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 203)
 
     def test_revoke_all_tokens(self):
         """
@@ -206,7 +206,7 @@ class ApiCase(unittest.TestCase):
 
         user_dict = self.login()
         response = self.client.delete("/api/auth/revoke-all-tokens")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 203)
         user = User.query.get(user_dict['id'])
         tokens = user.tokens.filter(Token.revoked == 0).count()
         self.assertEqual(tokens, 0)
@@ -273,7 +273,7 @@ class ApiCase(unittest.TestCase):
         # 4
         response = self.client.post(
             f"/api/messages/{username1}", json={'body': "Message test"})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         messageid = response.json['id']
         # 5
         response = self.client.get(f"/api/messages/{messageid}")
@@ -375,7 +375,7 @@ class ApiCase(unittest.TestCase):
                 response = self.client.post(
                     "/api/posts", data={'files': (fr, "test.arff")})
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         # 3
         with open(filename, 'rb') as fr:
             filestorage = FileStorage(
@@ -406,7 +406,7 @@ class ApiCase(unittest.TestCase):
         # Edit post
         response = self.client.put(
             f"/api/posts/{post_id}", json={"name": new_name, "description": new_description})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         # Can not edit inexistent post
         response = self.client.put(
             "/api/posts/100", json={"name": new_name, "description": new_description})
@@ -431,7 +431,7 @@ class ApiCase(unittest.TestCase):
         # 6
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(f"/api/downloads/data?pids={post_id}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         result = download_data.run([post_id], username, "127.0.0.1")
         self.assertEqual(result['state'], 'SUCCESS')
         # Can not download inexistent file
@@ -457,10 +457,10 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(post.get_unique_download_count(), 2)
         # 7
         response = self.client.post(f"/api/posts/{post_id}/favorite")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(user.has_favorited(post), True)
         response = self.client.post(f"/api/posts/{post_id}/favorite")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(user.has_favorited(post), False)
         # Can not favorite an inexistent post
         response = self.client.post("/api/posts/100/favorite")
@@ -533,7 +533,7 @@ class ApiCase(unittest.TestCase):
         # Comment
         response = self.client.post(
             f"/api/posts/{post_id}/comments", json={"text": "Comment 1"})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         # User2 can not comment
         self.login(create_user=False, user=create_user2)
         response = self.client.post(
@@ -553,7 +553,7 @@ class ApiCase(unittest.TestCase):
         # 11
         response = self.client.post(
             f"/api/comments/{comment_id}/replies", json={"text": "Reply to comment 1"})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         response = self.client.post(
             "/api/comments/100/replies", json={"text": "Reply to comment 1"})
         self.assertEqual(response.status_code, 422)
@@ -671,7 +671,7 @@ class ApiCase(unittest.TestCase):
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(
                 f"/api/posts/{post_id}/run", json=step)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         result = run_step.run(post_id, step_full, username)
         self.assertEqual(json.loads(result['result'])[
                          "code"] == "error", False)
@@ -689,7 +689,7 @@ class ApiCase(unittest.TestCase):
         db.session.commit()
         # Delete post
         response = self.client.delete(f"/api/posts/{post_id}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 203)
         # Can not delete inexistent post
         response = self.client.delete("/api/posts/100")
         self.assertEqual(response.status_code, 422)
@@ -801,12 +801,12 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 422)
         # 4
         response = self.client.delete(f"/api/users/{username1}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 203)
         # 5
         self.login(user=create_user3, admin=True)['username']
         # 6
         response = self.client.delete(f"/api/users/{username2}")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 203)
 
     def test_edit_user(self):
         """
@@ -829,7 +829,7 @@ class ApiCase(unittest.TestCase):
         # 4
         response = self.client.put("api/users/" + str(username1),
                                    json={"about_me": "Postdoc"})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(user1.about_me, "Postdoc")
 
     def test_follow_user(self):
@@ -848,7 +848,7 @@ class ApiCase(unittest.TestCase):
         username1 = self.login()['username']
         # 3
         response = self.client.post(f"api/users/{username2}/follow")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         # 4
         response = self.client.post(f"api/users/{username1}/follow")
         self.assertNotEqual(response.status_code, 200)
@@ -869,7 +869,7 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(len(response.json), 1)
         # 6
         response = self.client.post(f"api/users/{username2}/follow")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         # 7
         self.assertEqual(len(user2.followers.all()), 0)
         self.assertEqual(len(user1.followers.all()), 0)
@@ -888,14 +888,14 @@ class ApiCase(unittest.TestCase):
         }
         response = self.client.put(
             "/api/posts", json={'data_uuid': iris.id, 'info': info})
-        self.assertEqual(response.status_code, 200,
+        self.assertEqual(response.status_code, 201,
                          msg=response.json and response.json["errors"])
 
         self.tatu.store(iris)
 
         response = self.client.put(
             "/api/posts/activate", json={'data_uuid': iris.id})
-        self.assertEqual(response.status_code, 200,
+        self.assertEqual(response.status_code, 201,
                          msg=response.json and response.json["errors"])
 
         response = self.client.put(
@@ -934,7 +934,7 @@ class ApiCase(unittest.TestCase):
         with patch('app.api.tasks.send_async_email.delay'):
             response = self.client.post(
                 "/api/users/recover/key", json={"email": user.email})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         # 3
         user.email_confirmed = True
         db.session.commit()
