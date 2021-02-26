@@ -12,7 +12,7 @@ password = getpass("Password to connect to OKA: ")
 data = {"username": username, "password": password}
 # Only SQLALchemy
 response_login = requests.post(
-    'http://data.analytics.icmc.usp.br/api/auth/login', json=data)
+    'http://oka/api/auth/login', json=data)
 print(response_login)
 access_token = response_login.json()['access_token']
 headers = {'Authorization': 'Bearer ' + access_token}
@@ -27,7 +27,7 @@ def f(conn):
         i = 0
         print("s", end='')
         while i < 50 and run:
-            response = requests.get('http://data.analytics.icmc.usp.br/api/posts/1', headers=headers)
+            response = requests.get('http://oka.icmc.usp.br/api/posts/1', headers=headers)
             response.json()
             print(".", end='', flush=True)
             i += 1
