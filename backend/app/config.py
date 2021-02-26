@@ -1,11 +1,16 @@
 import os
 from datetime import timedelta
-from dotenv import load_dotenv
+from pathlib import Path
 
 from app.utils import is_browser
+from dotenv import load_dotenv
 
-basedir = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(os.path.join(basedir, '../.env'))
+# basedir = os.path.abspath(os.path.dirname(__file__))
+home = str(Path.home())
+okadir = os.path.join(home, '.oka')
+if not os.path.exists(okadir):
+    os.makedirs(okadir)
+load_dotenv(os.path.join(okadir, '.env'))
 
 
 class Config(object):
@@ -13,9 +18,9 @@ class Config(object):
     DEPLOYMENT_SECRET_KEY = os.environ.get(
         'DEPLOYMENT_SECRET_KEY') or 'deploy-not-set'
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        'DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'app.db')
+        'DATABASE_URL') or 'sqlite:///' + os.path.join(okadir, 'app.db')
     TATU_URL = os.environ.get('TATU_URL') or 'sqlite://' + \
-        os.path.join(basedir, 'tatu')
+               os.path.join(okadir, 'tatu')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or 587)
