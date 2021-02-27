@@ -55,7 +55,7 @@ export default function OkaHeader(props) {
 
     return (
         <div className="flex-row flex-axis-center flex-space-between background-primary-color padding-medium">
-            <Link to="/home"><h1 onClick={() => loggedUser.setRenderFeed(loggedUser.renderFeed + 1)} className="color-secondary">Oka2</h1></Link>
+            <Link to="/home"><h1 onClick={() => loggedUser.setRenderFeed(loggedUser.renderFeed + 1)} className="color-secondary">Oka3</h1></Link>
             <div id="small-hide">
                 <form className="search-form-primary" onSubmit={handleSearch}>
                     <input
