@@ -10,17 +10,17 @@ printf "____FILES____\n" | tee -a ~/deploy.log
 
 printf "____Backup current:____\n" | tee -a ~/deploy.log
 rsync -a /oka-repository/ /oka-repository_bkp/ --delete &
-    printf "____SSD -> to RAM:____\n" | tee -a ~/deploy.log
-    rsync -a /oka-repository/ /run/shm/oka-repository/ --delete
+printf "____SSD -> to RAM:____\n" | tee -a ~/deploy.log
+rsync -a /oka-repository/ /run/shm/oka-repository/ --delete
 printf "____Backup current:____ FINISHED \n\n" | tee -a ~/deploy.log
-    printf "____SSD -> RAM:____ FINISHED \n\n" | tee -a ~/deploy.log
+printf "____SSD -> RAM:____ FINISHED \n\n" | tee -a ~/deploy.log
 
 printf "____Starting with user:____\n" | tee -a ~/deploy.log
 whoami | tee -a ~/deploy.log
 printf "____Starting with user:____ FINISHED \n\n" | tee -a ~/deploy.log
 
 printf "____Pulling from github____\n" | tee -a ~/deploy.log
-# cd /home/oka/oka-repository/
+# cd /oka-repository/
 cd /run/shm/oka-repository/
 git pull | tee -a ~/deploy.log 
 printf "____Pulling from github____ FINISHED \n\n" | tee -a ~/deploy.log
@@ -72,14 +72,14 @@ printf "____FRONTEND____ FINISHED \n\n" | tee -a ~/deploy.log
 
 
 
-    printf "\n\n\n\n\n==============================================================================\n" | tee -a ~/deploy.log
-    printf "____DEPLOY FILES____\n" | tee -a ~/deploy.log
+printf "\n\n\n\n\n==============================================================================\n" | tee -a ~/deploy.log
+printf "____DEPLOY FILES____\n" | tee -a ~/deploy.log
 
-    printf "____RAM -> SSD:____\n" | tee -a ~/deploy.log
-    rsync -a /run/shm/oka-repository/ /oka-repository/ --delete
-    printf "____RAM -> SSD:____ FINISHED \n\n" | tee -a ~/deploy.log
+printf "____RAM -> SSD:____\n" | tee -a ~/deploy.log
+rsync -a /run/shm/oka-repository/ /oka-repository/ --delete
+printf "____RAM -> SSD:____ FINISHED \n\n" | tee -a ~/deploy.log
 
-    printf "____DEPLOY FILES____ FINISHED \n\n" | tee -a ~/deploy.log
+printf "____DEPLOY FILES____ FINISHED \n\n" | tee -a ~/deploy.log
 
 
 
@@ -90,12 +90,12 @@ printf "____Restarting NGINX\n" | tee -a ~/deploy.log
 /usr/bin/sudo /usr/sbin/service nginx restart | tee -a ~/deploy.log
 printf "____Restarting NGINX____ FINISHED \n\n" | tee -a ~/deploy.log
 
-printf "____Restarting Celery\n" | tee -a ~/deploy.log
-/usr/bin/sudo /usr/sbin/service celery restart | tee -a ~/deploy.log &
-printf "____Restarting Celery____ FINISHED \n\n" | tee -a ~/deploy.log
-printf "____Restarting API\n" | tee -a ~/deploy.log
-/usr/bin/sudo /usr/sbin/service oka restart | tee -a ~/deploy.log &
-printf "____Restarting API____ FINISHED \n\n" | tee -a ~/deploy.log
+# printf "____Restarting Celery\n" | tee -a ~/deploy.log
+# /usr/bin/sudo /usr/sbin/service celery restart | tee -a ~/deploy.log &
+# printf "____Restarting Celery____ FINISHED \n\n" | tee -a ~/deploy.log
+# printf "____Restarting API\n" | tee -a ~/deploy.log
+# /usr/bin/sudo /usr/sbin/service oka restart | tee -a ~/deploy.log &
+# printf "____Restarting API____ FINISHED \n\n" | tee -a ~/deploy.log
 
 printf "____SERVICES____ FINISHED \n\n" | tee -a ~/deploy.log
 
