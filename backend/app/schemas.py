@@ -340,7 +340,7 @@ class PostSimplifiedSchema(PostBaseSchema):
     class Meta:
         model = Post
         fields = ["id", "author", "comments", "allowed",
-                  "favorites", "name", "description"]
+                  "favorites", "name", "description", "timestamp"]
 
 
 class PostEditSchema(SQLAlchemyAutoSchema):

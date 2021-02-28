@@ -107,7 +107,7 @@ export default function Home() {
             setShowProgress(false);
             setProgress(0);
             setBlockSubmit(false);
-            NotificationManager.success("Upload successful. You can navigate while we process your datasets", "Finished", 10000)            
+            NotificationManager.success("Upload successful. You can navigate while we process your datasets", "Finished", 10000)
         } catch (error) {
             notifyError(error);
         }
@@ -177,10 +177,10 @@ export default function Home() {
                                     <h5 className="margin-sides-verysmall min-width-small">{progress}%</h5>
                                 </div>
                             }
-                            {(acceptedFiles.length > 0 && deniedFiles.length <= 0) &&
-                                blockSubmit ?
-                                <button className="margin-top-medium button-primary-disabled">Submit</button> :
-                                <button className="margin-top-medium button-primary" onClick={() => handleSubmit()}>Submit</button>
+                            {
+                                deniedFiles.length <= 0 && acceptedFiles.length > 0 && !blockSubmit ?
+                                    <button className="margin-top-medium button-primary" onClick={() => handleSubmit()}>Submit</button> :
+                                    <button className="margin-top-medium button-primary-disabled">Submit</button>
                             }
                         </div>
                     }

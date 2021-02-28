@@ -208,7 +208,7 @@ class UsersById(MethodView):
 class UsersPosts(MethodView):
     @bp.auth_required
     @bp.arguments(PostQuerySchema, location="query")
-    @bp.response(200, PostBaseSchema(many=True))
+    @bp.response(200, PostSimplifiedSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters, username):
         """
@@ -232,7 +232,7 @@ class UsersPosts(MethodView):
 class UsersFavorites(MethodView):
     @bp.auth_required
     @bp.arguments(PostQuerySchema, location="query")
-    @bp.response(200, PostBaseSchema(many=True))
+    @bp.response(200, PostSimplifiedSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters, username):
         """
