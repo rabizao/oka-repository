@@ -8,7 +8,7 @@ from app import db
 from app.errors.handlers import HTTPAbort
 from app.models import Comment, Post, User
 from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
-                         PostEditSchema, PostFilesSchema, PostQuerySchema,
+                         PostEditSchema, PostFilesSchema, PostQuerySchema, PostSimplifiedSchema,
                          RunSchema, TaskBaseSchema, UserBaseSchema, VisualizeQuerySchema, PostCreateSchema,
                          PostActivateSchema)
 from flask import current_app
@@ -37,7 +37,7 @@ def save_files(input_files):
 class Posts(MethodView):
     @bp.auth_required
     @bp.arguments(PostQuerySchema, location="query")
-    @bp.response(200, PostBaseSchema(many=True))
+    @bp.response(200, PostSimplifiedSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters):
         """
@@ -379,7 +379,7 @@ class PostsVisualizeById(MethodView):
 class PostsTwinsById(MethodView):
     @bp.auth_required
     @bp.arguments(PostQuerySchema, location="query")
-    @bp.response(200, PostBaseSchema(many=True))
+    @bp.response(200, PostSimplifiedSchema(many=True))
     @bp.paginate()
     def get(self, args, pagination_parameters, id):
         """
