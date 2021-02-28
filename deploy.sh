@@ -1,6 +1,6 @@
 #!/bin/bash
 printf "\n\n\n\n\n==============================================================================\n" | tee -a ~/deploy.log
-date | tee ~/deploy.log
+date | tee -a ~/deploy.log
 printf "all____ \n"
 
 
@@ -87,20 +87,25 @@ printf "\n\n\n\n\n==============================================================
 printf "____SERVICES____\n" | tee -a ~/deploy.log
 
 printf "____Restarting NGINX\n" | tee -a ~/deploy.log
-/usr/bin/sudo /usr/sbin/service nginx restart | tee -a ~/deploy.log
+/usr/bin/sudo /bin/systemctl restart nginx | tee -a ~/deploy.log
 printf "____Restarting NGINX____ FINISHED \n\n" | tee -a ~/deploy.log
 
-# printf "____Restarting Celery\n" | tee -a ~/deploy.log
-# /usr/bin/sudo /usr/sbin/service celery restart | tee -a ~/deploy.log &
-# printf "____Restarting Celery____ FINISHED \n\n" | tee -a ~/deploy.log
-# printf "____Restarting API\n" | tee -a ~/deploy.log
-# /usr/bin/sudo /usr/sbin/service oka restart | tee -a ~/deploy.log &
-# printf "____Restarting API____ FINISHED \n\n" | tee -a ~/deploy.log
+# printf "____[re]Starting DEPLOY service\n" | tee -a ~/deploy.log
+# /usr/bin/sudo /bin/systemctl restart deploy | tee -a ~/deploy.log &
+# printf "____[re]Starting DEPLOY service____ FINISHED \n\n" | tee -a ~/deploy.log
+
+printf "____Restarting Celery\n" | tee -a ~/deploy.log
+/usr/bin/sudo /bin/systemctl restart celery | tee -a ~/deploy.log &
+printf "____Restarting Celery____ FINISHED \n\n" | tee -a ~/deploy.log
+
+printf "____Restarting API\n" | tee -a ~/deploy.log
+/usr/bin/sudo /bin/systemctl restart oka | tee -a ~/deploy.log &
+printf "____Restarting API____ FINISHED \n\n" | tee -a ~/deploy.log
 
 printf "____SERVICES____ FINISHED \n\n" | tee -a ~/deploy.log
 
 
 
 printf "\n\n\n\n\n==============================================================================\n" | tee -a ~/deploy.log
-date | tee ~/deploy.log
+date | tee -a ~/deploy.log
 printf "all____ FINISHED \n"
