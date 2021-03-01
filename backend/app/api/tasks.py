@@ -44,7 +44,6 @@ def create_post(logged_user, data, name, description, filename=None, active=True
             }
         else:
             existing_post.active = True
-            db.session.commit()
             obj = {
                 'original_name': filename,
                 'message': 'Post successfully restored',
@@ -83,7 +82,7 @@ def create_post(logged_user, data, name, description, filename=None, active=True
                 # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
                 # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
                 db.session.add(post)
-        db.session.commit()
+                db.session.commit()
 
         obj = {
             'original_name': filename,
@@ -98,6 +97,7 @@ def create_post(logged_user, data, name, description, filename=None, active=True
             data=logged_user.new_notifications(),
             overwrite=True
         )
+    db.session.commit()
 
     return obj
 
@@ -242,7 +242,8 @@ def download_data(self, pids, username, ip):
                 datas = tatu.fetchstream(post.data_uuid, lazy=False)
                 for i, dat in enumerate(datas):
                     # zipped_file.writestr(f'{pid}-{i}-train.arff', dat.inner.arff('No name', 'No description'))
-                    zipped_file.writestr(f'{pid}-{i}-test.arff', dat.arff('No name', 'No description'))
+                    zipped_file.writestr(
+                        f'{pid}-{i}-test.arff', dat.arff('No name', 'No description'))
         zipped_file.close()
     tatu.close()
     return _set_job_progress(self, 100, result=f'{filename_server_zip}')
@@ -268,9 +269,13 @@ def process_file(self, files, username):
         path = '/'.join(file['path'].split('/')[:-1]) + '/'
         f = File(name, path)
         name, description = f.dataset, f.description
-        tatu.store(f.data, lazy=False, ignoredup=True)
-        result.append(create_post(logged_user, f.data, name,
-                                  description, file['original_name']))
+        try:
+            tatu.store(f.data, lazy=False, ignoredup=True)
+            result.append(create_post(logged_user, f.data, name,
+                                      description, file['original_name']))
+        except Exception as e:
+            db.session.rollback()
+            raise(e)
 
     tatu.close()
     return _set_job_progress(self, 100, result=result)
