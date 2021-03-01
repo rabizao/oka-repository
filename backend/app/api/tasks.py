@@ -82,6 +82,7 @@ def create_post(logged_user, data, name, description, filename=None, active=True
                 # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
                 # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
                 db.session.add(post)
+                db.session.commit()
 
         obj = {
             'original_name': filename,
