@@ -184,10 +184,9 @@ def run_step(self, post_id, step_asdict, username):
 
     step = Step.fromdict(step_asdict)
 
-    _set_job_progress(self, 0)
+    _set_job_progress(self, 25)
     data = tatu.fetch(post.data_uuid, lazy=False) >> step
     tatu.store(data)
-
     # minhas mudanças antes de dar pull no dev do rabizao ==============
     # tatu.store(data, lazy=False, ignoredup=True)
     # result = create_post(logged_user, data)

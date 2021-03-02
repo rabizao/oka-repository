@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import { CloudUpload, Clear } from '@material-ui/icons';
 import { NotificationManager } from 'react-notifications';
 
@@ -8,10 +8,12 @@ import OkaHeader from '../../components/OkaHeader';
 import ContentBox from '../../components/ContentBox';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import api from '../../services/api';
+import axios from 'axios';
 import { LoginContext } from '../../contexts/LoginContext';
 import { notifyError } from '../../utils';
 import { NotificationsContext } from '../../contexts/NotificationsContext';
 import { RunningTasksBarContext } from '../../contexts/RunningTasksBarContext';
+import { Prompt } from 'react-router-dom';
 
 export default function Home() {
     const [acceptedFiles, setAcceptedFiles] = useState([]);
@@ -23,8 +25,10 @@ export default function Home() {
     const dropRegion = useRef();
     const runningTasksBar = useContext(RunningTasksBarContext);
     const notificationsContext = useContext(NotificationsContext);
-
     const loggedUser = useContext(LoginContext);
+    const CancelToken = axios.CancelToken;
+    const source = useRef(null);
+
 
     function fileListToArray(list) {
         const array = []
@@ -76,21 +80,29 @@ export default function Home() {
         }
     }
 
+    useEffect(() => {
+        return () => {
+            source && source.current && source.current.cancel();
+        }
+    }, [])
+
     async function handleSubmit() {
         setShowProgress(true);
         setBlockSubmit(true);
+        source.current = CancelToken.source();
         var formData = new FormData();
         acceptedFiles.forEach((value) => {
             formData.append("files", value);
         })
 
-        const config = {
+        let config = {
             headers: {
                 'Content-Type': 'multipart/form-data'
             },
             onUploadProgress: function (progressEvent) {
                 setProgress(parseInt(Math.round((progressEvent.loaded / progressEvent.total) * 100)))
-            }
+            },
+            cancelToken: source.current.token
         }
 
         try {
@@ -109,7 +121,9 @@ export default function Home() {
             setBlockSubmit(false);
             NotificationManager.success("Upload successful. You can navigate while we process your datasets", "Finished", 10000)
         } catch (error) {
-            notifyError(error);
+            if (!axios.isCancel(error)) {
+                notifyError(error);
+            }
         }
     }
 
@@ -117,6 +131,15 @@ export default function Home() {
         var newArray = [...array];
         newArray.splice(index, 1);
         setter(newArray);
+    }
+
+    function handleCancelSubmit() {
+        source.current.cancel();
+        setAcceptedFiles([]);
+        setDeniedFiles([]);
+        setShowProgress(false);
+        setProgress(0);
+        setBlockSubmit(false);
     }
 
     return (
@@ -148,9 +171,13 @@ export default function Home() {
                                             <div>
                                                 {file.name}
                                             </div>
-                                            <button onClick={() => handleRemoveItem(acceptedFiles, setAcceptedFiles, index)}>
-                                                <Clear />
-                                            </button>
+                                            {
+                                                blockSubmit ?
+                                                    <Clear className="icon-primary-deactivated" /> :
+                                                    <button onClick={() => handleRemoveItem(acceptedFiles, setAcceptedFiles, index)}>
+                                                        <Clear />
+                                                    </button>
+                                            }
                                         </div>
                                     )}
                                 </>
@@ -163,9 +190,13 @@ export default function Home() {
                                             <div>
                                                 {file.name}
                                             </div>
-                                            <button onClick={() => handleRemoveItem(deniedFiles, setDeniedFiles, index)}>
-                                                <Clear />
-                                            </button>
+                                            {
+                                                blockSubmit ?
+                                                    <Clear className="icon-primary-deactivated" /> :
+                                                    <button onClick={() => handleRemoveItem(deniedFiles, setDeniedFiles, index)}>
+                                                        <Clear />
+                                                    </button>
+                                            }
                                         </div>
                                     )}
                                 </>
@@ -173,6 +204,10 @@ export default function Home() {
                             {
                                 showProgress &&
                                 <div className="flex-row flex-axis-center padding-small box width100">
+                                    <Prompt
+                                        when={blockSubmit}
+                                        message="This will cancel your upload, are you sure?"
+                                    />
                                     <LinearProgress className="padding-sides-small width100" variant="determinate" value={progress} />
                                     <h5 className="margin-sides-verysmall min-width-small">{progress}%</h5>
                                 </div>
@@ -180,7 +215,11 @@ export default function Home() {
                             {
                                 deniedFiles.length <= 0 && acceptedFiles.length > 0 && !blockSubmit ?
                                     <button className="margin-top-medium button-primary" onClick={() => handleSubmit()}>Submit</button> :
-                                    <button className="margin-top-medium button-primary-disabled">Submit</button>
+                                    <>
+                                        <button className="margin-top-medium button-primary-disabled">Submit</button>
+                                        <button className="margin-top-medium margin-sides-verysmall button-negative" onClick={handleCancelSubmit}>Cancel</button>
+                                    </>
+
                             }
                         </div>
                     }
