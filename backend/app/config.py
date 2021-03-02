@@ -20,7 +20,7 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         'DATABASE_URL') or 'sqlite:///' + os.path.join(okadir, 'app.db')
     TATU_URL = os.environ.get('TATU_URL') or 'sqlite://' + \
-               os.path.join(okadir, 'tatu')
+        os.path.join(okadir, 'tatu')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or 587)
@@ -44,7 +44,6 @@ class Config(object):
 
     CELERY_BROKER_URL = 'redis://localhost:6379/0'
     CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
-    CELERY_ACKS_LATE = True
     FRONTEND_HOST = os.environ.get('FRONTEND_HOST') or "http://localhost:3000"
 
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY') or 'testpass'
