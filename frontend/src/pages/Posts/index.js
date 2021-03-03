@@ -1090,6 +1090,7 @@ export default function Posts(props) {
                                                 }
                                             </>
                                         }
+                                        <h6 className="color-tertiary margin-left-small">{post.public ? "Public": "Private"}</h6>
                                     </div>
                                     <h6 className="color-tertiary">OID: <span className="font-courier color-tertiary">{post.data_uuid}</span></h6>
                                     <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>

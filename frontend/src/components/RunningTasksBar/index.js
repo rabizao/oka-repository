@@ -22,7 +22,7 @@ export default function RunningTasksBar() {
                 }
             </div>
             <button onClick={() => runningTasksBarContext.setActive(!runningTasksBarContext.active)} className="flex-row flex-crossaxis-center box padding-medium width100">
-                <h3 className="color-tertiary">Running tasks</h3>
+                <h4 className="color-tertiary">Running tasks</h4>
             </button>
         </div>
     );
