@@ -40,11 +40,43 @@ const categories = [
                 "parameters": [
                     {
                         "name": "mode",
-                        "values": ["cv"]
+                        "values": ["cv", "holdout"]
                     },
                     {
                         "name": "splits",
                         "values": [2, 3, 4, 5, 6, 7, 8, 9, 10]
+                    },
+                    {
+                        "name": "test_size",
+                        "values": [0.1, 0.2, 0.25, 0.3, 0.3333, 0.4, 0.5],
+                        "range": true
+                    },
+                    {
+                        "name": "seed",
+                        "values": [0, 100000],
+                        "range": true
+                    },
+                    {
+                        "name": "fields",
+                        "values": ["X,Y"]
+                    }
+                ]
+            },
+            {
+                "name": "Split",
+                "uuid": "split",
+                "parameters": [
+                    {
+                        "name": "mode",
+                        "values": ["cv", "holdout"]
+                    },
+                    {
+                        "name": "splits",
+                        "values": [2, 3, 4, 5, 6, 7, 8, 9, 10]
+                    },
+                    {
+                        "name": "test_size",
+                        "values": [0.1, 0.2, 0.25, 0.3, 0.3333, 0.4, 0.5]
                     },
                     {
                         "name": "seed",
