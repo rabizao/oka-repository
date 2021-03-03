@@ -15,14 +15,14 @@ export default function RunningTasksBar() {
                         <h3>No running tasks</h3> :
                         Object.entries(runningTasksBarContext.tasks).map(([id, task]) =>
                             <div key={id} className="flex-row flex-axis-center box">
-                                <div className="padding-medium"><CircularProgress className="icon-primary" variant="determinate" value={task.progress} /></div>
-                                <div className="padding-medium">{task.description}</div>
+                                <div className="padding-medium"><CircularProgress className="icon-primary" variant={task.progress !== 0 ? "determinate" : "indeterminate"} value={task.progress} /></div>
+                                <h5 className="padding-medium">{task.description}</h5>
                             </div>
                         )
                 }
             </div>
             <button onClick={() => runningTasksBarContext.setActive(!runningTasksBarContext.active)} className="flex-row flex-crossaxis-center box padding-medium width100">
-                <h3 className="color-tertiary">Running tasks</h3>
+                <h4 className="color-tertiary">Running tasks</h4>
             </button>
         </div>
     );
