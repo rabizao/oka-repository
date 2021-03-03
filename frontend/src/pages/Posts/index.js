@@ -362,13 +362,13 @@ export default function Posts(props) {
                             <button className="button-primary" onClick={handleReload}>Reload</button>
                         </div> :
                         <>
-                            <button className={`${showFields ? "button-negative" : "button-primary"} margin-small`} onClick={() => setShowFields(!showFields)}>
+                            <button className={`${showFields ? "button-negative" : "button-primary"} margin-very-very-small`} onClick={() => setShowFields(!showFields)}>
                                 {showFields ? "Hide Fields" : "Show Fields"}
                             </button>
-                            <button className={`${showData ? "button-negative" : "button-primary"} margin-small`} onClick={() => setShowData(!showData)}>
+                            <button className={`${showData ? "button-negative" : "button-primary"} margin-very-very-small`} onClick={() => setShowData(!showData)}>
                                 {showData ? "Hide Data" : "Show Data"}
                             </button>
-                            <button className={`${showMeta ? "button-negative" : "button-primary"} margin-small`} onClick={() => setShowMeta(!showMeta)}>
+                            <button className={`${showMeta ? "button-negative" : "button-primary"} margin-very-very-small`} onClick={() => setShowMeta(!showMeta)}>
                                 {showMeta ? "Hide Meta" : "Show Meta"}
                             </button>
                             {
@@ -458,17 +458,19 @@ export default function Posts(props) {
                                                 <button className="icon-normal" onClick={handleEditDescriptionSubmit}><Save className="icon-secondary" /></button>
                                             </div>
                                             <ReactQuill
-                                                modules={{ toolbar: [
-                                                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                                                    ['bold', 'italic', 'underline'],
-                                                    ['blockquote', 'code-block'],
-                                                    [{ 'script': 'sub' }, { 'script': 'super' }],
-                                                    ['link', 'image', 'video'],
-                                                    [{ 'indent': '-1' }, { 'indent': '+1' }],
-                                                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                                                    [{ 'direction': 'rtl' }],
-                                                    ['clean']
-                                                ] }}
+                                                modules={{
+                                                    toolbar: [
+                                                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                                                        ['bold', 'italic', 'underline'],
+                                                        ['blockquote', 'code-block'],
+                                                        [{ 'script': 'sub' }, { 'script': 'super' }],
+                                                        ['link', 'image', 'video'],
+                                                        [{ 'indent': '-1' }, { 'indent': '+1' }],
+                                                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                                        [{ 'direction': 'rtl' }],
+                                                        ['clean']
+                                                    ]
+                                                }}
                                                 theme="snow"
                                                 value={descriptionEdit}
                                                 toolbarOptions={{}}
@@ -539,7 +541,7 @@ export default function Posts(props) {
                         </div> :
                         <>
                             {Object.entries(charts).map(([option, obj]) =>
-                                <button key={option} className={`${showingCharts.includes(option) ? ("button-negative") : "button-primary"} margin-small`} onClick={(e) => handleChartsShowing(e, option)}>{obj.title}</button>
+                                <button key={option} className={`${showingCharts.includes(option) ? ("button-negative") : "button-primary"} margin-very-very-small`} onClick={(e) => handleChartsShowing(e, option)}>{obj.title}</button>
                             )}
                             {
                                 showingCharts.length > 0 &&
@@ -1020,56 +1022,54 @@ export default function Posts(props) {
                                         </div>
                                     }
 
-                                    <div className="flex-row margin-top-small">
-                                        <div className="flex-column flex-crossaxis-center">
-                                            <div className="flex-wrap">
+                                    <div className="flex-row-nowrap flex-axis-center overflow-x-auto margin-top-small">
+                                        {
+                                            post.history.length > 0 &&
+                                            (
+                                                showHistory ?
+                                                    <>
+                                                        <button className="margin-very-very-small icon-medium" title="Hide History" onClick={() => setShowHistory(!showHistory)}><ChevronLeft className="icon-tertiary" /></button>
+                                                        {
+                                                            post.history.map((item) =>
+                                                                item.data.step.desc.name &&
+                                                                <div key={item.id} className="flex-row-nowrap">
+                                                                    <button
+                                                                        title="Show Dataset" alt="Show Dataset"
+                                                                        onClick={(e) => handleIconClick(e, item.post, item.id)}
+                                                                        className="box-uuid-history"
+                                                                        style={{ backgroundColor: `rgb(${item.data.colors[0][0]}, ${item.data.colors[0][1]}, ${item.data.colors[0][2]})`, border: `var(--border)` }}>
+                                                                        <span>&nbsp;</span>
+                                                                        {
+                                                                            item.data.colors.slice(1).map((color, index) =>
+                                                                                <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{item.id[index]}</span>
+                                                                            )
+                                                                        }
+                                                                    </button>
+                                                                    <div className="flex-column flex-axis-center padding-sides-very-small">
+                                                                        <span className="color-tertiary">{item.data.step.desc.name}</span>
+                                                                        <span className="color-tertiary">→</span>
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        }
+                                                    </> :
+                                                    <button className="margin-very-very-small icon-medium" title="Expand History" onClick={() => setShowHistory(!showHistory)}><ChevronRight className="icon-tertiary" /></button>
+                                            )
+                                        }
+                                        <div className="flex-row-nowrap">
+                                            <button
+                                                onClick={(e) => copyToClipboard(e, post.data_uuid)}
+                                                title="Click to copy to clipboard"
+                                                className="flex-row-nowrap box-uuid"
+                                                style={{ backgroundColor: `rgb(${post.data_uuid_colors[0][0]}, ${post.data_uuid_colors[0][1]}, ${post.data_uuid_colors[0][2]})`, border: `var(--border)` }}>
+                                                <span>&nbsp;</span>
                                                 {
-                                                    post.history.length > 0 &&
-                                                    (
-                                                        showHistory ?
-                                                            <>
-                                                                <button className="margin-very-very-small icon-medium" title="Hide History" onClick={() => setShowHistory(!showHistory)}><ChevronLeft className="icon-tertiary" /></button>
-                                                                {
-                                                                    post.history.map((item) =>
-                                                                        item.data.step.desc.name &&
-                                                                        <div key={item.id} className="flex-row">
-                                                                            <button
-                                                                                title="Show Dataset" alt="Show Dataset"
-                                                                                onClick={(e) => handleIconClick(e, item.post, item.id)}
-                                                                                className="box-uuid-history"
-                                                                                style={{ backgroundColor: `rgb(${item.data.colors[0][0]}, ${item.data.colors[0][1]}, ${item.data.colors[0][2]})`, border: `var(--border)` }}>
-                                                                                <span>&nbsp;</span>
-                                                                                {
-                                                                                    item.data.colors.slice(1).map((color, index) =>
-                                                                                        <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{item.id[index]}</span>
-                                                                                    )
-                                                                                }
-                                                                            </button>
-                                                                            <div className="flex-column flex-axis-center padding-sides-very-small">
-                                                                                <span className="color-tertiary">{item.data.step.desc.name}</span>
-                                                                                <span className="color-tertiary">→</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    )
-                                                                }
-                                                            </> :
-                                                            <button className="margin-very-very-small icon-medium" title="Expand History" onClick={() => setShowHistory(!showHistory)}><ChevronRight className="icon-tertiary" /></button>
+                                                    post.data_uuid_colors.slice(1).map((color, index) =>
+                                                        <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{post.data_uuid[index]}</span>
                                                     )
                                                 }
-                                            </div>
+                                            </button>
                                         </div>
-                                        <button
-                                            onClick={(e) => copyToClipboard(e, post.data_uuid)}
-                                            title="Click to copy to clipboard"
-                                            className="box-uuid"
-                                            style={{ backgroundColor: `rgb(${post.data_uuid_colors[0][0]}, ${post.data_uuid_colors[0][1]}, ${post.data_uuid_colors[0][2]})`, border: `var(--border)` }}>
-                                            <span>&nbsp;</span>
-                                            {
-                                                post.data_uuid_colors.slice(1).map((color, index) =>
-                                                    <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{post.data_uuid[index]}</span>
-                                                )
-                                            }
-                                        </button>
                                     </div>
                                     <div className="flex-row flex-axis-center">
                                         {editName ?
