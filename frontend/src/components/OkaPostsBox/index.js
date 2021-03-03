@@ -207,7 +207,7 @@ export default function OkaPostsBox({ fetch_url }) {
                         {filteredPosts.map(
                             (post) =>
                                 <div key={post.id} className="flex-row box-horizontal background-hover padding-sides-small">
-                                    <button onClick={(e) => handleSelect(e, String(post.id))}>
+                                    <button onClick={(e) => handleSelect(e, post.id)}>
                                         {
                                             selection.includes(post.id) ?
                                                 <CheckBox className="icon-primary" /> :
