@@ -109,7 +109,7 @@ export default function ContentBox(props) {
                             <ul className="content-list margin-top-medium">
                                 {posts.map((post, index) =>
                                     <li key={post.id} className="background-hover">
-                                        <div className="content-item flex-row padding-medium">
+                                        <div className="content-item flex-row padding-small">
                                             <Link to={`/users/${post.author.username}/uploads`} ><Gravatar link={post.author.gravatar} size={40} rounded={true} /></Link>
                                             <Link className="padding-left-small width100 nowrap" to={`/posts/${post.id}/overview`}>
                                                 <div className="flex-column">
