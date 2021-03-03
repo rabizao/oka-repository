@@ -22,7 +22,6 @@ export default function OkaMyAccount() {
         loggedUser.setLogged(false);
         notificationsContext.setNotifications([]);
         notificationsContext.setSince(timeStart);
-        notificationsContext.setFirst(true);
         history.push('/');
     }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, createContext } from 'react';
+import React, { useState, useEffect, useContext, createContext, useRef } from 'react';
 
 import { saveAs } from 'file-saver';
 import useSound from 'use-sound';
@@ -22,7 +22,7 @@ const NotificationsProvider = ({ children }) => {
     const [notifyNewMessage, setNotifyNewMessage] = useState(0);
     const loggedUser = useContext(LoginContext);
     const runningTasksBar = useContext(RunningTasksBarContext);
-    const [first, setFirst] = useState(true);
+    const isWaitingDownload = useRef(false);
     const [playAlertSound] = useSound(alertSound);
 
 
@@ -32,6 +32,7 @@ const NotificationsProvider = ({ children }) => {
         try {
             const response = await api.get(`notifications?since=${since}`);
             var data = [...response.data]
+            setSince(data[data.length - 1].timestamp)
             if (data.length > 0) {
                 for (var i = 0; i < data.length; i++) {
                     const notification = data[i];
@@ -50,16 +51,19 @@ const NotificationsProvider = ({ children }) => {
                                 delete newTasks[payload.task_id]
                             }
                         } else {
-                            if (!first) {
+                            if (!(since === timeStart)) {
                                 if (payload.state === 'FAILURE') {
                                     NotificationManager.error(`There was an error with your request. Please try again later. Exception: ${payload.status}`, "Task", 8000)
                                 } else {
                                     if (payload.task_name === 'download_data') {
-                                        const r = await api.get(`downloads/data?name=${JSON.parse(payload.result)}`, {responseType: 'blob'})
-                                        saveAs(r.data, JSON.parse(payload.result))
+                                        if (isWaitingDownload) {
+                                            const r = await api.get(`downloads/data?name=${JSON.parse(payload.result)}`, { responseType: 'blob' });
+                                            saveAs(r.data, JSON.parse(payload.result));
+                                            isWaitingDownload.current = false;
+                                        }
                                     } else if (payload.task_name === 'run_step') {
                                         NotificationManager.success(`Your simulation has just finished.`, "Run", 8000)
-                                    } else if (payload.task_name === 'process_data') {
+                                    } else if (payload.task_name === 'process_file') {
 
                                     } else {
                                         NotificationManager.success(`Your task has just finished.`, "NoName", 8000)
@@ -69,7 +73,7 @@ const NotificationsProvider = ({ children }) => {
                             delete newTasks[payload.task_id]
                         }
                     } else if (notificationName === "data_uploaded") {
-                        if (!first) {
+                        if (!(since === timeStart)) {
                             if (payload["code"] === "success") {
                                 NotificationManager.success(payload["message"], `${payload['original_name']}`, 10000);
                                 loggedUser.setRenderFeed(loggedUser.renderFeed + 1)
@@ -82,23 +86,20 @@ const NotificationsProvider = ({ children }) => {
                         setNotificationsBadgeCount(payload);
                     } else if (notificationName === "unread_message_count") {
                         setMessagesBadgeCount(payload);
-                        if (payload > 0 && !first) {
+                        if (payload > 0 && !(since === timeStart)) {
                             setNotifyNewMessage(notifyNewMessage + 1);
                             playAlertSound();
                         }
                     }
                 }
-                setSince(data[data.length - 1].timestamp)
                 setNotifications(newNotifications);
                 runningTasksBar.setTasks(newTasks);
                 if (Object.keys(newTasks).length === 0) {
                     setDelay(10000);
                 }
-                setFirst(false);
             }
         } catch (error) {
             // Do nothing
-            setFirst(true);
         }
     }
 
@@ -112,7 +113,7 @@ const NotificationsProvider = ({ children }) => {
     useInterval(repeat, delay, loggedUser.logged);
 
     return (
-        <NotificationsContext.Provider value={{ notifications, setNotifications, delay, setDelay, notificationsBadgeCount, setNotificationsBadgeCount, messagesBadgeCount, setMessagesBadgeCount, notifyNewMessage, setSince, setFirst }}>
+        <NotificationsContext.Provider value={{ notifications, setNotifications, delay, setDelay, notificationsBadgeCount, setNotificationsBadgeCount, messagesBadgeCount, setMessagesBadgeCount, notifyNewMessage, setSince, isWaitingDownload }}>
             {children}
         </NotificationsContext.Provider>
     )

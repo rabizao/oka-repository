@@ -22,7 +22,7 @@ export const logout = () => {
     localStorage.clear();
 }
 
-export const timeStart = () => (new Date(Date.UTC(1970))).toISOString();
+export const timeStart = (new Date(Date.UTC(1970))).toISOString();
 
 export const is_expired = token => {
     var decoded_token = jwt_decode(token);

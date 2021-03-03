@@ -617,6 +617,7 @@ export default function Posts(props) {
             };
             runningTasksBar.setTasks(newTasks);
             runningTasksBar.setActive(true);
+            notificationsContext.isWaitingDownload.current = true;
             notificationsContext.setDelay(1000);
         } catch (error) {
             notifyError(error);
