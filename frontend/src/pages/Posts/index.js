@@ -29,14 +29,12 @@ import NotFound from '../NotFound';
 import TimeAgo from 'timeago-react';
 
 
-const categories = [
-    {
+const categories = {
+    evaluation: {
         "name": "Evaluation",
-        "uuid": "evaluation",
-        "algorithms": [
-            {
+        algorithms: {
+            partition: {
                 "name": "Partition",
-                "uuid": "partition",
                 "parameters": [
                     {
                         "name": "mode",
@@ -49,7 +47,6 @@ const categories = [
                     {
                         "name": "test_size",
                         "values": [0.1, 0.2, 0.25, 0.3, 0.3333, 0.4, 0.5],
-                        "range": true
                     },
                     {
                         "name": "seed",
@@ -62,9 +59,8 @@ const categories = [
                     }
                 ]
             },
-            {
+            split: {
                 "name": "Split",
-                "uuid": "split",
                 "parameters": [
                     {
                         "name": "mode",
@@ -89,9 +85,10 @@ const categories = [
                     }
                 ]
             }
-        ]
+        }
     }
-]
+}
+
 
 const metas = {
     General: [
@@ -283,8 +280,6 @@ export default function Posts(props) {
     const [openPublish, setOpenPublish] = useState(false);
     const [openRun, setOpenRun] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
-    const [showAlgorithms, setShowAlgorithms] = useState(false);
-    const [showParameters, setShowParameters] = useState(false);
     const [showMeta, setShowMeta] = useState(false);
     const [showFields, setShowFields] = useState(false);
     const [metaSet, setMetaSet] = useState([]);
@@ -765,24 +760,6 @@ export default function Posts(props) {
         }
     }
 
-    function handleSelectCategory(e) {
-        if (e.target.value !== "select") {
-            setShowAlgorithms(true);
-        } else {
-            setShowAlgorithms(false);
-        }
-        setRunCategory(e.target.value);
-    }
-
-    function handleSelectAlgorithm(e) {
-        if (e.target.value !== "select") {
-            setShowParameters(true);
-        } else {
-            setShowParameters(false);
-        }
-        setRunAlgorithm(e.target.value);
-    }
-
     function handleSelectParameter(e, parameterName) {
         var newRunParameter = { ...runParameter };
         newRunParameter[parameterName] = e.target.value;
@@ -811,8 +788,6 @@ export default function Posts(props) {
             setRunCategory('');
             setRunAlgorithm('');
             setRunParameter({});
-            setShowAlgorithms(false);
-            setShowParameters(false);
         } catch (error) {
             notifyError(error);
         }
@@ -910,69 +885,63 @@ export default function Posts(props) {
                             <h3 className="margin-bottom-small">Run</h3>
                             <form className="flex-column" onSubmit={handleRun}>
                                 <h4 className="margin-top-small bold">Select a category</h4>
-                                <select onChange={(e) => handleSelectCategory(e)} value={runCategory}>
+                                <select onChange={(e) => setRunCategory(e.target.value)} value={runCategory}>
                                     <option value={"select"}>Select</option>
                                     {
-                                        categories.map((category) =>
-                                            <option key={category["uuid"]} value={category["uuid"]}>{category["name"]}</option>
+                                        Object.entries(categories).map(([category, value]) =>
+                                            <option key={category} value={category}>{value["name"]}</option>
                                         )
                                     }
                                 </select>
                                 {
-                                    showAlgorithms &&
+                                    runCategory &&
                                     <>
                                         <h4 className="margin-top-small bold">Select the algorithm</h4>
-                                        <select onChange={(e) => handleSelectAlgorithm(e)} value={runAlgorithm}>
+                                        <select onChange={(e) => setRunAlgorithm(e.target.value)} value={runAlgorithm}>
                                             <option value={"select"}>Select</option>
                                             {
-                                                categories.map((category) =>
-                                                    category["algorithms"].map((algorithm) =>
-                                                        <option key={algorithm["uuid"]} value={algorithm["uuid"]}>{algorithm["name"]}</option>
-                                                    )
+                                                Object.entries(categories[runCategory]["algorithms"]).map(([algorithm, value]) =>
+                                                    <option key={algorithm} value={algorithm}>{value["name"]}</option>
                                                 )
                                             }
                                         </select>
                                     </>
                                 }
                                 {
-                                    showAlgorithms && showParameters &&
+                                    runCategory && runAlgorithm &&
                                     <>
                                         <h4 className="margin-top-small bold">Select the parameters</h4>
                                         {
-                                            categories.map((category) =>
-                                                category["algorithms"].map((algorithm) =>
-                                                    algorithm["parameters"].map((parameter) =>
-                                                        parameter["values"].length > 1 &&
-                                                        <div key={parameter["name"]} className="flex-row flex-axis-center flex-space-between">
-                                                            <label className="width50" htmlFor={parameter["name"]}>{parameter["name"]}</label>
-                                                            {
-                                                                parameter["range"] ?
-                                                                    <input
-                                                                        className="width50"
-                                                                        type="number"
-                                                                        min={parameter["values"][0]}
-                                                                        max={parameter["values"][1]}
-                                                                        value={runParameter[parameter["name"]] || ''}
-                                                                        onChange={e => handleSelectParameter(e, parameter["name"])}
-                                                                    /> :
-                                                                    <select className="width50" id={parameter["name"]} onChange={(e) => handleSelectParameter(e, parameter["name"])} value={runParameter[parameter["name"]] || ''}>
-                                                                        <option value={"select"}>Select</option>
-                                                                        {
-                                                                            parameter["values"].map((value) =>
-                                                                                <option key={value} value={value}>{value}</option>
-                                                                            )
-                                                                        }
-                                                                    </select>
-                                                            }
-                                                        </div>
-                                                    )
-                                                )
+                                            categories[runCategory]["algorithms"][runAlgorithm]["parameters"].map((parameter) =>
+                                                parameter["values"].length > 1 &&
+                                                <div key={parameter["name"]} className="flex-row flex-axis-center flex-space-between">
+                                                    <label className="width50" htmlFor={parameter["name"]}>{parameter["name"]}</label>
+                                                    {
+                                                        parameter["range"] ?
+                                                            <input
+                                                                className="width50"
+                                                                type="number"
+                                                                min={parameter["values"][0]}
+                                                                max={parameter["values"][1]}
+                                                                value={runParameter[parameter["name"]] || ''}
+                                                                onChange={e => handleSelectParameter(e, parameter["name"])}
+                                                            /> :
+                                                            <select className="width50" id={parameter["name"]} onChange={(e) => handleSelectParameter(e, parameter["name"])} value={runParameter[parameter["name"]] || ''}>
+                                                                <option value={"select"}>Select</option>
+                                                                {
+                                                                    parameter["values"].map((value) =>
+                                                                        <option key={value} value={value}>{value}</option>
+                                                                    )
+                                                                }
+                                                            </select>
+                                                    }
+                                                </div>
                                             )
                                         }
                                     </>
                                 }
                                 {
-                                    showAlgorithms && showParameters && runCategory && runAlgorithm && runParameter &&
+                                    runCategory && runAlgorithm && runParameter &&
                                     <button type="submit" className="button-primary margin-top-small">Run</button>
                                 }
 
@@ -1123,7 +1092,7 @@ export default function Posts(props) {
                                                 }
                                             </>
                                         }
-                                        <h6 className="color-tertiary margin-left-small">{post.public ? "Public": "Private"}</h6>
+                                        <h6 className="color-tertiary margin-left-small">{post.public ? "Public" : "Private"}</h6>
                                     </div>
                                     <h6 className="color-tertiary">OID: <span className="font-courier color-tertiary">{post.data_uuid}</span></h6>
                                     <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
