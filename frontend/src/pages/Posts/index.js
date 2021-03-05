@@ -84,6 +84,47 @@ const categories = {
                         "values": ["X,Y"]
                     }
                 ]
+            },
+            split2: {
+                "name": "Split2",
+                "parameters": [
+                    {
+                        "name": "modess",
+                        "values":
+                            [
+                                {
+                                    "cv": [
+                                        {
+                                            "name": "mode1",
+                                            "values": [2, 3, 4]
+                                        },
+                                        {
+                                            "name": "mode2",
+                                            "values": [22, 1, 33]
+                                        },
+                                    ]
+                                }
+                                , "holdout"
+                            ],
+                    },
+                    {
+                        "name": "splitsss",
+                        "values": [2, 3, 4, 5, 6, 7, 8, 9, 10]
+                    },
+                    {
+                        "name": "test_sizess",
+                        "values": [0.1, 0.2, 0.25, 0.3, 0.3333, 0.4, 0.5]
+                    },
+                    {
+                        "name": "seedss",
+                        "values": [0, 100000],
+                        "range": true
+                    },
+                    {
+                        "name": "fieldsss",
+                        "values": ["X,Y"]
+                    }
+                ]
             }
         }
     }
@@ -453,19 +494,19 @@ export default function Posts(props) {
                                                                         <button className={`icon-medium ${!post[item.variable] && "icon-error"}`} onClick={() => handlePostMetaUpdate(item.tag, post[item.variable])}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</button>
                                                                     )
                                                                 ) : (
-                                                                        item.type === "boolean" ? (
-                                                                            <div className={`icon-medium ${!post[item.variable] && "color-error"}`}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</div>
-                                                                        ) : (
-                                                                                <div className={"padding-sides-small"}>{post[item.variable]}</div>
-                                                                            )
-                                                                    )
-                                                            ) : (
                                                                     item.type === "boolean" ? (
-                                                                        <div className={`icon-medium ${!post[item.variable] && "icon-error"}`}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</div>
+                                                                        <div className={`icon-medium ${!post[item.variable] && "color-error"}`}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</div>
                                                                     ) : (
-                                                                            <div className={"padding-sides-small"}>{post[item.variable]}</div>
-                                                                        )
+                                                                        <div className={"padding-sides-small"}>{post[item.variable]}</div>
+                                                                    )
                                                                 )
+                                                            ) : (
+                                                                item.type === "boolean" ? (
+                                                                    <div className={`icon-medium ${!post[item.variable] && "icon-error"}`}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</div>
+                                                                ) : (
+                                                                    <div className={"padding-sides-small"}>{post[item.variable]}</div>
+                                                                )
+                                                            )
                                                         }
                                                     </div>
                                                 )}
@@ -886,7 +927,7 @@ export default function Posts(props) {
                             <form className="flex-column" onSubmit={handleRun}>
                                 <h4 className="margin-top-small bold">Select a category</h4>
                                 <select onChange={(e) => setRunCategory(e.target.value)} value={runCategory}>
-                                    <option value={"select"}>Select</option>
+                                    <option>Select</option>
                                     {
                                         Object.entries(categories).map(([category, value]) =>
                                             <option key={category} value={category}>{value["name"]}</option>
@@ -894,11 +935,11 @@ export default function Posts(props) {
                                     }
                                 </select>
                                 {
-                                    runCategory &&
+                                    runCategory && categories[runCategory] &&
                                     <>
                                         <h4 className="margin-top-small bold">Select the algorithm</h4>
                                         <select onChange={(e) => setRunAlgorithm(e.target.value)} value={runAlgorithm}>
-                                            <option value={"select"}>Select</option>
+                                            <option>Select</option>
                                             {
                                                 Object.entries(categories[runCategory]["algorithms"]).map(([algorithm, value]) =>
                                                     <option key={algorithm} value={algorithm}>{value["name"]}</option>
@@ -908,33 +949,84 @@ export default function Posts(props) {
                                     </>
                                 }
                                 {
-                                    runCategory && runAlgorithm &&
+                                    runCategory && runAlgorithm && categories[runCategory] && categories[runCategory]["algorithms"][runAlgorithm] &&
                                     <>
                                         <h4 className="margin-top-small bold">Select the parameters</h4>
                                         {
                                             categories[runCategory]["algorithms"][runAlgorithm]["parameters"].map((parameter) =>
                                                 parameter["values"].length > 1 &&
-                                                <div key={parameter["name"]} className="flex-row flex-axis-center flex-space-between">
-                                                    <label className="width50" htmlFor={parameter["name"]}>{parameter["name"]}</label>
+                                                <div key={parameter["name"]}>
+                                                    <div className="flex-row flex-axis-center flex-space-between">
+                                                        <label className="width50" htmlFor={parameter["name"]}>{parameter["name"]}</label>
+                                                        {
+                                                            parameter["range"] ?
+                                                                <input
+                                                                    className="width50"
+                                                                    type="number"
+                                                                    min={parameter["values"][0]}
+                                                                    max={parameter["values"][1]}
+                                                                    value={runParameter[parameter["name"]] || ''}
+                                                                    onChange={e => handleSelectParameter(e, parameter["name"])}
+                                                                /> :
+                                                                <select className="width50" id={parameter["name"]} onChange={(e) => handleSelectParameter(e, parameter["name"])} value={runParameter[parameter["name"]] || ''}>
+                                                                    <option>Select</option>
+                                                                    {
+                                                                        parameter["values"].map((value) =>
+                                                                            value.constructor === Object ?
+                                                                                Object.entries(value).map(([name, _]) =>
+                                                                                    <option key={name} value={name}>{name}</option>
+                                                                                ) :
+                                                                                <option key={value} value={value}>{value}</option>
+                                                                        )
+                                                                    }
+                                                                </select>
+                                                        }
+
+                                                    </div>
+
                                                     {
-                                                        parameter["range"] ?
-                                                            <input
-                                                                className="width50"
-                                                                type="number"
-                                                                min={parameter["values"][0]}
-                                                                max={parameter["values"][1]}
-                                                                value={runParameter[parameter["name"]] || ''}
-                                                                onChange={e => handleSelectParameter(e, parameter["name"])}
-                                                            /> :
-                                                            <select className="width50" id={parameter["name"]} onChange={(e) => handleSelectParameter(e, parameter["name"])} value={runParameter[parameter["name"]] || ''}>
-                                                                <option value={"select"}>Select</option>
-                                                                {
-                                                                    parameter["values"].map((value) =>
-                                                                        <option key={value} value={value}>{value}</option>
-                                                                    )
-                                                                }
-                                                            </select>
+                                                        parameter["values"].map((value) =>
+                                                            value.constructor === Object &&
+                                                            Object.entries(value).map(([name, nestedArray]) =>
+                                                                name === runParameter[parameter["name"]] &&
+                                                                nestedArray.map((nestedParameter) =>
+                                                                    nestedParameter["values"].length > 1 &&
+                                                                    <div key={nestedParameter["name"]}>
+                                                                        <div className="flex-row flex-axis-center flex-space-between">
+                                                                            <label className="width50" htmlFor={nestedParameter["name"]}>{nestedParameter["name"]}</label>
+                                                                            {
+                                                                                parameter["range"] ?
+                                                                                    <input
+                                                                                        className="width50"
+                                                                                        type="number"
+                                                                                        min={nestedParameter["values"][0]}
+                                                                                        max={nestedParameter["values"][1]}
+                                                                                        value={runParameter[nestedParameter["name"]] || ''}
+                                                                                        onChange={e => handleSelectParameter(e, nestedParameter["name"])}
+                                                                                    /> :
+                                                                                    <select className="width50" id={nestedParameter["name"]} onChange={(e) => handleSelectParameter(e, nestedParameter["name"])} value={runParameter[nestedParameter["name"]] || ''}>
+                                                                                        <option>Select</option>
+                                                                                        {
+                                                                                            nestedParameter["values"].map((value) =>
+                                                                                                value.constructor === Object ?
+                                                                                                    Object.entries(value).map(([name, _]) =>
+                                                                                                        <option key={name} value={name}>{name}</option>
+                                                                                                    ) :
+                                                                                                    <option key={value} value={value}>{value}</option>
+                                                                                            )
+                                                                                        }
+                                                                                    </select>
+                                                                            }
+                                                                        </div>
+                                                                    </div>
+                                                                )
+
+                                                            )
+                                                        )
                                                     }
+
+
+
                                                 </div>
                                             )
                                         }
