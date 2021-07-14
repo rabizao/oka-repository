@@ -9,7 +9,7 @@ import Modal from '@material-ui/core/Modal';
 import OkaHeader from '../../components/OkaHeader';
 import OkaNavBar from '../../components/OkaNavBar';
 import OkaPostsBox from '../../components/OkaPostsBox';
-import OkaMessagesBox from '../../components/OkaMessagesBox';
+// import OkaMessagesBox from '../../components/OkaMessagesBox';
 import OkaConversationBox from '../../components/OkaConversationBox';
 import api from '../../services/api';
 import { LoginContext } from '../../contexts/LoginContext';
@@ -82,12 +82,12 @@ export default function Users(props) {
             "url": "/users/" + username + "/favorites",
             "content": <OkaPostsBox fetch_url={"/users/" + username + "/favorites?" + queryString.stringify(parsedQueries)} />
         },
-        messages: {
-            "name": "Messages",
-            "private": true,
-            "url": "/users/" + username + "/messages",
-            "content": <OkaMessagesBox />
-        },
+        // messages: {
+        //     "name": "Messages",
+        //     "private": true,
+        //     "url": "/users/" + username + "/messages",
+        //     "content": <OkaMessagesBox />
+        // },
         following: {
             "name": "Following",
             "url": "/users/" + username + "/following",

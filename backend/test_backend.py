@@ -244,79 +244,79 @@ class ApiCase(unittest.TestCase):
         response = self.client.get(f"/api/contacts/{data[0]['id']}")
         self.assertEqual(response.status_code, 422)
 
-    def test_messages(self):
-        """
-            1 - Login user1
-            2 - Try to send message to yourself
-            3 - Login user2
-            4 - Send message to user1
-            5 - User2 can list the message
-            6 - Login user1
-            7 - User1 can list the message
-            8 - Login user3
-            9 - User3 can not list the message
-            10 - Can not send a message to an inexistent user
-            11 - Can not list a message of an inexistent user
-            12 - Can not list conversation with an inexistent user
-            13 - Can not list last messages of an inexistent user
-            14 - Can not list last messages of another user
-            15 - Can not list an inexistent message id
-        """
-        # 1
-        username1 = self.login()['username']
-        # 2
-        response = self.client.post(
-            f"/api/messages/{username1}", json={'body': "Message test"})
-        self.assertEqual(response.status_code, 422)
-        # 3
-        username2 = self.login(user=create_user2)['username']
-        # 4
-        response = self.client.post(
-            f"/api/messages/{username1}", json={'body': "Message test"})
-        self.assertEqual(response.status_code, 201)
-        messageid = response.json['id']
-        # 5
-        response = self.client.get(f"/api/messages/{messageid}")
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get(f"api/messages/{username1}/conversation")
-        self.assertEqual(len(response.json), 1)
-        response = self.client.get(f"api/messages/{username2}/lasts")
-        self.assertEqual(len(response.json), 1)
-        # 6
-        self.login(create_user=False)
-        # 7
-        response = self.client.get(f"/api/messages/{username2}")
-        self.assertEqual(len(response.json), 1)
-        response = self.client.get(f"/api/messages/{messageid}")
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get(f"api/messages/{username2}/conversation")
-        self.assertEqual(len(response.json), 1)
-        response = self.client.get(f"api/messages/{username1}/lasts")
-        self.assertEqual(len(response.json), 1)
-        # 8
-        self.login(user=create_user3)['username']
-        # 9
-        response = self.client.get(f"/api/messages/{messageid}")
-        self.assertNotEqual(response.status_code, 200)
-        # 10
-        response = self.client.post(
-            "/api/messages/inexistent", json={'body': "Message test"})
-        self.assertNotEqual(response.status_code, 200)
-        # 11
-        response = self.client.get("/api/messages/inexistent")
-        self.assertNotEqual(response.status_code, 200)
-        # 12
-        response = self.client.get("/api/messages/inexistent/conversation")
-        self.assertNotEqual(response.status_code, 200)
-        # 13
-        response = self.client.get(f"/api/messages/{username2}/lasts")
-        self.assertNotEqual(response.status_code, 200)
-        # 14
-        response = self.client.get("/api/messages/inexistent/lasts")
-        self.assertNotEqual(response.status_code, 200)
-        # 15
-        response = self.client.get("/api/messages/100")
-        self.assertNotEqual(response.status_code, 200)
+    # def test_messages(self):
+    #     """
+    #         1 - Login user1
+    #         2 - Try to send message to yourself
+    #         3 - Login user2
+    #         4 - Send message to user1
+    #         5 - User2 can list the message
+    #         6 - Login user1
+    #         7 - User1 can list the message
+    #         8 - Login user3
+    #         9 - User3 can not list the message
+    #         10 - Can not send a message to an inexistent user
+    #         11 - Can not list a message of an inexistent user
+    #         12 - Can not list conversation with an inexistent user
+    #         13 - Can not list last messages of an inexistent user
+    #         14 - Can not list last messages of another user
+    #         15 - Can not list an inexistent message id
+    #     """
+    #     # 1
+    #     username1 = self.login()['username']
+    #     # 2
+    #     response = self.client.post(
+    #         f"/api/messages/{username1}", json={'body': "Message test"})
+    #     self.assertEqual(response.status_code, 422)
+    #     # 3
+    #     username2 = self.login(user=create_user2)['username']
+    #     # 4
+    #     response = self.client.post(
+    #         f"/api/messages/{username1}", json={'body': "Message test"})
+    #     self.assertEqual(response.status_code, 201)
+    #     messageid = response.json['id']
+    #     # 5
+    #     response = self.client.get(f"/api/messages/{messageid}")
+    #     self.assertEqual(response.status_code, 200)
+    #     response = self.client.get(f"api/messages/{username1}/conversation")
+    #     self.assertEqual(len(response.json), 1)
+    #     response = self.client.get(f"api/messages/{username2}/lasts")
+    #     self.assertEqual(len(response.json), 1)
+    #     # 6
+    #     self.login(create_user=False)
+    #     # 7
+    #     response = self.client.get(f"/api/messages/{username2}")
+    #     self.assertEqual(len(response.json), 1)
+    #     response = self.client.get(f"/api/messages/{messageid}")
+    #     self.assertEqual(response.status_code, 200)
+    #     response = self.client.get(f"api/messages/{username2}/conversation")
+    #     self.assertEqual(len(response.json), 1)
+    #     response = self.client.get(f"api/messages/{username1}/lasts")
+    #     self.assertEqual(len(response.json), 1)
+    #     # 8
+    #     self.login(user=create_user3)['username']
+    #     # 9
+    #     response = self.client.get(f"/api/messages/{messageid}")
+    #     self.assertNotEqual(response.status_code, 200)
+    #     # 10
+    #     response = self.client.post(
+    #         "/api/messages/inexistent", json={'body': "Message test"})
+    #     self.assertNotEqual(response.status_code, 200)
+    #     # 11
+    #     response = self.client.get("/api/messages/inexistent")
+    #     self.assertNotEqual(response.status_code, 200)
+    #     # 12
+    #     response = self.client.get("/api/messages/inexistent/conversation")
+    #     self.assertNotEqual(response.status_code, 200)
+    #     # 13
+    #     response = self.client.get(f"/api/messages/{username2}/lasts")
+    #     self.assertNotEqual(response.status_code, 200)
+    #     # 14
+    #     response = self.client.get("/api/messages/inexistent/lasts")
+    #     self.assertNotEqual(response.status_code, 200)
+    #     # 15
+    #     response = self.client.get("/api/messages/100")
+    #     self.assertNotEqual(response.status_code, 200)
 
     def test_notifications(self):
         """

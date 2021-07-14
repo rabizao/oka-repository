@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useContext, createContext, useRef } from 'react';
 
 import { saveAs } from 'file-saver';
-import useSound from 'use-sound';
+// import useSound from 'use-sound';
 
 import api from '../services/api';
 import { useInterval } from '../hooks/useInterval';
 import { LoginContext } from './LoginContext';
 import { RunningTasksBarContext } from './RunningTasksBarContext';
 import { NotificationManager } from 'react-notifications';
-import alertSound from '../assets/notification_simple-01.ogg';
+// import alertSound from '../assets/notification_simple-01.ogg';
 import { timeStart } from '../services/auth';
 
 export const NotificationsContext = createContext();
@@ -19,11 +19,13 @@ const NotificationsProvider = ({ children }) => {
     const [delay, setDelay] = useState(10000);
     const [notificationsBadgeCount, setNotificationsBadgeCount] = useState(0);
     const [messagesBadgeCount, setMessagesBadgeCount] = useState(0);
-    const [notifyNewMessage, setNotifyNewMessage] = useState(0);
+    // const [notifyNewMessage, setNotifyNewMessage] = useState(0);
     const loggedUser = useContext(LoginContext);
     const runningTasksBar = useContext(RunningTasksBarContext);
     const isWaitingDownload = useRef(false);
-    const [playAlertSound] = useSound(alertSound);
+    // const [playAlertSound] = useSound(alertSound);
+    // messages between users disabled. To enable you have pro uncomment 
+    // items and propagate notifyNewMessage in NotificationsContext.Provider
 
 
     async function repeat() {
@@ -84,13 +86,14 @@ const NotificationsProvider = ({ children }) => {
                         newNotifications.push(notification);
                     } else if (notificationName === "unread_notification_count") {
                         setNotificationsBadgeCount(payload);
-                    } else if (notificationName === "unread_message_count") {
-                        setMessagesBadgeCount(payload);
-                        if (payload > 0 && !(since === timeStart)) {
-                            setNotifyNewMessage(notifyNewMessage + 1);
-                            playAlertSound();
-                        }
                     }
+                    // else if (notificationName === "unread_message_count") {
+                    //     setMessagesBadgeCount(payload);
+                    //     if (payload > 0 && !(since === timeStart)) {
+                    //         setNotifyNewMessage(notifyNewMessage + 1);
+                    //         playAlertSound();
+                    //     }
+                    // }
                 }
                 setNotifications(newNotifications);
                 runningTasksBar.setTasks(newTasks);
@@ -113,7 +116,7 @@ const NotificationsProvider = ({ children }) => {
     useInterval(repeat, delay, loggedUser.logged);
 
     return (
-        <NotificationsContext.Provider value={{ notifications, setNotifications, delay, setDelay, notificationsBadgeCount, setNotificationsBadgeCount, messagesBadgeCount, setMessagesBadgeCount, notifyNewMessage, setSince, isWaitingDownload }}>
+        <NotificationsContext.Provider value={{ notifications, setNotifications, delay, setDelay, notificationsBadgeCount, setNotificationsBadgeCount, messagesBadgeCount, setMessagesBadgeCount, setSince, isWaitingDownload }}>
             {children}
         </NotificationsContext.Provider>
     )

@@ -22,29 +22,31 @@ import { RunningTasksBarContext } from '../../contexts/RunningTasksBarContext';
 import { NotificationsContext } from '../../contexts/NotificationsContext';
 import { frontendUrl } from '../../services/api';
 import { notifyError } from '../../utils';
-import ParallelCoordinatesPlot from '../../components/ParallelCoordinatesPlot';
+// import ParallelCoordinatesPlot from '../../components/ParallelCoordinatesPlot';
 import HistogramPlot from '../../components/HistogramPlot';
-import PearsonCorrelationPlot from '../../components/PearsonCorrelationPlot';
+// import PearsonCorrelationPlot from '../../components/PearsonCorrelationPlot';
 import NotFound from '../NotFound';
 import TimeAgo from 'timeago-react';
 
 
-const categories = [
-    {
+const categories = {
+    evaluation: {
         "name": "Evaluation",
-        "uuid": "evaluation",
-        "algorithms": [
-            {
+        algorithms: {
+            partition: {
                 "name": "Partition",
-                "uuid": "partition",
                 "parameters": [
                     {
                         "name": "mode",
-                        "values": ["cv"]
+                        "values": ["cv"] // , "holdout"
                     },
                     {
                         "name": "splits",
                         "values": [2, 3, 4, 5, 6, 7, 8, 9, 10]
+                    },
+                    {
+                        "name": "test_size",
+                        "values": [0.1, 0.2, 0.25, 0.3, 0.3333, 0.4, 0.5],
                     },
                     {
                         "name": "seed",
@@ -56,10 +58,37 @@ const categories = [
                         "values": ["X,Y"]
                     }
                 ]
-            }
-        ]
+            },
+            // split: {
+            //     "name": "Split",
+            //     "parameters": [
+            //         {
+            //             "name": "mode",
+            //             "values": ["cv", "holdout"]
+            //         },
+            //         {
+            //             "name": "splits",
+            //             "values": [2, 3, 4, 5, 6, 7, 8, 9, 10]
+            //         },
+            //         {
+            //             "name": "test_size",
+            //             "values": [0.1, 0.2, 0.25, 0.3, 0.3333, 0.4, 0.5]
+            //         },
+            //         {
+            //             "name": "seed",
+            //             "values": [0, 100000],
+            //             "range": true
+            //         },
+            //         {
+            //             "name": "fields",
+            //             "values": ["X,Y"]
+            //         }
+            //     ]
+            // }            
+        }
     }
-]
+}
+
 
 const metas = {
     General: [
@@ -251,8 +280,6 @@ export default function Posts(props) {
     const [openPublish, setOpenPublish] = useState(false);
     const [openRun, setOpenRun] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
-    const [showAlgorithms, setShowAlgorithms] = useState(false);
-    const [showParameters, setShowParameters] = useState(false);
     const [showMeta, setShowMeta] = useState(false);
     const [showFields, setShowFields] = useState(false);
     const [metaSet, setMetaSet] = useState([]);
@@ -426,19 +453,19 @@ export default function Posts(props) {
                                                                         <button className={`icon-medium ${!post[item.variable] && "icon-error"}`} onClick={() => handlePostMetaUpdate(item.tag, post[item.variable])}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</button>
                                                                     )
                                                                 ) : (
-                                                                        item.type === "boolean" ? (
-                                                                            <div className={`icon-medium ${!post[item.variable] && "color-error"}`}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</div>
-                                                                        ) : (
-                                                                                <div className={"padding-sides-small"}>{post[item.variable]}</div>
-                                                                            )
-                                                                    )
-                                                            ) : (
                                                                     item.type === "boolean" ? (
-                                                                        <div className={`icon-medium ${!post[item.variable] && "icon-error"}`}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</div>
+                                                                        <div className={`icon-medium ${!post[item.variable] && "color-error"}`}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</div>
                                                                     ) : (
-                                                                            <div className={"padding-sides-small"}>{post[item.variable]}</div>
-                                                                        )
+                                                                        <div className={"padding-sides-small"}>{post[item.variable]}</div>
+                                                                    )
                                                                 )
+                                                            ) : (
+                                                                item.type === "boolean" ? (
+                                                                    <div className={`icon-medium ${!post[item.variable] && "icon-error"}`}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</div>
+                                                                ) : (
+                                                                    <div className={"padding-sides-small"}>{post[item.variable]}</div>
+                                                                )
+                                                            )
                                                         }
                                                     </div>
                                                 )}
@@ -733,24 +760,6 @@ export default function Posts(props) {
         }
     }
 
-    function handleSelectCategory(e) {
-        if (e.target.value !== "select") {
-            setShowAlgorithms(true);
-        } else {
-            setShowAlgorithms(false);
-        }
-        setRunCategory(e.target.value);
-    }
-
-    function handleSelectAlgorithm(e) {
-        if (e.target.value !== "select") {
-            setShowParameters(true);
-        } else {
-            setShowParameters(false);
-        }
-        setRunAlgorithm(e.target.value);
-    }
-
     function handleSelectParameter(e, parameterName) {
         var newRunParameter = { ...runParameter };
         newRunParameter[parameterName] = e.target.value;
@@ -779,8 +788,6 @@ export default function Posts(props) {
             setRunCategory('');
             setRunAlgorithm('');
             setRunParameter({});
-            setShowAlgorithms(false);
-            setShowParameters(false);
         } catch (error) {
             notifyError(error);
         }
@@ -878,69 +885,114 @@ export default function Posts(props) {
                             <h3 className="margin-bottom-small">Run</h3>
                             <form className="flex-column" onSubmit={handleRun}>
                                 <h4 className="margin-top-small bold">Select a category</h4>
-                                <select onChange={(e) => handleSelectCategory(e)} value={runCategory}>
-                                    <option value={"select"}>Select</option>
+                                <select onChange={(e) => setRunCategory(e.target.value)} value={runCategory}>
+                                    <option>Select</option>
                                     {
-                                        categories.map((category) =>
-                                            <option key={category["uuid"]} value={category["uuid"]}>{category["name"]}</option>
+                                        Object.entries(categories).map(([category, value]) =>
+                                            <option key={category} value={category}>{value["name"]}</option>
                                         )
                                     }
                                 </select>
                                 {
-                                    showAlgorithms &&
+                                    runCategory && categories[runCategory] &&
                                     <>
                                         <h4 className="margin-top-small bold">Select the algorithm</h4>
-                                        <select onChange={(e) => handleSelectAlgorithm(e)} value={runAlgorithm}>
-                                            <option value={"select"}>Select</option>
+                                        <select onChange={(e) => setRunAlgorithm(e.target.value)} value={runAlgorithm}>
+                                            <option>Select</option>
                                             {
-                                                categories.map((category) =>
-                                                    category["algorithms"].map((algorithm) =>
-                                                        <option key={algorithm["uuid"]} value={algorithm["uuid"]}>{algorithm["name"]}</option>
-                                                    )
+                                                Object.entries(categories[runCategory]["algorithms"]).map(([algorithm, value]) =>
+                                                    <option key={algorithm} value={algorithm}>{value["name"]}</option>
                                                 )
                                             }
                                         </select>
                                     </>
                                 }
                                 {
-                                    showAlgorithms && showParameters &&
+                                    runCategory && runAlgorithm && categories[runCategory] && categories[runCategory]["algorithms"][runAlgorithm] &&
                                     <>
                                         <h4 className="margin-top-small bold">Select the parameters</h4>
                                         {
-                                            categories.map((category) =>
-                                                category["algorithms"].map((algorithm) =>
-                                                    algorithm["parameters"].map((parameter) =>
-                                                        parameter["values"].length > 1 &&
-                                                        <div key={parameter["name"]} className="flex-row flex-axis-center flex-space-between">
-                                                            <label className="width50" htmlFor={parameter["name"]}>{parameter["name"]}</label>
-                                                            {
-                                                                parameter["range"] ?
-                                                                    <input
-                                                                        className="width50"
-                                                                        type="number"
-                                                                        min={parameter["values"][0]}
-                                                                        max={parameter["values"][1]}
-                                                                        value={runParameter[parameter["name"]] || ''}
-                                                                        onChange={e => handleSelectParameter(e, parameter["name"])}
-                                                                    /> :
-                                                                    <select className="width50" id={parameter["name"]} onChange={(e) => handleSelectParameter(e, parameter["name"])} value={runParameter[parameter["name"]] || ''}>
-                                                                        <option value={"select"}>Select</option>
-                                                                        {
-                                                                            parameter["values"].map((value) =>
+                                            categories[runCategory]["algorithms"][runAlgorithm]["parameters"].map((parameter) =>
+                                                parameter["values"].length > 1 &&
+                                                <div key={parameter["name"]}>
+                                                    <div className="flex-row flex-axis-center flex-space-between">
+                                                        <label className="width50" htmlFor={parameter["name"]}>{parameter["name"]}</label>
+                                                        {
+                                                            parameter["range"] ?
+                                                                <input
+                                                                    className="width50"
+                                                                    type="number"
+                                                                    min={parameter["values"][0]}
+                                                                    max={parameter["values"][1]}
+                                                                    value={runParameter[parameter["name"]] || ''}
+                                                                    onChange={e => handleSelectParameter(e, parameter["name"])}
+                                                                /> :
+                                                                <select className="width50" id={parameter["name"]} onChange={(e) => handleSelectParameter(e, parameter["name"])} value={runParameter[parameter["name"]] || ''}>
+                                                                    <option>Select</option>
+                                                                    {
+                                                                        parameter["values"].map((value) =>
+                                                                            value.constructor === Object ?
+                                                                                Object.entries(value).map(([name, _]) =>
+                                                                                    <option key={name} value={name}>{name}</option>
+                                                                                ) :
                                                                                 <option key={value} value={value}>{value}</option>
-                                                                            )
-                                                                        }
-                                                                    </select>
-                                                            }
-                                                        </div>
-                                                    )
-                                                )
+                                                                        )
+                                                                    }
+                                                                </select>
+                                                        }
+
+                                                    </div>
+
+                                                    {
+                                                        parameter["values"].map((value) =>
+                                                            value.constructor === Object &&
+                                                            Object.entries(value).map(([name, nestedArray]) =>
+                                                                name === runParameter[parameter["name"]] &&
+                                                                nestedArray.map((nestedParameter) =>
+                                                                    nestedParameter["values"].length > 1 &&
+                                                                    <div key={nestedParameter["name"]}>
+                                                                        <div className="flex-row flex-axis-center flex-space-between">
+                                                                            <label className="width50" htmlFor={nestedParameter["name"]}>{nestedParameter["name"]}</label>
+                                                                            {
+                                                                                parameter["range"] ?
+                                                                                    <input
+                                                                                        className="width50"
+                                                                                        type="number"
+                                                                                        min={nestedParameter["values"][0]}
+                                                                                        max={nestedParameter["values"][1]}
+                                                                                        value={runParameter[nestedParameter["name"]] || ''}
+                                                                                        onChange={e => handleSelectParameter(e, nestedParameter["name"])}
+                                                                                    /> :
+                                                                                    <select className="width50" id={nestedParameter["name"]} onChange={(e) => handleSelectParameter(e, nestedParameter["name"])} value={runParameter[nestedParameter["name"]] || ''}>
+                                                                                        <option>Select</option>
+                                                                                        {
+                                                                                            nestedParameter["values"].map((value) =>
+                                                                                                value.constructor === Object ?
+                                                                                                    Object.entries(value).map(([name, _]) =>
+                                                                                                        <option key={name} value={name}>{name}</option>
+                                                                                                    ) :
+                                                                                                    <option key={value} value={value}>{value}</option>
+                                                                                            )
+                                                                                        }
+                                                                                    </select>
+                                                                            }
+                                                                        </div>
+                                                                    </div>
+                                                                )
+
+                                                            )
+                                                        )
+                                                    }
+
+
+
+                                                </div>
                                             )
                                         }
                                     </>
                                 }
                                 {
-                                    showAlgorithms && showParameters && runCategory && runAlgorithm && runParameter &&
+                                    runCategory && runAlgorithm && runParameter &&
                                     <button type="submit" className="button-primary margin-top-small">Run</button>
                                 }
 
@@ -1091,7 +1143,7 @@ export default function Posts(props) {
                                                 }
                                             </>
                                         }
-                                        <h6 className="color-tertiary margin-left-small">{post.public ? "Public": "Private"}</h6>
+                                        <h6 className="color-tertiary margin-left-small">{post.public ? "Public" : "Private"}</h6>
                                     </div>
                                     <h6 className="color-tertiary">OID: <span className="font-courier color-tertiary">{post.data_uuid}</span></h6>
                                     <h6 className="color-tertiary">uploaded by {post.author.name} - <Link className="color-tertiary link-underline" to={`/users/${post.author.username}/uploads`}>{post.author.username}</Link></h6>
