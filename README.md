@@ -1,6 +1,8 @@
 ![test](https://github.com/rabizao/oka-repository/workflows/test/badge.svg)
 [![codecov](https://codecov.io/gh/rabizao/oka-repository/branch/main/graph/badge.svg?token=4V7MOA5EBL)](https://codecov.io/gh/rabizao/oka-repository)
 
+### Ongoing project, not ready for production yet
+
 ## OKA Repository
 
 Install API
