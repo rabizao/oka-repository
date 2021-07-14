@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { useHistory, Link } from 'react-router-dom';
-import { Search, Notifications, ChatBubble } from '@material-ui/icons'; // Apps, AccountBalance,
+import { Search, Notifications } from '@material-ui/icons'; // Apps, AccountBalance, , ChatBubble
 import Badge from '@material-ui/core/Badge';
 
 import './styles.css';
@@ -48,10 +48,10 @@ export default function OkaHeader(props) {
         }
     }
 
-    function handleMessageBadgeClick() {
-        notificationsContext.setMessagesBadgeCount(0);
-        history.push(`/users/${loggedUser.username}/messages`);
-    }
+    // function handleMessageBadgeClick() {
+    //     notificationsContext.setMessagesBadgeCount(0);
+    //     history.push(`/users/${loggedUser.username}/messages`);
+    // }
 
     return (
         <div className="flex-row flex-axis-center flex-space-between background-primary-color padding-small">
@@ -134,11 +134,11 @@ export default function OkaHeader(props) {
                             />
                         </Badge>
                     </li>
-                    <li className="flex-row cursor-pointer icon-normal" onClick={handleMessageBadgeClick}>
+                    {/* <li className="flex-row cursor-pointer icon-normal" onClick={handleMessageBadgeClick}>
                         <Badge badgeContent={notificationsContext.messagesBadgeCount} color="error">
                             <ChatBubble className="icon-tertiary" />
                         </Badge>
-                    </li>
+                    </li> */}
                     <li className="flex-row cursor-pointer icon-normal">
                         <OkaMyAccount />
                     </li>

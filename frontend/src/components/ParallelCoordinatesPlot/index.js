@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { ResponsiveParallelCoordinates } from '@nivo/parallel-coordinates';
-import api from '../../services/api';
+// import api from '../../services/api';
 import { notifyError } from '../../utils';
 import { CircularProgress } from '@material-ui/core';
 
@@ -2249,7 +2249,7 @@ const mockData = [
 ]
 
 export default function ParallelCoordinatesPlot({ postId, attrs }) {
-    const [chartData, setChartData] = useState([]);
+    // const [chartData, setChartData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [render, setRender] = useState(0);
@@ -2257,8 +2257,8 @@ export default function ParallelCoordinatesPlot({ postId, attrs }) {
     useEffect(() => {
         async function fetchData() {
             try {
-                const response = await api.get(`posts/${postId}/visualize?plt=parallelcoordinates`);
-                setChartData(response.data);
+                // const response = await api.get(`posts/${postId}/visualize?plt=parallelcoordinates`);
+                // setChartData(response.data);
                 setError(false);
             } catch (error) {
                 notifyError(error, false);

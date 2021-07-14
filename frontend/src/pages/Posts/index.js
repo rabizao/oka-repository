@@ -22,9 +22,9 @@ import { RunningTasksBarContext } from '../../contexts/RunningTasksBarContext';
 import { NotificationsContext } from '../../contexts/NotificationsContext';
 import { frontendUrl } from '../../services/api';
 import { notifyError } from '../../utils';
-import ParallelCoordinatesPlot from '../../components/ParallelCoordinatesPlot';
+// import ParallelCoordinatesPlot from '../../components/ParallelCoordinatesPlot';
 import HistogramPlot from '../../components/HistogramPlot';
-import PearsonCorrelationPlot from '../../components/PearsonCorrelationPlot';
+// import PearsonCorrelationPlot from '../../components/PearsonCorrelationPlot';
 import NotFound from '../NotFound';
 import TimeAgo from 'timeago-react';
 

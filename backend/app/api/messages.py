@@ -112,6 +112,8 @@ class MessagesLastsByUsername(MethodView):
         query = Message.query.join(subqry, Message.id == subqry.c.id).group_by(
             subqry.c.sender_recipient)
 
+        # There is a bug on this query so messages functionality is disabled by now
+
         logged_user.last_message_read_time = datetime.utcnow()
         logged_user.add_notification(
             name='unread_message_count', data=0, overwrite=True)
