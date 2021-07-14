@@ -58,7 +58,7 @@ const NotificationsProvider = ({ children }) => {
                                     NotificationManager.error(`There was an error with your request. Please try again later. Exception: ${payload.status}`, "Task", 8000)
                                 } else {
                                     if (payload.task_name === 'download_data') {
-                                        if (isWaitingDownload) {
+                                        if (isWaitingDownload.current == true) {
                                             const r = await api.get(`downloads/data?name=${JSON.parse(payload.result)}`, { responseType: 'blob' });
                                             saveAs(r.data, JSON.parse(payload.result));
                                             isWaitingDownload.current = false;
