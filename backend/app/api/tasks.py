@@ -233,16 +233,17 @@ def download_data(self, pids, username, ip):
                 raise Exception(
                     f'Download failed: data {post.data_uuid} not found!')
             post.add_download(ip)
-            logged_user.add_file(filename_server_zip)
-            db.session.commit()
             zipped_file.writestr(f'{pid}.arff', data.arff(
                 'No name', 'No description'))
             if data.hasstream:
                 datas = tatu.fetchstream(post.data_uuid, lazy=False)
                 for i, dat in enumerate(datas):
-                    # zipped_file.writestr(f'{pid}-{i}-train.arff', dat.inner.arff('No name', 'No description'))
+                    zipped_file.writestr(
+                        f'{pid}-{i}-train.arff', dat.inner.arff('No name', 'No description'))
                     zipped_file.writestr(
                         f'{pid}-{i}-test.arff', dat.arff('No name', 'No description'))
+        logged_user.add_file(filename_server_zip)
+        db.session.commit()
         zipped_file.close()
     tatu.close()
     return _set_job_progress(self, 100, result=f'{filename_server_zip}')
