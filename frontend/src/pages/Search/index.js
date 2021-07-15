@@ -178,7 +178,7 @@ export default function Search(props) {
     const navItems = {
         datasets: {
             "name": "Datasets",
-            "url": "/search/datasets?" + queryString.stringify(parsedQueries) + "&logic=and",
+            "url": "/search/datasets?" + queryString.stringify(parsedQueries) + ("logic" in parsedQueries ? "" : "&logic=and"),
             "content": datasets()
         },
         people: {
