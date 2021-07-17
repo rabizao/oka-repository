@@ -331,16 +331,19 @@ class PostsVisualizeById(MethodView):
         datas = []
         # TODO: replace all data transformation by cacheable results and avoid evaluating heavy fields like X
         if args["plt"] == "scatter":
-            data_modified = data >> Sample_(
-                n=500, ignore_badarg=True) * Binarize
+            data_modified = data >> Sample_(n=500, ignore_badarg=True) * Binarize
             for m in data_modified.Yt[0]:
                 inner = []
                 for k in range(len(data_modified.X)):
-                    if m == data_modified.Y[k]:
-                        inner.append(
-                            {
-                                "x": data_modified.X[k, args['x']],
-                                "y": data_modified.X[k, args['y']],
+                    left = m if isinstance(m, str) else str(float(m))
+                    if isinstance(data_modified.y[k], str):
+                        right = data_modified.y[k]
+                    else:
+                        right = str(float(data_modified.y[k]))
+                    if left == right:
+                        inner.append({
+                                "x": float(data_modified.X[k, args['x']]),
+                                "y": float(data_modified.X[k, args['y']]),
                             })
                 datas.append(
                     {
@@ -364,7 +367,7 @@ class PostsVisualizeById(MethodView):
             maximum = max(cut)
             minimum = min(cut)
             step = (maximum - minimum) / 10
-            ranges = np.arange(minimum, maximum, step)
+            ranges = np.arange(minimum-1, maximum+1, step)
 
             df = pd.DataFrame(cut)
             df2 = df.groupby(pd.cut(cut, ranges)).count()

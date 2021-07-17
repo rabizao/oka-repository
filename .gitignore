@@ -41,6 +41,7 @@ backend/app/media/
 .env
 testdb
 
+
 # IDE
 .idea/
 *.iml
@@ -54,3 +55,4 @@ token.txt
 backend/.myenv
 .vscode
 *.log
+backend/.venv

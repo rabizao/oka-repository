@@ -5,7 +5,7 @@ from . import bp
 from app.models import User, Post
 from app.api.tasks import send_async_email
 from app.schemas import PostSimplifiedSchema, UserBaseSchema, UserQuerySchema, UserRecoverKeySubmitNewPassSchema, \
-    UserRegisterSchema, UserEditSchema, PostQuerySchema, PostBaseSchema, UserConfirmationSchema, \
+    UserRegisterSchema, UserEditSchema, PostQuerySchema, UserConfirmationSchema, \
     UserRecoverKeySchema, UserRecoverKeySubmitSchema
 from flask import current_app
 from flask.views import MethodView

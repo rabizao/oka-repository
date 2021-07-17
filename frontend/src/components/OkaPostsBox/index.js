@@ -92,6 +92,7 @@ export default function OkaPostsBox({ fetch_url }) {
             runningTasksBar.setTasks(newTasks);
             runningTasksBar.setActive(true);
             notificationsContext.setDelay(1000);
+            notificationsContext.isWaitingDownload.current = true;
         } catch (error) {
             notifyError(error);
         }

@@ -26,8 +26,8 @@ const StaticMenu = () => {
     const e2edsSection = useScrollSection('e2eds');
     const getSection = useScrollSection('get');
     const exploreSection = useScrollSection('explore');
-    const learnSection = useScrollSection('learn');
-    const explainSection = useScrollSection('explain');
+    // const learnSection = useScrollSection('learn');
+    // const explainSection = useScrollSection('explain');
     const reproduceSection = useScrollSection('reproduce');
     const whoweareSection = useScrollSection('whoweare');
 
@@ -37,8 +37,8 @@ const StaticMenu = () => {
             <div id="small-hide" onClick={e2edsSection.onClick} selected={e2edsSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${e2edsSection.selected && "underline-active"}`}>End-to-End</div>
             <div id="small-hide" onClick={getSection.onClick} selected={getSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${getSection.selected && "underline-active"}`}>Get</div>
             <div id="small-hide" onClick={exploreSection.onClick} selected={exploreSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${exploreSection.selected && "underline-active"}`}>Explore</div>
-            <div id="small-hide" onClick={learnSection.onClick} selected={learnSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${learnSection.selected && "underline-active"}`}>Learn</div>
-            <div id="small-hide" onClick={explainSection.onClick} selected={explainSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${explainSection.selected && "underline-active"}`}>Explain</div>
+            {/* <div id="small-hide" onClick={learnSection.onClick} selected={learnSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${learnSection.selected && "underline-active"}`}>Learn</div>
+            <div id="small-hide" onClick={explainSection.onClick} selected={explainSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${explainSection.selected && "underline-active"}`}>Explain</div> */}
             <div id="small-hide" onClick={reproduceSection.onClick} selected={reproduceSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${reproduceSection.selected && "underline-active"}`}>Reproduce</div>
             <div onClick={whoweareSection.onClick} selected={whoweareSection.selected} className={`color-tertiary padding-left-medium cursor-pointer ${whoweareSection.selected && "underline-active"}`}>Who we are</div>
         </div>
@@ -181,13 +181,13 @@ export default function Index() {
 
                     <Section id="explore" className="margin-vertical-big padding-top-navbar">
                         <div className="flex-column flex-axis-center padding-top-big">
-                            <h1 className="underline-active">Tupa View</h1>
+                            <h1 className="underline-active">Visualization</h1>
                             <h4 className="padding-top-medium">Visualize and explore your data online</h4>
                             <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
                         </div>
                     </Section>
 
-                    <Section id="learn" className="margin-vertical-big padding-top-navbar">
+                    {/* <Section id="learn" className="margin-vertical-big padding-top-navbar">
                         <div className="flex-column flex-axis-center padding-top-big">
                             <h1 className="underline-active">Extract Metafeatures</h1>
                             <h4 className="padding-top-medium">Use our automatated tool to get the best pipeline to make predictions or classifications in your data</h4>
@@ -201,7 +201,7 @@ export default function Index() {
                             <h4 className="padding-top-medium">Use our interpretation tool to understand what is behind your model</h4>
                             <img src={e2edsImg} className="padding-top-big max-width-images" alt="End to End Data Science" />
                         </div>
-                    </Section>
+                    </Section> */}
 
                     <Section id="reproduce" className="margin-vertical-big padding-top-navbar padding-bottom-big">
                         <div className="flex-column flex-axis-center padding-top-big">
