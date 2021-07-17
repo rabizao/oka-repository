@@ -54,3 +54,4 @@ token.txt
 backend/.myenv
 .vscode
 *.log
+backend/.venv
