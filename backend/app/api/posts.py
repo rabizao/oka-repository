@@ -335,9 +335,13 @@ class PostsVisualizeById(MethodView):
             for m in data_modified.Yt[0]:
                 inner = []
                 for k in range(len(data_modified.X)):
-                    if str(float(m)) == str(float(data_modified.Y[k])):
-                        inner.append(
-                            {
+                    left = m if isinstance(m, str) else str(float(m))
+                    if isinstance(data_modified.y[k], str):
+                        right = data_modified.y[k]
+                    else:
+                        right = str(float(data_modified.y[k]))
+                    if left == right:
+                        inner.append({
                                 "x": float(data_modified.X[k, args['x']]),
                                 "y": float(data_modified.X[k, args['y']]),
                             })

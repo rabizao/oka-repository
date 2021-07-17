@@ -41,6 +41,7 @@ backend/app/media/
 .env
 testdb
 
+
 # IDE
 .idea/
 *.iml
