@@ -31,7 +31,7 @@
     "@nivo/heatmap": "^0.67.0",
     "@nivo/parallel-coordinates": "^0.67.0",
     "@nivo/scatterplot": "^0.67.0",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "file-saver": "^2.0.5",
     "interweave": "^12.7.0",
     "jwt-decode": "^3.1.2",
