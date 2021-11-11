@@ -224,6 +224,11 @@ button, input[type="submit"], input[type="reset"] {
     margin-right: 10px;
 }
 
+.margin-sides-big {
+    margin-left: 40px;
+    margin-right: 40px;
+}
+
 .margin-vertical-small {
     margin-top: 20px;
     margin-bottom: 20px;
