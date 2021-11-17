@@ -4,17 +4,17 @@ import sys
 import uuid as u
 from zipfile import ZipFile
 
-from aiuna.step.file import File
-from akangatu.transf.step import Step
-from app import celery, db, mail
-from app.models import Post, Task, User
-from app.schemas import TaskStatusBaseSchema
 from celery.signals import worker_init
 from flask import current_app
 from flask.views import MethodView
 from flask_mail import Message
+from idict.persistence.sqla import SQLA
+from lazyds.data.dataset import File
 
-from . import bp
+from app import celery, db, mail
+from app.api import bp
+from app.models import Post, Task, User
+from app.schemas import TaskStatusBaseSchema
 
 
 # def create_post(logged_user, data, name="No name",
@@ -248,36 +248,43 @@ def download_data(self, pids, username, ip):
     return _set_job_progress(self, 100, result=f'{filename_server_zip}')
 
 
-@celery.task(bind=True, base=BaseTask)
-def process_file(self, files, username):
-    '''
+# @celery.task(bind=True, base=BaseTask)
+def process_file(files, username):
+    """
     Background task to run async post process
-    '''
+    """
     logged_user = User.get_by_username(username)
     if not logged_user:
         raise Exception(f'Username {username} not found!')
-    result = []
-    tatu = current_app.config['TATU_SERVER']()
+    # result = []
+
+    # tatu = current_app.config['TATU_SERVER']()
+    storage = SQLA("sqlite+pysqlite:////tmp/asd.db", debug=True)
 
     for file in files:
         actual_index = files.index(file)
-        _set_job_progress(self, actual_index / len(files) * 100)
+        # _set_job_progress(self, actual_index / len(files) * 100)
 
-        # TODO: remove redundancy
         name = file['path'].split('/')[-1]
         path = '/'.join(file['path'].split('/')[:-1]) + '/'
-        f = File(name, path)
-        name, description = f.dataset, f.description
-        try:
-            tatu.store(f.data, lazy=False, ignoredup=True)
-            result.append(create_post(logged_user, f.data, name,
-                                      description, file['original_name']))
-        except Exception as e:
-            db.session.rollback()
-            raise(e)
-
-    tatu.close()
-    return _set_job_progress(self, 100, result=result)
+        d = File(path + name) >> [storage]  # TODO: pegar @relation ou filename
+        # try:
+        post = Post(
+            author=logged_user,
+            data_uuid=d.id,
+            name="name_",
+            description="description_",
+            number_of_instances=1,
+            number_of_features=1,
+            number_of_targets=1,
+            number_of_classes=1,
+            active=True
+        )
+        # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
+        # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
+        db.session.add(post)
+        db.session.commit()
+    # return _set_job_progress(self, 100, result=result)
 
 
 @bp.route('tasks/<string:task_id>/status')

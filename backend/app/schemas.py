@@ -6,9 +6,6 @@ from app import db
 from app.models import User, Post, Comment, Contact, Notification, Task, Message
 from flask import current_app
 from flask_smorest.fields import Upload
-from garoupa.avatar23 import colors
-from kururu.tool.communication.lazycache import Cache
-from kururu.tool.manipulation.slice import Slice
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
 from werkzeug.security import generate_password_hash

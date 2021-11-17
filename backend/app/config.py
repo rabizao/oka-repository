@@ -18,7 +18,7 @@ class Config(object):
     DEPLOYMENT_SECRET_KEY = os.environ.get(
         'DEPLOYMENT_SECRET_KEY') or 'deploy-not-set'
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        'DATABASE_URL') or 'sqlite:///' + os.path.join(okadir, 'app.db')
+        'DATABASE_URL') or 'sqlite+pysqlite:///' + os.path.join(okadir, 'app.db')
     TATU_URL = os.environ.get('TATU_URL') or 'sqlite://' + \
         os.path.join(okadir, 'tatu')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
