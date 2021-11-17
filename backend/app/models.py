@@ -1,16 +1,14 @@
 import json
 import uuid as u
 from datetime import datetime
-from flask.globals import current_app
+from hashlib import md5
 
+from flask.globals import current_app
 from sqlalchemy import and_, or_
 from werkzeug.security import check_password_hash
 
-from . import celery, db
 from app.utils import consts
-
-from hashlib import md5
-
+from . import celery, db
 
 followers = db.Table('followers',
                      db.Column('follower_id', db.Integer,

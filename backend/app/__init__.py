@@ -12,7 +12,6 @@ from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_smorest import Api
 from flask_sqlalchemy import SQLAlchemy
-from tatu import Tatu
 
 from .config import Config
 
@@ -45,24 +44,24 @@ def create_app(config_class=Config):
                        static_folder='media')
 
     app.config.from_object(config_class)
-    if RECONNECTMODE_TATU:
-        def f():
-            tatu = Tatu(url=app.config['TATU_URL'],
-                        threaded=False,
-                        close_when_idle=True,
-                        disable_close=DEBUG_TATU,
-                        force_lazyfetch=LAZY_TATU)
-            tatu.open()
-            return tatu
+    # if RECONNECTMODE_TATU:
+    #     def f():
+    #         tatu = Tatu(url=app.config['TATU_URL'],
+    #                     threaded=False,
+    #                     close_when_idle=True,
+    #                     disable_close=DEBUG_TATU,
+    #                     force_lazyfetch=LAZY_TATU)
+    #         tatu.open()
+    #         return tatu
+    #
+    # else:
+    #     tatu = Tatu(url=app.config['TATU_URL'], threaded=THREADED_TATU, force_lazyfetch=LAZY_TATU)
 
-    else:
-        tatu = Tatu(url=app.config['TATU_URL'], threaded=THREADED_TATU, force_lazyfetch=LAZY_TATU)
+        # def f():
+        #     tatu.disable_close = DEBUG_TATU
+        #     return tatu
 
-        def f():
-            tatu.disable_close = DEBUG_TATU
-            return tatu
-
-    app.config['TATU_SERVER'] = f
+    # app.config['TATU_SERVER'] = f
 
     db.init_app(app)
     migrate.init_app(app, db)

@@ -1,15 +1,14 @@
+from idict import idict
 import json
 import unittest
 import warnings
 from datetime import timedelta
 from io import BytesIO
+from time import sleep
 from unittest.mock import patch
 
-from aiuna.compression import pack
-from aiuna.step.dataset import Dataset
-from aiuna.step.let import Let
-from time import sleep
 # import os
+from idict.persistence.sqla import SQLA
 from werkzeug.datastructures import FileStorage
 
 import app
@@ -63,7 +62,7 @@ class ApiCase(unittest.TestCase):
         self.app_context.push()
         self.client = self.app.test_client()
         db.create_all()
-        self.tatu = self.app.config['TATU_SERVER']()
+        # self.tatu = self.app.config['TATU_SERVER']()
         # if os.path.exists('testdb.db'):
         #     os.remove('testdb.db')
 
@@ -71,7 +70,7 @@ class ApiCase(unittest.TestCase):
         db.session.remove()
         db.drop_all()
         self.app_context.pop()
-        self.tatu.close(force=True)
+        # self.tatu.close(force=True)
 
     def login(self, create_user=True, user=create_user1, long_term=False, admin=False, token=None, confirm_email=True):
         # 1 - Create
@@ -111,6 +110,18 @@ class ApiCase(unittest.TestCase):
                                                              data_api["api_token"]
 
         return data
+
+    def test_process_files(self):
+        from app.api.tasks import process_file
+        user = User(**create_user1)
+        db.session.add(user)
+        db.session.commit()
+        storage = SQLA("sqlite+pysqlite:////tmp/asd.db", debug=True)
+        process_file(files=[{"path": "../examples/iris.arff", "original_name": "filename"}], username="user1111")
+        p = Post.query.get(1)
+        self.assertEquals(p.name, "name_")
+        self.assertEquals(p.data_uuid, "7V_bdb0596bdac3a55eaa5e738d23b88294dfaea")
+        self.assertTrue("7V_bdb0596bdac3a55eaa5e738d23b88294dfaea" in storage)
 
     # Test db
     def test_db(self):
@@ -383,7 +394,7 @@ class ApiCase(unittest.TestCase):
             files = save_files([filestorage])
         result = process_file.run(files, username)
         self.assertEqual(json.loads(result['result'])[
-                         0]["code"] == "success", True)
+                             0]["code"] == "success", True)
         post_id = json.loads(result['result'])[0]['id']
         post = Post.query.get(post_id)
         # 4
@@ -620,11 +631,11 @@ class ApiCase(unittest.TestCase):
         result = process_file.run(files, username2)
         self.assertEqual(result['state'], 'SUCCESS')
         self.assertEqual(json.loads(result['result'])[
-                         0]["code"] == "error", False)
+                             0]["code"] == "error", False)
         result = process_file.run(files, username2)
         self.assertEqual(result['state'], 'SUCCESS')
         self.assertEqual(json.loads(result['result'])[
-                         0]["code"] == "error", True)
+                             0]["code"] == "error", True)
         # 15
         # Can not list twins of inexistent post
         response = self.client.get("/api/posts/100/twins")
@@ -674,7 +685,7 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         result = run_step.run(post_id, step_full, username)
         self.assertEqual(json.loads(result['result'])[
-                         "code"] == "error", False)
+                             "code"] == "error", False)
         # 17
         # User2 can not delete post_id
         response = self.client.delete(f"/api/posts/{post_id}")
@@ -696,7 +707,7 @@ class ApiCase(unittest.TestCase):
         # Restore post uploading data again
         result = process_file.run(files, username)
         self.assertEqual(json.loads(result['result'])[
-                         0]["code"] == "success", True)
+                             0]["code"] == "success", True)
 
     def test_sync(self):
         """
@@ -745,7 +756,7 @@ class ApiCase(unittest.TestCase):
         response = self.client.post(
             "/api/sync/many?cat=fields&ignoredup=true", json=info)
         msg = (
-            "errors" in response.json and response.json["errors"]) or response.json
+                      "errors" in response.json and response.json["errors"]) or response.json
         self.assertEqual(1, response.json["n"], msg=msg)
 
         # 8
@@ -761,7 +772,7 @@ class ApiCase(unittest.TestCase):
         }}
         response = self.client.post("/api/sync?cat=data", json=dic)
         msg = (
-            "errors" in response.json and response.json["errors"]) or response.json
+                      "errors" in response.json and response.json["errors"]) or response.json
         self.assertTrue('success' in response.json, msg)
 
         # 9
