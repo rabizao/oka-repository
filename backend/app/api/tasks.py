@@ -1,10 +1,9 @@
 import json
 # import time
+import sys
 import uuid as u
-from os import sys
 from zipfile import ZipFile
 
-from aiuna.content.data import Data
 from aiuna.step.file import File
 from akangatu.transf.step import Step
 from app import celery, db, mail
