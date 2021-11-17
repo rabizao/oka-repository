@@ -45,7 +45,7 @@ class Logout(MethodView):
     @bp.auth_required
     @bp.response(203)
     def delete(self):
-        """Revoke access token"""
+        """Revoke API token"""
         jti = get_jwt()['jti']
         user = User.get_by_username(get_jwt_identity())
         user.set_revoked_jti_store(jti, True)
