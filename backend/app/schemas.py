@@ -2,13 +2,14 @@ from datetime import datetime
 
 # from kururu.tool.manipulation.slice import Slice
 import numpy as np
-from app import db
-from app.models import User, Post, Comment, Contact, Notification, Task, Message
 from flask import current_app
 from flask_smorest.fields import Upload
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
 from werkzeug.security import generate_password_hash
+
+from app import db
+from app.models import User, Post, Comment, Contact, Notification, Task, Message
 
 
 def get_attrs(uuid):
@@ -362,28 +363,24 @@ class PostFilesSchema(SQLAlchemySchema):
     files = fields.List(Upload(), required=True)
 
 
+class PostFileSchema(SQLAlchemySchema):
+    file = Upload(required=True)
+
+
 class PostActivateSchema(SQLAlchemySchema):
     data_uuid = fields.String(required=True)
 
 
-class SyncCheckBaseSchema(SQLAlchemySchema):
-    uuids = fields.List(fields.String(), required=True)
-    cat = fields.String(required=True)
-    empty = fields.Boolean(missing=True)
-    # names = fields.List(fields.String())
-    fetch = fields.Boolean(missing=False)
+class SyncIOSchema(SQLAlchemySchema):
+    checkonly = fields.Boolean(missing=False)
 
 
 class SyncCheckResponseSchema(SQLAlchemySchema):
-    uuids = fields.Dict(dump_only=True)
+    dic = fields.List(fields.Dict(keys=fields.String), dump_only=True)
 
 
 class SyncPostSchema(SQLAlchemySchema):
     kwargs = fields.Dict(required=True)
-
-
-class SyncPostQuerySchema(SQLAlchemySchema):
-    cat = fields.String(required=True)
 
 
 class SyncResponseSchema(SQLAlchemySchema):

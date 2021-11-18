@@ -1,59 +1,35 @@
 # noinspection PyArgumentList
+
 import simplejson as json2
-from app.schemas import (SyncCheckBaseSchema, SyncCheckResponseSchema, SyncPostSchema, SyncPostQuerySchema,
-                         SyncResponseSchema, SyncContentFileSchema, SyncFieldsSchema, SyncFieldsQuerySchema,
-                         SuccessResponseSchema, NumberResponseSchema, SyncContentQuerySchema)
 from flask import make_response, current_app, jsonify
 from flask.views import MethodView
+from idict.persistence.sqla import SQLA
 
+from app.schemas import (SyncResponseSchema, SyncContentFileSchema, SyncFieldsSchema, SyncFieldsQuerySchema,
+                         SuccessResponseSchema, NumberResponseSchema, SyncContentQuerySchema, SyncIOSchema,
+                         PostFilesSchema, PostFileSchema)
 from . import bp
 
 
-@bp.route("/sync")
-class SyncCheck(MethodView):
+# @bp.route("/data/<string:id>")
+
+@bp.route("/item/<string:id>")
+class SyncItem(MethodView):
     @bp.auth_required
-    @bp.arguments(SyncCheckBaseSchema, location="query")
-    @bp.response(200, SyncCheckResponseSchema)
-    def get(self, args):  # return None or a row from one of the tables ("cat"s): data, step
-        tatu = current_app.config['TATU_SERVER']()
-        uuid = args["uuids"][0]  # TODO: Implement get/has multiple data, steps, streams.
-        if args['cat'] == "data":
-            # jsonify allows to return None or a dict, which is compatible with the posterior SQL usage of this result
-            ret = jsonify(
-                tatu.getdata(uuid, args['empty']) if args['fetch'] else {"has": tatu.hasdata(uuid, args['empty'])}
-            )
-        elif args['cat'] == "step":
-            ret = jsonify(tatu.getstep(uuid) if args['fetch'] else {"has": tatu.hasstep(uuid)})
-        elif args['cat'] == "content":
-            ret = jsonify(tatu.getcontent(uuid) if args['fetch'] else {"has": tatu.hascontent(args["uuids"])})
-        elif args['cat'] == "stream":
-            ret = jsonify(tatu.getstream(uuid) if args['fetch'] else {"has": tatu.hasstream(uuid)})
-        else:
-            print("W: Unexpected condition.")
-            tatu.close()
-            return
-        tatu.close()
-        return ret
+    @bp.arguments(SyncIOSchema, location="query")
+    @bp.response(200)
+    def get(self, argsQuery, id):
+        storage = SQLA(current_app.config['DATA_URL'], autopack=False, debug=True)
+        return bool(id in storage) if argsQuery["checkonly"] else make_response(storage[id])
 
     @bp.auth_required
-    @bp.arguments(SyncPostQuerySchema, location="query")
-    @bp.arguments(SyncPostSchema)
+    @bp.arguments(PostFileSchema, location="files")
     @bp.response(201, SuccessResponseSchema)
-    def post(self, args, argsQuery):  # insert a dict in one of the tables ("cat"s): data, step
-        tatu = current_app.config['TATU_SERVER']()
-        kwargs = argsQuery['kwargs']
-        if args['cat'] == "data":
-            ret = {"success": tatu.putdata(**kwargs)}
-        elif args['cat'] == "step":
-            ret = {"success": tatu.putstep(**kwargs)}
-        elif args['cat'] == "content":
-            ret = {"success": tatu.putcontent(**kwargs)}
-        else:
-            print("W: Unexpected condition.")
-            tatu.close()
-            return
-        tatu.close()
-        return ret
+    def post(self, argsFile, id):
+        print(22222222222222222222222222222222222)
+        storage = SQLA(current_app.config['DATA_URL'], autopack=False, debug=True)
+        storage[id] = argsFile["file"].read()
+        return {"success": True}
 
 
 @bp.route("/sync/<string:uuid>/lock")
