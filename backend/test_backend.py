@@ -47,7 +47,7 @@ class TestConfig(Config):
     BROKER_URL = 'redis://'
     CELERY_RESULT_BACKEND = None
     # TATU_URL = 'sqlite://testdb'
-    TATU_URL = 'sqlite://:memory:'
+    DATA_URL = 'sqlite://:memory:'
 
 
 class ApiCase(unittest.TestCase):

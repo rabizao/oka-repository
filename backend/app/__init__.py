@@ -15,11 +15,6 @@ from flask_sqlalchemy import SQLAlchemy
 
 from .config import Config
 
-DEBUG_TATU = False  # Must be True for test_backend.
-RECONNECTMODE_TATU = True  # Must be True to avoid concurrency problems.
-LAZY_TATU = True  # Must be True to enable faster access to Data fields while showing posts.
-THREADED_TATU = True  # Must be False for backend_tests
-
 db = SQLAlchemy()
 migrate = Migrate()
 mail = Mail()
@@ -28,41 +23,11 @@ jwt = JWTManager()
 limiter = Limiter(key_func=get_remote_address)
 
 
-class FlaskWrapper(Flask):
-    """https://stackoverflow.com/a/57231282/9681577"""
-
-    def run(self, host=None, port=None, debug=None, load_dotenv=True, **options):
-        if not RECONNECTMODE_TATU and (not self.debug or os.getenv('WERKZEUG_RUN_MAIN') == 'true'):
-            with self.app_context():
-                self.config['TATU_SERVER']().open()
-        super(FlaskWrapper, self).run(host=host, port=port,
-                                      debug=debug, load_dotenv=load_dotenv, **options)
-
-
 def create_app(config_class=Config):
-    app = FlaskWrapper(__name__, static_url_path="/media",
-                       static_folder='media')
+    app = Flask(__name__, static_url_path="/media",
+                static_folder='media')
 
     app.config.from_object(config_class)
-    # if RECONNECTMODE_TATU:
-    #     def f():
-    #         tatu = Tatu(url=app.config['TATU_URL'],
-    #                     threaded=False,
-    #                     close_when_idle=True,
-    #                     disable_close=DEBUG_TATU,
-    #                     force_lazyfetch=LAZY_TATU)
-    #         tatu.open()
-    #         return tatu
-    #
-    # else:
-    #     tatu = Tatu(url=app.config['TATU_URL'], threaded=THREADED_TATU, force_lazyfetch=LAZY_TATU)
-
-        # def f():
-        #     tatu.disable_close = DEBUG_TATU
-        #     return tatu
-
-    # app.config['TATU_SERVER'] = f
-
     db.init_app(app)
     migrate.init_app(app, db)
     CORS(app, expose_headers=["X-Pagination"])

@@ -19,8 +19,8 @@ class Config(object):
         'DEPLOYMENT_SECRET_KEY') or 'deploy-not-set'
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         'DATABASE_URL') or 'sqlite+pysqlite:///' + os.path.join(okadir, 'app.db')
-    TATU_URL = os.environ.get('TATU_URL') or 'sqlite://' + \
-        os.path.join(okadir, 'tatu')
+    DATA_URL = os.environ.get('DATA_URL') or 'sqlite+pysqlite:///' + \
+        os.path.join(okadir, 'data.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or 587)

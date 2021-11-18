@@ -23,7 +23,7 @@ from .tasks import create_post
 def save_files(input_files):
     files = []
     for file in input_files:
-        full_path = current_app.config['TMP_FOLDER'] + \
+        full_path = current_app.config['TMP_FOLDER'] + "/" + \
             str(u.uuid4()) + file.filename[-10:]
         file.save(full_path)
         files.append({"path": full_path, "original_name": file.filename})

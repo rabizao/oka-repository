@@ -248,43 +248,55 @@ def download_data(self, pids, username, ip):
     return _set_job_progress(self, 100, result=f'{filename_server_zip}')
 
 
-# @celery.task(bind=True, base=BaseTask)
-def process_file(files, username):
+@celery.task(bind=True, base=BaseTask)
+def process_file(self, files, username):
     """
     Background task to run async post process
     """
     logged_user = User.get_by_username(username)
     if not logged_user:
         raise Exception(f'Username {username} not found!')
-    # result = []
+    result = []
 
     # tatu = current_app.config['TATU_SERVER']()
-    storage = SQLA("sqlite+pysqlite:////tmp/asd.db", debug=True)
+    storage = SQLA(current_app.config['DATA_URL'], debug=True)
 
     for file in files:
         actual_index = files.index(file)
-        # _set_job_progress(self, actual_index / len(files) * 100)
+        _set_job_progress(self, actual_index / len(files) * 100)
 
         name = file['path'].split('/')[-1]
         path = '/'.join(file['path'].split('/')[:-1]) + '/'
         d = File(path + name) >> [storage]  # TODO: pegar @relation ou filename
-        # try:
-        post = Post(
-            author=logged_user,
-            data_uuid=d.id,
-            name="name_",
-            description="description_",
-            number_of_instances=1,
-            number_of_features=1,
-            number_of_targets=1,
-            number_of_classes=1,
-            active=True
-        )
-        # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
-        # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
-        db.session.add(post)
+        existing_post = logged_user.posts.filter_by(data_uuid=d.id).first()
+        if existing_post:
+            pass
+        else:
+            post = Post(
+                author=logged_user,
+                data_uuid=d.id,
+                name=file['original_name'],
+                description="No description",
+                active=True
+            )
+            db.session.add(post)
+            db.session.flush()
+            obj = {
+                'original_name': file['original_name'],
+                'message': 'Post successfully created',
+                'code': 'success',
+                'id': post.id
+            }
+            result.append(obj)
+            logged_user.add_notification(
+                name='data_uploaded', data=obj, overwrite=False)
+            logged_user.add_notification(
+                name='unread_notification_count',
+                data=logged_user.new_notifications(),
+                overwrite=True
+            )
         db.session.commit()
-    # return _set_job_progress(self, 100, result=result)
+    return _set_job_progress(self, 100, result=result)
 
 
 @bp.route('tasks/<string:task_id>/status')
