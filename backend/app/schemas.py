@@ -1,8 +1,8 @@
 from datetime import datetime
 
 # from kururu.tool.manipulation.slice import Slice
-import numpy as np
-from flask import current_app
+# import numpy as np
+# from flask import current_app
 from flask_smorest.fields import Upload
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
@@ -13,52 +13,55 @@ from app.models import User, Post, Comment, Contact, Notification, Task, Message
 
 
 def get_attrs(uuid):
-    tatu = current_app.config['TATU_SERVER']()
-    data = tatu.fetch(uuid, lazy=False)
-    ret = data.Xd if data else {}
-    tatu.close()
-    return ret
+    # tatu = current_app.config['TATU_SERVER']()
+    # data = tatu.fetch(uuid, lazy=False)
+    # ret = data.Xd if data else {}
+    # tatu.close()
+    # return ret
+    return {}
 
 
 def get_history(post):
-    tatu = current_app.config['TATU_SERVER']()
-    data = tatu.fetch(post.data_uuid, lazy=False)
+    # tatu = current_app.config['TATU_SERVER']()
+    # data = tatu.fetch(post.data_uuid, lazy=False)
 
-    if not data:  # REMINDER: The history exists, but is not accessible through data.fetch()
-        return []
+    # if not data:  # REMINDER: The history exists, but is not accessible through data.fetch()
+    #     return []
     lst = []
-    userid = post.author.id
+    # userid = post.author.id
 
-    for k, d in list(data.past.items())[:-1]:
-        if d["step"]["desc"]["name"][:3] not in ["B", "Rev", "In", "Aut", "E"]:
-            post = Post.query.filter_by(data_uuid=k, user_id=userid).first()
-            lst.append({"id": k, "data": d, "post": post and post.id})
-    tatu.close()
+    # for k, d in list(data.past.items())[:-1]:
+    #     if d["step"]["desc"]["name"][:3] not in ["B", "Rev", "In", "Aut", "E"]:
+    #         post = Post.query.filter_by(data_uuid=k, user_id=userid).first()
+    #         lst.append({"id": k, "data": d, "post": post and post.id})
+    # tatu.close()
     return lst
 
 
 def get_head(uuid):
-    tatu = current_app.config['TATU_SERVER']()
-    data = tatu.fetch(uuid, lazy=False)
-    if not data:  # REMINDER: Data registry exists, but can be empty.
-        tatu.close()
-        return []
-    sliced = data >> Slice(":10,:10") * Cache(tatu)
-    table = np.concatenate((sliced.X, sliced.Y), axis=1).tolist()
-    ret = [data.Xd[:10] + data.Yd[:10]] + table
-    tatu.close()
-    return ret
+    # tatu = current_app.config['TATU_SERVER']()
+    # data = tatu.fetch(uuid, lazy=False)
+    # if not data:  # REMINDER: Data registry exists, but can be empty.
+    #     tatu.close()
+    #     return []
+    # sliced = data >> Slice(":10,:10") * Cache(tatu)
+    # table = np.concatenate((sliced.X, sliced.Y), axis=1).tolist()
+    # ret = [data.Xd[:10] + data.Yd[:10]] + table
+    # tatu.close()
+    # return ret
+    return []
 
 
 def get_fields(uuid):
-    tatu = current_app.config['TATU_SERVER']()
-    data = tatu.fetch(uuid, lazy=False)
-    if not data:  # REMINDER: Data registry exists, but can be empty.
-        return []
+    # tatu = current_app.config['TATU_SERVER']()
+    # data = tatu.fetch(uuid, lazy=False)
+    # if not data:  # REMINDER: Data registry exists, but can be empty.
+    #     return []
 
-    ret = list(data.asdict.keys())
-    tatu.close()
-    return ret
+    # ret = list(data.asdict.keys())
+    # tatu.close()
+    # return ret
+    return []
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -322,8 +325,8 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     allowed = fields.Nested(UserBaseSchema(only=["username", "name"]),
                             many=True, dump_only=True)
     favorites = auto_field(dump_only=True)
-    data_uuid_colors = fields.Function(
-        lambda obj: colors(obj.data_uuid), dump_only=True)
+    # data_uuid_colors = fields.Function(
+    #     lambda obj: colors(obj.data_uuid), dump_only=True)
     attrs = fields.Function(lambda obj: get_attrs(
         obj.data_uuid), dump_only=True)
     history = fields.Function(lambda obj: get_history(obj), dump_only=True)

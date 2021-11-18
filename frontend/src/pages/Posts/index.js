@@ -1114,13 +1114,14 @@ export default function Posts(props) {
                                                 onClick={(e) => copyToClipboard(e, post.data_uuid)}
                                                 title="Click to copy to clipboard"
                                                 className="flex-row-nowrap box-uuid"
-                                                style={{ backgroundColor: `rgb(${post.data_uuid_colors[0][0]}, ${post.data_uuid_colors[0][1]}, ${post.data_uuid_colors[0][2]})`, border: `var(--border)` }}>
+                                                // style={{ backgroundColor: `rgb(${post.data_uuid_colors[0][0]}, ${post.data_uuid_colors[0][1]}, ${post.data_uuid_colors[0][2]})`, border: `var(--border)` }}
+                                                >
                                                 <span>&nbsp;</span>
-                                                {
+                                                {/* {
                                                     post.data_uuid_colors.slice(1).map((color, index) =>
                                                         <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{post.data_uuid[index]}</span>
                                                     )
-                                                }
+                                                } */}
                                             </button>
                                         </div>
                                     </div>
