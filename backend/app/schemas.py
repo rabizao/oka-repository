@@ -28,6 +28,7 @@ def get_history(post):
     # if not data:  # REMINDER: The history exists, but is not accessible through data.fetch()
     #     return []
     lst = []
+    lst.append({"id": "oid", "data": {}, "post": 1})
     # userid = post.author.id
 
     # for k, d in list(data.past.items())[:-1]:

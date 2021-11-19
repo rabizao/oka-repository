@@ -45,6 +45,7 @@
     "react-scripts": "^4.0.3",
     "react-scroll-section": "^3.0.2",
     "react-slick": "^0.28.1",
+    "react-syntax-highlighter": "^15.4.5",
     "slick-carousel": "^1.8.1",
     "timeago-react": "^3.0.2",
     "use-sound": "^2.0.1"

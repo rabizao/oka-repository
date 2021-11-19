@@ -27,6 +27,8 @@ import HistogramPlot from '../../components/HistogramPlot';
 // import PearsonCorrelationPlot from '../../components/PearsonCorrelationPlot';
 import NotFound from '../NotFound';
 import TimeAgo from 'timeago-react';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 
 const categories = {
@@ -279,6 +281,7 @@ export default function Posts(props) {
     const [collaboratorUsername, setCollaboratorUsername] = useState('');
     const [openPublish, setOpenPublish] = useState(false);
     const [openRun, setOpenRun] = useState(false);
+    const [openOperationDescription, setOpenOperationDescription] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
     const [showMeta, setShowMeta] = useState(false);
     const [showFields, setShowFields] = useState(false);
@@ -865,7 +868,7 @@ export default function Posts(props) {
                                         <form className="form flex-column" onSubmit={e => handleSubmitCollaborator(e, collaboratorUsername)}>
                                             <label>
                                                 Username
-                                    <input
+                                                <input
                                                     placeholder="Username"
                                                     value={collaboratorUsername}
                                                     onChange={e => setCollaboratorUsername(e.target.value)}
@@ -1006,7 +1009,7 @@ export default function Posts(props) {
                         <div className="modal padding-big">
                             <h3>Publish your dataset</h3>
                             <h5 className="margin-top-small"><span className="color-error bold">You can not undo this action.</span> Please note that after publishing your dataset it will be available to everyone forever. If you want to make this dataset available to a specific group of people please use share button instead.
-                    </h5>
+                            </h5>
                             <h4 className="margin-top-small bold">Publication Details to be displayed on the published page</h4>
                             <div className="flex-column">
                                 <h5>Title: {post.name}</h5>
@@ -1014,7 +1017,7 @@ export default function Posts(props) {
                                 {
                                     post && post.allowed && post.allowed.length > 0 &&
                                     <h5>Collaborators:
-                                {
+                                        {
                                             post.allowed.map((collaborator, index) =>
                                                 <span key={index}> {collaborator.name}{(index !== post.allowed.length - 1) && ", "}</span>
                                             )
@@ -1056,6 +1059,28 @@ export default function Posts(props) {
 
                         </div>
                     </Modal>
+                    <Modal
+                        open={openOperationDescription}
+                        onClose={() => setOpenOperationDescription(false)}
+                    >
+                        <div className="modal padding-big" style={{ maxWidth: "100%" }}>
+                            <h3 className="margin-bottom-small">Operation Function</h3>
+                            <SyntaxHighlighter language="python" style={docco}>
+                                {
+                                    `
+def save_files(input_files):
+    files = []
+    for file in input_files:
+        full_path = current_app.config['TMP_FOLDER']
+        file.save(full_path)
+        files.append({"path": full_path, "original_name": file.filename})
+    return files
+                                    `
+                                }
+                            </SyntaxHighlighter>
+
+                        </div>
+                    </Modal>
                     <OkaHeader />
                     <div className="oka-hero-background padding-sides-small padding-top-big">
                         {loading ?
@@ -1084,24 +1109,29 @@ export default function Posts(props) {
                                                         <button className="margin-very-very-small icon-medium" title="Hide History" onClick={() => setShowHistory(!showHistory)}><ChevronLeft className="icon-tertiary" /></button>
                                                         {
                                                             post.history.map((item) =>
-                                                                item.data.step.desc.name &&
+                                                                // item.data.step.desc.name &&
                                                                 <div key={item.id} className="flex-row-nowrap">
                                                                     <button
                                                                         title="Show Dataset" alt="Show Dataset"
                                                                         onClick={(e) => handleIconClick(e, item.post, item.id)}
                                                                         className="box-uuid-history"
-                                                                        style={{ backgroundColor: `rgb(${item.data.colors[0][0]}, ${item.data.colors[0][1]}, ${item.data.colors[0][2]})`, border: `var(--border)` }}>
+                                                                        // style={{ backgroundColor: `rgb(${item.data.colors[0][0]}, ${item.data.colors[0][1]}, ${item.data.colors[0][2]})`, border: `var(--border)` }}
+                                                                        style={{ backgroundColor: `rgb(255, 255, 255)`, border: `var(--border)` }}
+                                                                    >
                                                                         <span>&nbsp;</span>
-                                                                        {
+                                                                        {/* {
                                                                             item.data.colors.slice(1).map((color, index) =>
                                                                                 <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{item.id[index]}</span>
                                                                             )
-                                                                        }
+                                                                        } */}
                                                                     </button>
-                                                                    <div className="flex-column flex-axis-center padding-sides-very-small">
-                                                                        <span className="color-tertiary">{item.data.step.desc.name}</span>
-                                                                        <span className="color-tertiary">→</span>
-                                                                    </div>
+                                                                    <button onClick={() => setOpenOperationDescription(true)}>
+                                                                        <div className="flex-column flex-axis-center padding-sides-very-small" title="Descricao da operacao">
+                                                                            {/* <span className="color-tertiary">{item.data.step.desc.name}</span> */}
+                                                                            <span className="color-tertiary">Nome</span>
+                                                                            <span className="color-tertiary">→</span>
+                                                                        </div>
+                                                                    </button>
                                                                 </div>
                                                             )
                                                         }
@@ -1115,7 +1145,8 @@ export default function Posts(props) {
                                                 title="Click to copy to clipboard"
                                                 className="flex-row-nowrap box-uuid"
                                                 // style={{ backgroundColor: `rgb(${post.data_uuid_colors[0][0]}, ${post.data_uuid_colors[0][1]}, ${post.data_uuid_colors[0][2]})`, border: `var(--border)` }}
-                                                >
+                                                style={{ backgroundColor: `rgb(255, 255, 255)`, border: `var(--border)` }}
+                                            >
                                                 <span>&nbsp;</span>
                                                 {/* {
                                                     post.data_uuid_colors.slice(1).map((color, index) =>
