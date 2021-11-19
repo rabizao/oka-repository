@@ -211,7 +211,7 @@ def download_data(self, pids, username, ip):
     logged_user = User.get_by_username(username)
     if not logged_user:
         raise Exception(f'Username {username} not found!')
-    tatu = current_app.config['TATU_SERVER']()
+    storage = SQLA(current_app.config['DATA_URL'], debug=True)
     filename_server_zip = str(u.uuid4()) + '.zip'
     path_server_zip = f'{current_app.config["TMP_FOLDER"]}/{filename_server_zip}'
     with ZipFile(path_server_zip, 'w') as zipped_file:
@@ -220,31 +220,20 @@ def download_data(self, pids, username, ip):
             _set_job_progress(self, actual_index / len(pids) * 100)
             post = Post.query.get(pid)
             if not post:
-                tatu.close()
                 raise Exception(f'Download failed: post {pid} not found!')
             if not logged_user.has_access(post):
-                tatu.close()
                 raise Exception(
                     f'Download failed. You do not have access to post {pid}!')
-            data = tatu.fetch(post.data_uuid, lazy=False)
+            data = storage[post.data_uuid]
             if data is None:
-                tatu.close()
                 raise Exception(
                     f'Download failed: data {post.data_uuid} not found!')
             post.add_download(ip)
             zipped_file.writestr(f'{pid}.arff', data.arff(
                 'No name', 'No description'))
-            if data.hasstream:
-                datas = tatu.fetchstream(post.data_uuid, lazy=False)
-                for i, dat in enumerate(datas):
-                    zipped_file.writestr(
-                        f'{pid}-{i}-train.arff', dat.inner.arff('No name', 'No description'))
-                    zipped_file.writestr(
-                        f'{pid}-{i}-test.arff', dat.arff('No name', 'No description'))
         logged_user.add_file(filename_server_zip)
         db.session.commit()
         zipped_file.close()
-    tatu.close()
     return _set_job_progress(self, 100, result=f'{filename_server_zip}')
 
 
