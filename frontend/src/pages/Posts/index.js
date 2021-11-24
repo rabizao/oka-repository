@@ -289,6 +289,7 @@ export default function Posts(props) {
     const [showData, setShowData] = useState(false);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
+    const [operationCode, setOperationCode] = useState('');
     const [runCategory, setRunCategory] = useState('');
     const [runAlgorithm, setRunAlgorithm] = useState('');
     const [runParameter, setRunParameter] = useState({});
@@ -807,6 +808,11 @@ export default function Posts(props) {
         }
     }
 
+    function handleOperationClick(operation) {
+        setOpenOperationDescription(true);
+        setOperationCode(operation.code);
+    }
+
     return (
         loading ?
             <div className="flex-row flex-crossaxis-center"><CircularProgress className="icon-primary" /></div> :
@@ -1065,20 +1071,13 @@ export default function Posts(props) {
                     >
                         <div className="modal padding-big" style={{ maxWidth: "100%" }}>
                             <h3 className="margin-bottom-small">Operation Function</h3>
-                            <SyntaxHighlighter language="python" style={docco}>
-                                {
-                                    `
-def save_files(input_files):
-    files = []
-    for file in input_files:
-        full_path = current_app.config['TMP_FOLDER']
-        file.save(full_path)
-        files.append({"path": full_path, "original_name": file.filename})
-    return files
-                                    `
-                                }
-                            </SyntaxHighlighter>
-
+                            {
+                                operationCode ?
+                                    <SyntaxHighlighter language="python" style={docco}>
+                                        {operationCode}
+                                    </SyntaxHighlighter> :
+                                    "Code not provided."
+                            }
                         </div>
                     </Modal>
                     <OkaHeader />
@@ -1125,7 +1124,7 @@ def save_files(input_files):
                                                                             )
                                                                         } */}
                                                                     </button>
-                                                                    <button onClick={() => setOpenOperationDescription(true)}>
+                                                                    <button onClick={() => handleOperationClick(item)}>
                                                                         <div className="flex-column flex-axis-center padding-sides-very-small" title={item.description}>
                                                                             {/* <span className="color-tertiary">{item.data.step.desc.name}</span> */}
                                                                             <span className="color-tertiary">{item.name}</span>

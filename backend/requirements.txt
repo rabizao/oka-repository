@@ -48,7 +48,7 @@ Jinja2==3.0.3
 joblib==1.1.0
 kombu==5.2.2
 lange==0.2101.24
-lazyds==0.211124.3
+lazyds==0.211124.4
 ldict==3.211124.1
 liac-arff==2.5.0
 limits==1.5.1

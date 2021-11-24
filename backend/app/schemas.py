@@ -29,14 +29,11 @@ def get_history(post):
 
     # if not data:  # REMINDER: The history exists, but is not accessible through data.fetch()
     #     return []
-    lst = []
     # lst.append({"id": "oid", "data": {}, "post": 1})
     storage = SQLA(current_app.config['DATA_URL'], debug=True)
-    print(111111111111111111111111111111111111111111111, post.data_uuid, storage.keys())
     data = idict.fromid(post.data_uuid, storage)
-    print(data.history)
     # data.show()
-    
+
     # userid = post.author.id
 
     # for k, d in list(data.past.items())[:-1]:
