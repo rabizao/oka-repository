@@ -2,8 +2,10 @@ from datetime import datetime
 
 # from kururu.tool.manipulation.slice import Slice
 # import numpy as np
-# from flask import current_app
+from flask import current_app
 from flask_smorest.fields import Upload
+from idict import idict
+from idict.persistence.sqla import SQLA
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
 from werkzeug.security import generate_password_hash
@@ -29,6 +31,10 @@ def get_history(post):
     #     return []
     lst = []
     lst.append({"id": "oid", "data": {}, "post": 1})
+    storage = SQLA(current_app.config['DATA_URL'], debug=True)
+    # data = idict.fromid(post.data_uuid, storage)
+    # print(data.history)
+    
     # userid = post.author.id
 
     # for k, d in list(data.past.items())[:-1]:

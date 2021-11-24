@@ -177,6 +177,7 @@ def run_step(self, post_id, step_asdict, username):
     '''
     Background task to perform simulations based on step
     '''
+    # raise KeyError()
     post = Post.query.get(post_id)
     logged_user = User.get_by_username(username)
     tatu = current_app.config['TATU_SERVER']()
@@ -208,6 +209,8 @@ def download_data(self, pids, username, ip):
     Background task to run async download process
     '''
     # TODO: Check if user has access to files
+    from idict import idict, let
+    from lazyds.data.dataset import arff
     logged_user = User.get_by_username(username)
     if not logged_user:
         raise Exception(f'Username {username} not found!')
@@ -224,13 +227,13 @@ def download_data(self, pids, username, ip):
             if not logged_user.has_access(post):
                 raise Exception(
                     f'Download failed. You do not have access to post {pid}!')
-            data = storage[post.data_uuid]
+            data = idict.fromid(post.data_uuid, storage)
             if data is None:
                 raise Exception(
                     f'Download failed: data {post.data_uuid} not found!')
             post.add_download(ip)
-            zipped_file.writestr(f'{pid}.arff', data.arff(
-                'No name', 'No description'))
+            df = data >> let(arff, field="df")
+            zipped_file.writestr(f'{pid}.arff', df.arff)
         logged_user.add_file(filename_server_zip)
         db.session.commit()
         zipped_file.close()
