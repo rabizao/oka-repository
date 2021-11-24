@@ -1126,9 +1126,9 @@ def save_files(input_files):
                                                                         } */}
                                                                     </button>
                                                                     <button onClick={() => setOpenOperationDescription(true)}>
-                                                                        <div className="flex-column flex-axis-center padding-sides-very-small" title="Descricao da operacao">
+                                                                        <div className="flex-column flex-axis-center padding-sides-very-small" title={item.description}>
                                                                             {/* <span className="color-tertiary">{item.data.step.desc.name}</span> */}
-                                                                            <span className="color-tertiary">Nome</span>
+                                                                            <span className="color-tertiary">{item.name}</span>
                                                                             <span className="color-tertiary">→</span>
                                                                         </div>
                                                                     </button>

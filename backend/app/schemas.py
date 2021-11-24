@@ -44,7 +44,7 @@ def get_history(post):
     #         post = Post.query.filter_by(data_uuid=k, user_id=userid).first()
     #         lst.append({"id": k, "data": d, "post": post and post.id})
     # tatu.close()
-    return data.history
+    return list(data.history.values())
 
 
 def get_head(uuid):
