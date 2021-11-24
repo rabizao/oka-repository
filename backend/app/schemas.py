@@ -30,10 +30,12 @@ def get_history(post):
     # if not data:  # REMINDER: The history exists, but is not accessible through data.fetch()
     #     return []
     lst = []
-    lst.append({"id": "oid", "data": {}, "post": 1})
+    # lst.append({"id": "oid", "data": {}, "post": 1})
     storage = SQLA(current_app.config['DATA_URL'], debug=True)
-    # data = idict.fromid(post.data_uuid, storage)
-    # print(data.history)
+    print(111111111111111111111111111111111111111111111, post.data_uuid, storage.keys())
+    data = idict.fromid(post.data_uuid, storage)
+    print(data.history)
+    # data.show()
     
     # userid = post.author.id
 
@@ -42,7 +44,7 @@ def get_history(post):
     #         post = Post.query.filter_by(data_uuid=k, user_id=userid).first()
     #         lst.append({"id": k, "data": d, "post": post and post.id})
     # tatu.close()
-    return lst
+    return data.history
 
 
 def get_head(uuid):

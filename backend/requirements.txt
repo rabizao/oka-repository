@@ -17,7 +17,7 @@ click-didyoumean==0.3.0
 click-plugins==1.1.1
 click-repl==0.2.0
 colorclass==2.2.0
-colored==1.4.3
+colored==1.4.2
 coverage==6.1.2
 decorator==5.1.0
 dill==0.3.4
@@ -34,7 +34,7 @@ Flask-SQLAlchemy==2.5.1
 garoupa==2.211123.1
 greenlet==1.1.2
 gunicorn==20.1.0
-idict==1.211124.1
+idict==1.211124.2
 idna==3.3
 imbalanced-learn==0.8.1
 imblearn==0.0
@@ -48,7 +48,7 @@ Jinja2==3.0.3
 joblib==1.1.0
 kombu==5.2.2
 lange==0.2101.24
-lazyds==0.211124.1
+lazyds==0.211124.3
 ldict==3.211124.1
 liac-arff==2.5.0
 limits==1.5.1

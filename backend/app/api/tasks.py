@@ -210,7 +210,7 @@ def download_data(self, pids, username, ip):
     '''
     # TODO: Check if user has access to files
     from idict import idict, let
-    from lazyds.data.dataset import arff
+    from lazyds.data.dataset import df2arff
     logged_user = User.get_by_username(username)
     if not logged_user:
         raise Exception(f'Username {username} not found!')
@@ -223,7 +223,7 @@ def download_data(self, pids, username, ip):
             _set_job_progress(self, actual_index / len(pids) * 100)
             post = Post.query.get(pid)
             if not post:
-                raise Exception(f'Download failed: post {pid} not found!')
+                raise Exception(fr'Download failed: post {pid} not found!')
             if not logged_user.has_access(post):
                 raise Exception(
                     f'Download failed. You do not have access to post {pid}!')
@@ -232,7 +232,7 @@ def download_data(self, pids, username, ip):
                 raise Exception(
                     f'Download failed: data {post.data_uuid} not found!')
             post.add_download(ip)
-            df = data >> let(arff, field="df")
+            df = data >> let(df2arff, field="df")
             zipped_file.writestr(f'{pid}.arff', df.arff)
         logged_user.add_file(filename_server_zip)
         db.session.commit()
@@ -259,7 +259,11 @@ def process_file(self, files, username):
 
         name = file['path'].split('/')[-1]
         path = '/'.join(file['path'].split('/')[:-1]) + '/'
-        d = File(path + name) >> [storage]  # TODO: pegar @relation ou filename
+
+        # TODO: pegar @relation ou filename
+        d = File(path + name) >> [storage]
+        d.evaluate()
+
         existing_post = logged_user.posts.filter_by(data_uuid=d.id).first()
         if existing_post:
             pass
