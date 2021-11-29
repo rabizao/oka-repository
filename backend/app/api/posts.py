@@ -1,6 +1,8 @@
 import json
 import uuid as u
 from datetime import datetime
+from idict.core.idict_ import Idict
+from idict.persistence.sqla import SQLA
 
 import numpy as np
 import pandas as pd
@@ -18,6 +20,7 @@ from flask_smorest import abort
 
 from . import bp
 from .tasks import create_post
+from idict.persistence.raw.sqladict import sqladict
 
 
 def save_files(input_files):
@@ -58,11 +61,16 @@ class Posts(MethodView):
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
 
-        files = save_files(argsFiles['files'])
+        storage = SQLA(current_app.config['DATA_URL'], debug=True)
 
-        task = logged_user.launch_task('process_file',
-                                       "Processing your uploaded files",
-                                       [files, username])
+        for file in argsFiles['files']:
+            data = Idict(arff=file.read().decode())
+            if data.id in storage:
+                HTTPAbort.already_uploaded()
+            data >> [storage]
+            task = logged_user.launch_task('process_file',
+                                            "Processing your uploaded files",
+                                            [data.id, username])
         db.session.commit()
         return task
 
@@ -329,7 +337,8 @@ class PostsVisualizeById(MethodView):
         datas = []
         # TODO: replace all data transformation by cacheable results and avoid evaluating heavy fields like X
         if args["plt"] == "scatter":
-            data_modified = data >> Sample_(n=500, ignore_badarg=True) * Binarize
+            data_modified = data >> Sample_(
+                n=500, ignore_badarg=True) * Binarize
             for m in data_modified.Yt[0]:
                 inner = []
                 for k in range(len(data_modified.X)):
@@ -340,9 +349,9 @@ class PostsVisualizeById(MethodView):
                         right = str(float(data_modified.y[k]))
                     if left == right:
                         inner.append({
-                                "x": float(data_modified.X[k, args['x']]),
-                                "y": float(data_modified.X[k, args['y']]),
-                            })
+                            "x": float(data_modified.X[k, args['x']]),
+                            "y": float(data_modified.X[k, args['y']]),
+                        })
                 datas.append(
                     {
                         "id": m,

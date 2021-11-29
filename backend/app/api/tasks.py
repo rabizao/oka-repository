@@ -10,95 +10,103 @@ from flask.views import MethodView
 from flask_mail import Message
 from idict.core.idict_ import Idict
 from idict.persistence.sqla import SQLA
+from idict.persistence.raw.sqladict import sqladict
 
 from app import celery, db, mail
 from app.api import bp
 from app.models import Post, Task, User
 from app.schemas import TaskStatusBaseSchema
 
+import arff2pandas as a2p
+
+
+def create_post(logged_user, data):
+    if isinstance(data, list):
+        pass
+
 
 # def create_post(logged_user, data, name="No name",
 # description="No description", filename=None, active=True, info=None):
-def create_post(logged_user, data, name, description, filename=None, active=True, info=None, notify=True):
-    """Create an inactive post for the given Data object or data id str."""
-    if info is None:
-        info = {
-            "nattrs": data.X.shape[1],
-            "ninsts": data.X.shape[0],
-            "ntargs": data.Y.shape[1] if len(data.Y.shape) > 1 else 1,
-            "nclasses": len(set(data.y)),
-            "past": list(data.past)}
-    data_id = data.id if isinstance(data, Data) else data
-    if filename is None:
-        filename = name
-    existing_post = logged_user.posts.filter_by(data_uuid=data_id).first()
-    if existing_post:
-        # Choose message when the post already exists.
-        if existing_post.active or not active:
-            obj = {
-                'original_name': filename,
-                'message': 'Error! Dataset already uploaded',
-                'code': 'error',
-                'id': existing_post.id
-            }
-        else:
-            existing_post.active = True
-            obj = {
-                'original_name': filename,
-                'message': 'Post successfully restored',
-                'code': 'success',
-                'id': existing_post.id
-            }
-        logged_user.add_notification(
-            name='data_uploaded', data=obj, overwrite=False)
-        logged_user.add_notification(
-            name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True
-        )
-    else:
-        # Defaults for ancestors.
-        name_, description_, ninsts_, nattrs_, ntargs_, nclasses_ = "No name", "No description", -1, -1, -1, -1
+# def create_post(logged_user, data, name, description, filename=None, active=True, info=None, notify=True):
+#     """Create an inactive post for the given Data object or data id str."""
+#     if info is None:
+#         info = {
+#             "nattrs": data.X.shape[1],
+#             "ninsts": data.X.shape[0],
+#             "ntargs": data.Y.shape[1] if len(data.Y.shape) > 1 else 1,
+#             "nclasses": len(set(data.y)),
+#             "past": list(data.past)}
+#     data_id = data.id if isinstance(data, Data) else data
+#     if filename is None:
+#         filename = name
+#     existing_post = logged_user.posts.filter_by(data_uuid=data_id).first()
+#     if existing_post:
+#         # Choose message when the post already exists.
+#         if existing_post.active or not active:
+#             obj = {
+#                 'original_name': filename,
+#                 'message': 'Error! Dataset already uploaded',
+#                 'code': 'error',
+#                 'id': existing_post.id
+#             }
+#         else:
+#             existing_post.active = True
+#             obj = {
+#                 'original_name': filename,
+#                 'message': 'Post successfully restored',
+#                 'code': 'success',
+#                 'id': existing_post.id
+#             }
+#         logged_user.add_notification(
+#             name='data_uploaded', data=obj, overwrite=False)
+#         logged_user.add_notification(
+#             name='unread_notification_count', data=logged_user.new_notifications(), overwrite=True
+#         )
+#     else:
+#         # Defaults for ancestors.
+#         name_, description_, ninsts_, nattrs_, ntargs_, nclasses_ = "No name", "No description", -1, -1, -1, -1
 
-        # Create post and needed ancestors.
-        for did in info["past"][1:]:
-            if did == data_id:
-                # Only the last Data object has metainfo.
-                name_, description_, ninsts_, nattrs_, ntargs_, nclasses_ = name, description, info[
-                    "ninsts"], info["nattrs"], info["ntargs"], info["nclasses"]
-            existing_post = logged_user.posts.filter_by(data_uuid=did).first()
-            if not existing_post:
-                # noinspection PyArgumentList
-                post = Post(
-                    author=logged_user,
-                    data_uuid=did,
-                    name=name_,
-                    description=description_,
-                    number_of_instances=ninsts_,
-                    number_of_features=nattrs_,
-                    number_of_targets=ntargs_,
-                    number_of_classes=nclasses_,
-                    active=active
-                )
-                # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
-                # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
-                db.session.add(post)
-                db.session.commit()
+#         # Create post and needed ancestors.
+#         for did in info["past"][1:]:
+#             if did == data_id:
+#                 # Only the last Data object has metainfo.
+#                 name_, description_, ninsts_, nattrs_, ntargs_, nclasses_ = name, description, info[
+#                     "ninsts"], info["nattrs"], info["ntargs"], info["nclasses"]
+#             existing_post = logged_user.posts.filter_by(data_uuid=did).first()
+#             if not existing_post:
+#                 # noinspection PyArgumentList
+#                 post = Post(
+#                     author=logged_user,
+#                     data_uuid=did,
+#                     name=name_,
+#                     description=description_,
+#                     number_of_instances=ninsts_,
+#                     number_of_features=nattrs_,
+#                     number_of_targets=ntargs_,
+#                     number_of_classes=nclasses_,
+#                     active=active
+#                 )
+#                 # TODO: Inserir as informacoes do dataset no banco de dados. Exemplo post.number_of_instances,
+#                 # post.number_of_features, post.number_of_targets, etc (ver variaveis em models.py class Post)
+#                 db.session.add(post)
+#                 db.session.commit()
 
-        obj = {
-            'original_name': filename,
-            'message': 'Post successfully created',
-            'code': 'success',
-            'id': post.id
-        }
-        logged_user.add_notification(
-            name='data_uploaded', data=obj, overwrite=False)
-        logged_user.add_notification(
-            name='unread_notification_count',
-            data=logged_user.new_notifications(),
-            overwrite=True
-        )
-    db.session.commit()
+#         obj = {
+#             'original_name': filename,
+#             'message': 'Post successfully created',
+#             'code': 'success',
+#             'id': post.id
+#         }
+#         logged_user.add_notification(
+#             name='data_uploaded', data=obj, overwrite=False)
+#         logged_user.add_notification(
+#             name='unread_notification_count',
+#             data=logged_user.new_notifications(),
+#             overwrite=True
+#         )
+#     db.session.commit()
 
-    return obj
+#     return obj
 
 
 class BaseTask(celery.Task):
@@ -240,57 +248,77 @@ def download_data(self, pids, username, ip):
 
 
 @celery.task(bind=True, base=BaseTask)
-def process_file(self, files, username):
+def process_file(self, id, username):
     """
     Background task to run async post process
     """
-    logged_user = User.get_by_username(username)
-    if not logged_user:
-        raise Exception(f'Username {username} not found!')
-    result = []
 
-    # tatu = current_app.config['TATU_SERVER']()
+    print(id, username)
     storage = SQLA(current_app.config['DATA_URL'], debug=True)
+    data = Idict.fromid(id, storage)
+    print("comecou")
 
-    for file in files:
-        actual_index = files.index(file)
-        _set_job_progress(self, actual_index / len(files) * 100)
+    # from testfixtures import TempDirectory
 
-        name = file['path'].split('/')[-1]
-        path = '/'.join(file['path'].split('/')[:-1]) + '/'
+    data >> a2p.loads(data.arff)
 
-        # TODO: pegar @relation ou filename
-        d = Idict.fromfile(path + name) >> [storage]
 
-        existing_post = logged_user.posts.filter_by(data_uuid=d.id).first()
-        if existing_post:
-            pass
-        else:
-            post = Post(
-                author=logged_user,
-                data_uuid=d.id,
-                name=file['original_name'],
-                description="No description",
-                active=True
-            )
-            db.session.add(post)
-            db.session.flush()
-            obj = {
-                'original_name': file['original_name'],
-                'message': 'Post successfully created',
-                'code': 'success',
-                'id': post.id
-            }
-            result.append(obj)
-            logged_user.add_notification(
-                name='data_uploaded', data=obj, overwrite=False)
-            logged_user.add_notification(
-                name='unread_notification_count',
-                data=logged_user.new_notifications(),
-                overwrite=True
-            )
-        db.session.commit()
-    return _set_job_progress(self, 100, result=result)
+
+
+# @celery.task(bind=True, base=BaseTask)
+# def process_file(self, files, username):
+#     """
+#     Background task to run async post process
+#     """
+#     logged_user = User.get_by_username(username)
+#     if not logged_user:
+#         raise Exception(f'Username {username} not found!')
+#     result = []
+
+#     # tatu = current_app.config['TATU_SERVER']()
+#     # files = ["arq0.arff", "arq1.arff"]
+#     # files = bin
+#     storage = SQLA(current_app.config['DATA_URL'], debug=True)
+
+#     for file in files:
+#         actual_index = files.index(file)
+#         _set_job_progress(self, actual_index / len(files) * 100)
+
+#         name = file['path'].split('/')[-1]
+#         path = '/'.join(file['path'].split('/')[:-1]) + '/'
+
+#         # TODO: pegar @relation ou filename
+#         d = Idict.fromfile(path + name) >> [storage]
+
+#         existing_post = logged_user.posts.filter_by(data_uuid=d.id).first()
+#         if existing_post:
+#             pass
+#         else:
+#             post = Post(
+#                 author=logged_user,
+#                 data_uuid=d.id,
+#                 name=file['original_name'],
+#                 description="No description",
+#                 active=True
+#             )
+#             db.session.add(post)
+#             db.session.flush()
+#             obj = {
+#                 'original_name': file['original_name'],
+#                 'message': 'Post successfully created',
+#                 'code': 'success',
+#                 'id': post.id
+#             }
+#             result.append(obj)
+#             logged_user.add_notification(
+#                 name='data_uploaded', data=obj, overwrite=False)
+#             logged_user.add_notification(
+#                 name='unread_notification_count',
+#                 data=logged_user.new_notifications(),
+#                 overwrite=True
+#             )
+#         db.session.commit()
+#     return _set_job_progress(self, 100, result=result)
 
 
 @bp.route('tasks/<string:task_id>/status')

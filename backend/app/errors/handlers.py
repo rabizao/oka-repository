@@ -67,6 +67,13 @@ class HTTPAbort:
         return abort(422, errors={"json": {field: ["Invalid."]}})
 
     @staticmethod
+    def already_uploaded(field="arff"):
+        """
+        Called when the provided field was already uploaded
+        """
+        return abort(422, errors={"json": {field: ["Already uploaded."]}})
+
+    @staticmethod
     def field_wrong(field="password"):
         """
         Called when the provided field is wrong
