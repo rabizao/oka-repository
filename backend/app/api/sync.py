@@ -3,11 +3,12 @@
 import simplejson as json2
 from flask import make_response, current_app, jsonify
 from flask.views import MethodView
+from idict.persistence.raw.sqladict import sqladict
 from idict.persistence.sqla import SQLA
 
 from app.schemas import (SyncResponseSchema, SyncContentFileSchema, SyncFieldsSchema, SyncFieldsQuerySchema,
                          SuccessResponseSchema, NumberResponseSchema, SyncContentQuerySchema, SyncIOSchema,
-                         PostFilesSchema, PostFileSchema)
+                         PostFileSchema)
 from . import bp
 
 
@@ -19,16 +20,18 @@ class SyncItem(MethodView):
     @bp.arguments(SyncIOSchema, location="query")
     @bp.response(200)
     def get(self, argsQuery, id):
-        storage = SQLA(current_app.config['DATA_URL'], autopack=False, debug=True)
-        return bool(id in storage) if argsQuery["checkonly"] else make_response(storage[id])
+        with sqladict(current_app.config['DATA_URL'], debug=True) as db:
+            print(id, id in db, 7777777777777777777777777777777777777)
+            return bool(id in db) if argsQuery["checkonly"] else make_response(db[id])
 
     @bp.auth_required
     @bp.arguments(PostFileSchema, location="files")
     @bp.response(201, SuccessResponseSchema)
     def post(self, argsFile, id):
-        print(22222222222222222222222222222222222)
-        storage = SQLA(current_app.config['DATA_URL'], autopack=False, debug=True)
-        storage[id] = argsFile["file"].read()
+        with sqladict(current_app.config['DATA_URL'], debug=True) as db:
+            if id in db:
+                return {"success": False}
+            db[id] = argsFile["file"].read()
         return {"success": True}
 
 

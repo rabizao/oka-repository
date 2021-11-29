@@ -8,8 +8,8 @@ from celery.signals import worker_init
 from flask import current_app
 from flask.views import MethodView
 from flask_mail import Message
+from idict.core.idict_ import Idict
 from idict.persistence.sqla import SQLA
-from lazyds.data.dataset import File
 
 from app import celery, db, mail
 from app.api import bp
@@ -210,7 +210,6 @@ def download_data(self, pids, username, ip):
     '''
     # TODO: Check if user has access to files
     from idict import idict, let
-    from lazyds.data.dataset import df2arff
     logged_user = User.get_by_username(username)
     if not logged_user:
         raise Exception(f'Username {username} not found!')
@@ -261,8 +260,7 @@ def process_file(self, files, username):
         path = '/'.join(file['path'].split('/')[:-1]) + '/'
 
         # TODO: pegar @relation ou filename
-        d = File(path + name) >> [storage]
-        d.evaluate()
+        d = Idict.fromfile(path + name) >> [storage]
 
         existing_post = logged_user.posts.filter_by(data_uuid=d.id).first()
         if existing_post:
