@@ -7,6 +7,7 @@ from flask_smorest.fields import Upload
 from idict import idict
 from idict.persistence.sqla import SQLA
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
+from marshmallow.decorators import pre_load
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
 from werkzeug.security import generate_password_hash
 
@@ -32,6 +33,10 @@ def get_history(post):
     # lst.append({"id": "oid", "data": {}, "post": 1})
     storage = SQLA(current_app.config['DATA_URL'], debug=True)
     data = idict.fromid(post.data_uuid, storage)
+    if "history" not in data:
+        return []
+
+    return list(data.history.values())
     # data.show()
 
     # userid = post.author.id
@@ -42,7 +47,7 @@ def get_history(post):
     #         lst.append({"id": k, "data": d, "post": post and post.id})
     # tatu.close()
     # return list(data.history.values())
-    return list({"name": "teste", "description": "descricao"})
+    # return list({"name": "teste", "description": "descricao"})
 
 
 def get_head(uuid):
@@ -449,6 +454,19 @@ class VisualizeQuerySchema(SQLAlchemySchema):
     x = fields.Integer(missing=0)
     y = fields.Integer(missing=0)
     plt = fields.String(required=True)
+
+
+class ItemInfoSchema(SQLAlchemySchema):
+
+    @pre_load
+    def test(self, data, **kwargs):
+        print(data)
+        return data
+
+    file = Upload(required=True)
+    id = fields.String()
+    name = fields.String(missing="No name")
+    description = fields.String(missing="No description")
 
 
 class ContactBaseSchema(SQLAlchemyAutoSchema):
