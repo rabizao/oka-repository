@@ -69,42 +69,23 @@ class Posts(MethodView):
                 HTTPAbort.already_uploaded()
             data >> [storage]
             task = logged_user.launch_task('process_file',
-                                            "Processing your uploaded files",
-                                            [data.id, username])
+                                           "Processing your uploaded files",
+                                           [data.id, username, "original_name"])
         db.session.commit()
         return task
 
-    @bp.auth_required
-    @bp.arguments(PostCreateSchema)
-    @bp.response(201)
-    def put(self, args):
-        """
-        Create inactive post (and without Data for a while), and parents.
-        """
-        logged_user = User.get_by_username(get_jwt_identity())
-        obj = create_post(
-            logged_user, args["data_uuid"], args["name"], args["description"], active=False, info=args["info"])
-        if obj["code"] != "success":
-            abort(422, errors={"json": {"data_uuid": obj["message"]}})
-
-
-# noinspection PyArgumentList
-@bp.route("/posts/activate")
-class PostsActivate(MethodView):
-    @bp.auth_required
-    @bp.arguments(PostActivateSchema)
-    @bp.response(201)
-    def put(self, args):
-        """
-        Activate post with id {id}
-        """
-        logged_user = User.get_by_username(get_jwt_identity())
-        post = Post.query.filter_by(
-            data_uuid=args["data_uuid"], user_id=logged_user.id).first()
-        if not post:
-            HTTPAbort.not_found(field="data_uuid")
-        post.active = True
-        db.session.commit()
+    # @bp.auth_required
+    # @bp.arguments(PostCreateSchema)
+    # @bp.response(201)
+    # def put(self, args):
+    #     """
+    #     Create inactive post (and without Data for a while), and parents.
+    #     """
+    #     logged_user = User.get_by_username(get_jwt_identity())
+    #     obj = create_post(
+    #         logged_user, args["data_uuid"], args["name"], args["description"], active=False, info=args["info"])
+    #     if obj["code"] != "success":
+    #         abort(422, errors={"json": {"data_uuid": obj["message"]}})
 
 
 @bp.route('/posts/<int:id>')
@@ -445,3 +426,22 @@ class PostsTransformById(MethodView):
                                        [post.id, step_asdict, username])
         db.session.commit()
         return task
+
+
+# noinspection PyArgumentList
+@bp.route("/posts/activate")
+class PostsActivate(MethodView):
+    @bp.auth_required
+    @bp.arguments(PostActivateSchema)
+    @bp.response(201)
+    def put(self, args):
+        """
+        Activate post with id {id}
+        """
+        logged_user = User.get_by_username(get_jwt_identity())
+        post = Post.query.filter_by(
+            data_uuid=args["data_uuid"], user_id=logged_user.id).first()
+        if not post:
+            HTTPAbort.not_found(field="data_uuid")
+        post.active = True
+        db.session.commit()

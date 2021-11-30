@@ -41,7 +41,8 @@ def get_history(post):
     #         post = Post.query.filter_by(data_uuid=k, user_id=userid).first()
     #         lst.append({"id": k, "data": d, "post": post and post.id})
     # tatu.close()
-    return list(data.history.values())
+    # return list(data.history.values())
+    return list({"name": "teste", "description": "descricao"})
 
 
 def get_head(uuid):
@@ -333,8 +334,8 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     favorites = auto_field(dump_only=True)
     # data_uuid_colors = fields.Function(
     #     lambda obj: colors(obj.data_uuid), dump_only=True)
-    attrs = fields.Function(lambda obj: get_attrs(
-        obj.data_uuid), dump_only=True)
+    # attrs = fields.Function(lambda obj: get_attrs(
+    #     obj.data_uuid), dump_only=True)
     history = fields.Function(lambda obj: get_history(obj), dump_only=True)
     downloads = fields.Function(
         lambda obj: obj.get_unique_download_count(), dump_only=True)

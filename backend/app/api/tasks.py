@@ -248,10 +248,13 @@ def download_data(self, pids, username, ip):
 
 
 @celery.task(bind=True, base=BaseTask)
-def process_file(self, id, username):
+def process_file(self, id, username, original_name):
     """
     Background task to run async post process
     """
+    logged_user = User.get_by_username(username)
+    if not logged_user:
+        raise Exception(f'Username {username} not found!')
 
     print(id, username)
     storage = SQLA(current_app.config['DATA_URL'], debug=True)
@@ -259,10 +262,36 @@ def process_file(self, id, username):
     print("comecou")
 
     # from testfixtures import TempDirectory
+    # data >> a2p.loads(data.arff)
 
-    data >> a2p.loads(data.arff)
+    existing_post = logged_user.posts.filter_by(data_uuid=data.id).first()
+    if existing_post:
+        raise Exception('Dataset already uploaded!')
 
+    post = Post(
+        author=logged_user,
+        data_uuid=data.id,
+        name="name",
+        description="No description"
+    )
+    db.session.add(post)
+    db.session.flush()
+    result = {
+        'original_name': original_name,
+        'message': 'Post successfully created',
+        'code': 'success',
+        'id': post.id
+    }
+    logged_user.add_notification(
+        name='data_uploaded', data=result, overwrite=False)
+    logged_user.add_notification(
+        name='unread_notification_count',
+        data=logged_user.new_notifications(),
+        overwrite=True
+    )
 
+    db.session.commit()
+    return _set_job_progress(self, 100, result=result)
 
 
 # @celery.task(bind=True, base=BaseTask)
