@@ -10,6 +10,7 @@ from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow.decorators import pre_load
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
 from werkzeug.security import generate_password_hash
+from garoupa import ø
 
 from app import db
 from app.models import User, Post, Comment, Contact, Notification, Task, Message
@@ -74,6 +75,12 @@ def get_fields(uuid):
     # tatu.close()
     # return ret
     return []
+
+
+def get_name(oid, username):
+    storage = SQLA(current_app.config['DATA_URL'], debug=True)
+    data = idict.fromid(str(ø * oid * username.encode()), storage)
+    return data["_name"]
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -345,6 +352,7 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     downloads = fields.Function(
         lambda obj: obj.get_unique_download_count(), dump_only=True)
     head = fields.Function(lambda obj: get_head(obj.data_uuid), dump_only=True)
+    name = fields.Function(lambda obj: get_name(obj.data_uuid, obj.author.username), dump_only=True)
     fields = fields.Function(
         lambda obj: get_fields(obj.data_uuid), dump_only=True)
 
@@ -379,7 +387,7 @@ class PostFilesSchema(SQLAlchemySchema):
 
 
 class PostFileSchema(SQLAlchemySchema):
-    file = Upload(required=True)
+    file = Upload()
 
 
 class PostActivateSchema(SQLAlchemySchema):
@@ -463,10 +471,10 @@ class ItemInfoSchema(SQLAlchemySchema):
         print(data)
         return data
 
-    file = Upload(required=True)
     id = fields.String()
     name = fields.String(missing="No name")
     description = fields.String(missing="No description")
+    create_post = fields.Boolean(missing=False)
 
 
 class ContactBaseSchema(SQLAlchemyAutoSchema):

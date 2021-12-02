@@ -20,9 +20,33 @@ from idict import idict
 from idict.function.data import df2arff, arff2df
 
 
-def create_post(logged_user, data):
-    if isinstance(data, list):
-        pass
+def create_post(logged_user, id, original_name="My uploaded data"):
+    existing_post = logged_user.posts.filter_by(data_uuid=id).first()
+    if existing_post:
+        raise Exception('Dataset already uploaded!')
+
+    post = Post(
+        author=logged_user,
+        data_uuid=id
+    )
+    db.session.add(post)
+    db.session.flush()
+    result = {
+        'original_name': original_name,
+        'message': 'Post successfully created',
+        'code': 'success',
+        'id': post.id
+    }
+    logged_user.add_notification(
+        name='data_uploaded', data=result, overwrite=False)
+    logged_user.add_notification(
+        name='unread_notification_count',
+        data=logged_user.new_notifications(),
+        overwrite=True
+    )
+
+    db.session.commit()
+    return result
 
 
 # def create_post(logged_user, data, name="No name",
@@ -261,36 +285,7 @@ def process_file(self, id, username, original_name):
     data = Idict.fromid(id, storage)
     data >> arff2df >> [storage]
 
-    # create_post(logged_user, id, original_name)
-
-    existing_post = logged_user.posts.filter_by(data_uuid=data.id).first()
-    if existing_post:
-        raise Exception('Dataset already uploaded!')
-
-    post = Post(
-        author=logged_user,
-        data_uuid=data.id,
-        name="name",
-        description="No description"
-    )
-    db.session.add(post)
-    db.session.flush()
-    result = {
-        'original_name': original_name,
-        'message': 'Post successfully created',
-        'code': 'success',
-        'id': post.id
-    }
-    logged_user.add_notification(
-        name='data_uploaded', data=result, overwrite=False)
-    logged_user.add_notification(
-        name='unread_notification_count',
-        data=logged_user.new_notifications(),
-        overwrite=True
-    )
-
-    db.session.commit()
-    return _set_job_progress(self, 100, result=result)
+    return _set_job_progress(self, 100, result=create_post(logged_user, data.id, original_name))
 
 
 # @celery.task(bind=True, base=BaseTask)

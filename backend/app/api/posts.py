@@ -69,7 +69,7 @@ class Posts(MethodView):
             data >> [storage]
             task = logged_user.launch_task('process_file',
                                            "Processing your uploaded files",
-                                           [data.id, username, "original_name"])
+                                           [data.id, username, file.filename])
         db.session.commit()
         return task
 
