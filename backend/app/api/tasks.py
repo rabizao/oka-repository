@@ -10,7 +10,6 @@ from flask.views import MethodView
 from flask_mail import Message
 from idict.core.idict_ import Idict
 from idict.persistence.sqla import SQLA
-from idict.persistence.raw.sqladict import sqladict
 
 from app import celery, db, mail
 from app.api import bp
