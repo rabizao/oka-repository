@@ -20,7 +20,6 @@ from flask_smorest import abort
 
 from . import bp
 from .tasks import create_post
-from idict.persistence.raw.sqladict import sqladict
 
 
 def save_files(input_files):
