@@ -16,12 +16,37 @@ from app.api import bp
 from app.models import Post, Task, User
 from app.schemas import TaskStatusBaseSchema
 
-import arff2pandas as a2p
+from idict import idict
+from idict.function.data import df2arff, arff2df
 
 
-def create_post(logged_user, data):
-    if isinstance(data, list):
-        pass
+def create_post(logged_user, id, original_name="My uploaded data"):
+    existing_post = logged_user.posts.filter_by(data_uuid=id).first()
+    if existing_post:
+        raise Exception('Dataset already uploaded!')
+
+    post = Post(
+        author=logged_user,
+        data_uuid=id
+    )
+    db.session.add(post)
+    db.session.flush()
+    result = {
+        'original_name': original_name,
+        'message': 'Post successfully created',
+        'code': 'success',
+        'id': post.id
+    }
+    logged_user.add_notification(
+        name='data_uploaded', data=result, overwrite=False)
+    logged_user.add_notification(
+        name='unread_notification_count',
+        data=logged_user.new_notifications(),
+        overwrite=True
+    )
+
+    db.session.commit()
+    return result
 
 
 # def create_post(logged_user, data, name="No name",
@@ -216,20 +241,22 @@ def download_data(self, pids, username, ip):
     Background task to run async download process
     '''
     # TODO: Check if user has access to files
-    from idict import idict, let
+    from io import BytesIO
+
     logged_user = User.get_by_username(username)
     if not logged_user:
         raise Exception(f'Username {username} not found!')
+
     storage = SQLA(current_app.config['DATA_URL'], debug=True)
-    filename_server_zip = str(u.uuid4()) + '.zip'
-    path_server_zip = f'{current_app.config["TMP_FOLDER"]}/{filename_server_zip}'
-    with ZipFile(path_server_zip, 'w') as zipped_file:
+    filename = str(u.uuid4()) + '.zip'
+    file = BytesIO()
+    with ZipFile(file, 'w') as zipped_file:
         for pid in pids:
             actual_index = pids.index(pid)
             _set_job_progress(self, actual_index / len(pids) * 100)
             post = Post.query.get(pid)
             if not post:
-                raise Exception(fr'Download failed: post {pid} not found!')
+                raise Exception(f'Download failed: post {pid} not found!')
             if not logged_user.has_access(post):
                 raise Exception(
                     f'Download failed. You do not have access to post {pid}!')
@@ -238,12 +265,11 @@ def download_data(self, pids, username, ip):
                 raise Exception(
                     f'Download failed: data {post.data_uuid} not found!')
             post.add_download(ip)
-            df = data >> let(df2arff, field="df")
-            zipped_file.writestr(f'{pid}.arff', df.arff)
-        logged_user.add_file(filename_server_zip)
+            zipped_file.writestr(f'{pid}.arff', data.arff)
+        logged_user.add_file(filename, file.getvalue())
         db.session.commit()
-        zipped_file.close()
-    return _set_job_progress(self, 100, result=f'{filename_server_zip}')
+
+    return _set_job_progress(self, 100, result=f'{filename}')
 
 
 @celery.task(bind=True, base=BaseTask)
@@ -255,42 +281,11 @@ def process_file(self, id, username, original_name):
     if not logged_user:
         raise Exception(f'Username {username} not found!')
 
-    print(id, username)
     storage = SQLA(current_app.config['DATA_URL'], debug=True)
     data = Idict.fromid(id, storage)
-    print("comecou")
+    data >> arff2df >> [storage]
 
-    # from testfixtures import TempDirectory
-    # data >> a2p.loads(data.arff)
-
-    existing_post = logged_user.posts.filter_by(data_uuid=data.id).first()
-    if existing_post:
-        raise Exception('Dataset already uploaded!')
-
-    post = Post(
-        author=logged_user,
-        data_uuid=data.id,
-        name="name",
-        description="No description"
-    )
-    db.session.add(post)
-    db.session.flush()
-    result = {
-        'original_name': original_name,
-        'message': 'Post successfully created',
-        'code': 'success',
-        'id': post.id
-    }
-    logged_user.add_notification(
-        name='data_uploaded', data=result, overwrite=False)
-    logged_user.add_notification(
-        name='unread_notification_count',
-        data=logged_user.new_notifications(),
-        overwrite=True
-    )
-
-    db.session.commit()
-    return _set_job_progress(self, 100, result=result)
+    return _set_job_progress(self, 100, result=create_post(logged_user, data.id, original_name))
 
 
 # @celery.task(bind=True, base=BaseTask)

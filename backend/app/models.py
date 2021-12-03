@@ -250,8 +250,8 @@ class User(PaginateMixin, db.Model):
         db.session.add(task)
         return task
 
-    def add_file(self, name):
-        file = File(owner=self, name=name)
+    def add_file(self, name, blob):
+        file = File(owner=self, name=name, blob=blob)
         db.session.add(file)
         return file
 
@@ -426,6 +426,7 @@ class Task(db.Model):
 class File(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), index=True)
+    blob = db.Column(db.LargeBinary)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 

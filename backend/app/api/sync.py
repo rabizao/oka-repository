@@ -1,13 +1,19 @@
 # noinspection PyArgumentList
 
+from flask_jwt_extended.utils import get_jwt_identity
+from idict.data.compression import unpack
 import simplejson as json2
 from flask import make_response, current_app, jsonify
 from flask.views import MethodView
-from idict.persistence.sqla import SQLA, sqla
+from idict.persistence.sqla import sqla
 
+from idict.persistence.sqla import sqla, SQLA
+from app.api.tasks import create_post
+from app.errors.handlers import HTTPAbort
+from app.models import User
 from app.schemas import (SyncResponseSchema, SyncContentFileSchema, SyncFieldsSchema, SyncFieldsQuerySchema,
                          SuccessResponseSchema, NumberResponseSchema, SyncContentQuerySchema, SyncIOSchema,
-                         PostFileSchema)
+                         PostFileSchema, ItemInfoSchema)
 from . import bp
 
 
@@ -19,19 +25,25 @@ class SyncItem(MethodView):
     @bp.arguments(SyncIOSchema, location="query")
     @bp.response(200)
     def get(self, argsQuery, id):
-        with sqla(current_app.config['DATA_URL'], debug=True) as db:
-            print(id, id in db, 7777777777777777777777777777777777777)
-            return bool(id in db) if argsQuery["checkonly"] else make_response(db[id])
+        with sqla(current_app.config['DATA_URL'], debug=True) as storage:
+            if "id" not in storage:
+                HTTPAbort.not_found()
+            if not argsQuery["checkonly"]:
+                return json2.dumps(storage[id])
 
     @bp.auth_required
     @bp.arguments(PostFileSchema, location="files")
+    @bp.arguments(ItemInfoSchema, location="form")
     @bp.response(201, SuccessResponseSchema)
-    def post(self, argsFile, id):
-        with sqla(current_app.config['DATA_URL'], debug=True) as db:
-            if id in db:
-                return {"success": False}
-            db[id] = argsFile["file"].read()
-        return {"success": True}
+    def post(self, argsFile, argsForm, id):
+        logged_user = User.get_by_username(get_jwt_identity())
+
+        with sqla(current_app.config["DATA_URL"], debug=True) as storage:
+            if id in storage:
+                HTTPAbort.already_uploaded(field="data")
+            storage[id] = argsFile["file"].read()
+            if argsForm["create_post"]:
+                create_post(logged_user, id)
 
 
 @bp.route("/sync/<string:uuid>/lock")
