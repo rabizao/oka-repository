@@ -34,7 +34,7 @@ Flask-SQLAlchemy==2.5.1
 garoupa==2.211126.1
 greenlet==1.1.2
 gunicorn==20.1.0
-idict==1.211202.4
+idict==1.211203.1
 idna==3.3
 imbalanced-learn==0.8.1
 imblearn==0.0

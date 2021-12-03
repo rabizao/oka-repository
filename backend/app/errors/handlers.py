@@ -57,7 +57,7 @@ class HTTPAbort:
         """
         Called when the provided field does not exist
         """
-        return abort(422, errors={"json": {field: ["Not found."]}})
+        return abort(404, errors={"json": {field: ["Not found."]}})
 
     @staticmethod
     def field_invalid(field="key"):

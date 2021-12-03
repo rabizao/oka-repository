@@ -12,7 +12,7 @@ from idict.persistence.sqla import sqla
 from app.api.tasks import create_post
 from app.errors.handlers import HTTPAbort
 from app.models import User
-from app.schemas import (SyncResponseSchema, SyncContentFileSchema, SyncFieldsSchema, SyncFieldsQuerySchema,
+from app.schemas import (FoundResponseSchema, SyncResponseSchema, SyncContentFileSchema, SyncFieldsSchema, SyncFieldsQuerySchema,
                          SuccessResponseSchema, NumberResponseSchema, SyncContentQuerySchema, SyncIOSchema,
                          PostFileSchema, ItemInfoSchema)
 from . import bp
@@ -20,19 +20,26 @@ from . import bp
 
 # @bp.route("/data/<string:id>")
 
+
+@bp.route("/item/<string:id>/check")
+class SyncItem(MethodView):
+    @bp.auth_required
+    @bp.response(200, FoundResponseSchema)
+    def get(self, id):
+        with sqla(current_app.config['DATA_URL'], user_id=get_jwt_identity()) as storage:
+            return {"found": id in storage}
+
+
 @bp.route("/item/<string:id>")
 class SyncItem(MethodView):
     @bp.auth_required
-    @bp.arguments(SyncIOSchema, location="query")
     @bp.response(200)
-    def get(self, argsQuery, id):
+    def get(self, id):
         with sqla(current_app.config['DATA_URL'], user_id=get_jwt_identity()) as storage:
-            exist = id in storage
-            if argsQuery["checkonly"] and exist:
-                return
-            if not exist:
+            if id not in storage:
                 HTTPAbort.not_found()
             return send_file(BytesIO(storage[id]), mimetype="application/octet-stream")
+
 
     @bp.auth_required
     @bp.arguments(PostFileSchema, location="files")

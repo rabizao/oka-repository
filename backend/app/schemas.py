@@ -32,12 +32,13 @@ def get_history(post):
     # if not data:  # REMINDER: The history exists, but is not accessible through data.fetch()
     #     return []
     # lst.append({"id": "oid", "data": {}, "post": 1})
-    storage = SQLA(current_app.config['DATA_URL'], debug=True)
-    data = idict.fromid(post.data_uuid, storage)
-    if "history" not in data:
-        return []
+    # storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username, debug=True)
+    # data = idict(post.data_uuid, storage)
+    # if "_history" not in data:
+    #     return []
 
-    return list(data.history.values())
+    # return list(data.history.values())
+    return []
     # data.show()
 
     # userid = post.author.id
@@ -78,9 +79,10 @@ def get_fields(uuid):
 
 
 def get_name(oid, username):
-    storage = SQLA(current_app.config['DATA_URL'], debug=True)
-    data = idict.fromid(str(ø * oid * username.encode()), storage)
-    return data["_name"]
+    # storage = SQLA(current_app.config['DATA_URL'], debug=True)
+    # data = idict.fromid(str(ø * oid * username.encode()), storage)
+    # return data["_name"]
+    return "chumbado"
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -430,6 +432,10 @@ class SyncContentQuerySchema(SQLAlchemySchema):
 
 class SuccessResponseSchema(SQLAlchemySchema):
     success = fields.Bool()
+
+
+class FoundResponseSchema(SQLAlchemySchema):
+    found = fields.Bool()
 
 
 class NumberResponseSchema(SQLAlchemySchema):
