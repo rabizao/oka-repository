@@ -1,13 +1,11 @@
 # noinspection PyArgumentList
 
-from flask_jwt_extended.utils import get_jwt_identity
-from idict.data.compression import unpack
 import simplejson as json2
 from flask import make_response, current_app, jsonify
 from flask.views import MethodView
+from flask_jwt_extended.utils import get_jwt_identity
 from idict.persistence.sqla import sqla
 
-from idict.persistence.sqla import sqla, SQLA
 from app.api.tasks import create_post
 from app.errors.handlers import HTTPAbort
 from app.models import User
@@ -25,22 +23,32 @@ class SyncItem(MethodView):
     @bp.arguments(SyncIOSchema, location="query")
     @bp.response(200)
     def get(self, argsQuery, id):
-        with sqla(current_app.config['DATA_URL'], debug=True) as storage:
-            if "id" not in storage:
+        with sqla(current_app.config['DATA_URL'], user_id=get_jwt_identity()) as storage:
+            exist = "id" in storage
+            if argsQuery["checkonly"] and exist:
+                return
+            if not exist:
+                print(get_jwt_identity(), id, 888888888888888888888888888888888)
+                print(list(storage.keys()))
                 HTTPAbort.not_found()
-            if not argsQuery["checkonly"]:
-                return json2.dumps(storage[id])
+            print(id, 999999999999999)
+            return json2.dumps(storage[id])
+            print(id, 1000000000000000000000)
 
     @bp.auth_required
     @bp.arguments(PostFileSchema, location="files")
     @bp.arguments(ItemInfoSchema, location="form")
     @bp.response(201, SuccessResponseSchema)
     def post(self, argsFile, argsForm, id):
+        print(id, 1000000000000000000000)
         logged_user = User.get_by_username(get_jwt_identity())
 
-        with sqla(current_app.config["DATA_URL"], debug=True) as storage:
+        with sqla(current_app.config["DATA_URL"], user_id=get_jwt_identity(), debug=True) as storage:
+            print(id, 99999999999)
             if id in storage:
+                print(id, 888888888)
                 HTTPAbort.already_uploaded(field="data")
+            print(id, 77777777777)
             storage[id] = argsFile["file"].read()
             if argsForm["create_post"]:
                 create_post(logged_user, id)
