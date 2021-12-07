@@ -281,11 +281,11 @@ def process_file(self, id, username, original_name):
     if not logged_user:
         raise Exception(f'Username {username} not found!')
 
-    storage = SQLA(current_app.config['DATA_URL'], debug=True)
-    data = Idict.fromid(id, storage)
-    data >> arff2df >> [storage]
+    storage = SQLA(current_app.config['DATA_URL'], user_id=username, debug=True)
+    data_rawarff = Idict.fromid(id, storage)
+    oid = (data_rawarff >> arff2df >> [[storage]]).id
 
-    return _set_job_progress(self, 100, result=create_post(logged_user, data.id, original_name))
+    return _set_job_progress(self, 100, result=create_post(logged_user, oid, original_name))  # data.id acho q nao é OID
 
 
 # @celery.task(bind=True, base=BaseTask)

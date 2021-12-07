@@ -1,28 +1,20 @@
+import json
 from datetime import datetime
 
 # from kururu.tool.manipulation.slice import Slice
 # import numpy as np
 from flask import current_app
 from flask_smorest.fields import Upload
+from garoupa.misc.colors import id2rgb
 from idict import idict
 from idict.persistence.sqla import SQLA
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow.decorators import pre_load
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
 from werkzeug.security import generate_password_hash
-from garoupa import ø
 
 from app import db
 from app.models import User, Post, Comment, Contact, Notification, Task, Message
-
-
-def get_attrs(uuid):
-    # tatu = current_app.config['TATU_SERVER']()
-    # data = tatu.fetch(uuid, lazy=False)
-    # ret = data.Xd if data else {}
-    # tatu.close()
-    # return ret
-    return {}
 
 
 def get_history(post):
@@ -32,24 +24,25 @@ def get_history(post):
     # if not data:  # REMINDER: The history exists, but is not accessible through data.fetch()
     #     return []
     # lst.append({"id": "oid", "data": {}, "post": 1})
-    # storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username, debug=True)
-    # data = idict(post.data_uuid, storage)
-    # if "_history" not in data:
-    #     return []
-
-    # return list(data.history.values())
-    return []
-    # data.show()
-
-    # userid = post.author.id
-
-    # for k, d in list(data.past.items())[:-1]:
-    #     if d["step"]["desc"]["name"][:3] not in ["B", "Rev", "In", "Aut", "E"]:
-    #         post = Post.query.filter_by(data_uuid=k, user_id=userid).first()
-    #         lst.append({"id": k, "data": d, "post": post and post.id})
-    # tatu.close()
-    # return list(data.history.values())
-    # return list({"name": "teste", "description": "descricao"})
+    storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username, debug=True)
+    print(post.data_uuid, post.data_uuid, "<<<<<<<<<<<<<<<<<<<")
+    data = idict(post.data_uuid, storage)
+    if "_history" not in data:
+        return []
+    newhist = []
+    last_hosh = data.hosh
+    current_hosh = last_hosh
+    for id, step in reversed(data.history.items()):
+        current_hosh /= id
+        step["id"] = current_hosh.id
+        metadata = step.copy()
+        metadata["id"] = id
+        del metadata["name"]
+        del metadata["code"]
+        step["metadata"] = json.dumps(metadata, indent=3)
+        step["rgb"] = id2rgb(id, dark=False)
+        newhist.append(step)
+    return newhist
 
 
 def get_head(uuid):
@@ -346,8 +339,7 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     allowed = fields.Nested(UserBaseSchema(only=["username", "name"]),
                             many=True, dump_only=True)
     favorites = auto_field(dump_only=True)
-    # data_uuid_colors = fields.Function(
-    #     lambda obj: colors(obj.data_uuid), dump_only=True)
+    data_uuid_colors = fields.Function(lambda obj: id2rgb(obj.data_uuid, dark=False), dump_only=True)
     # attrs = fields.Function(lambda obj: get_attrs(
     #     obj.data_uuid), dump_only=True)
     history = fields.Function(lambda obj: get_history(obj), dump_only=True)

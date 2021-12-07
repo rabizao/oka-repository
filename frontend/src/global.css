@@ -821,29 +821,32 @@ button, input[type="submit"], input[type="reset"] {
 
 .box-uuid {
     height: 110px;
-    width: 90px;
+    width: 96px;
     padding: 5px;
+    text-align: left;
     font-family: "Andale Mono", Andale Mono, monospace;
+    font-size: 16px;
     overflow: hidden;
     display: -webkit-box;
     -moz-box-orient: vertical;
     -webkit-box-orient: vertical;
-    word-break: break-word;
-    word-wrap: break-word;
+    word-break: break-all;
+    word-wrap: break-all;
 }
 
 .box-uuid-history {
     height: 60px;
-    width: 50px;
+    width: 52px;
     padding: 5px;
+    text-align: left;
     font-family: "Andale Mono", Andale Mono, monospace;
-    font-size: 10px;
+    font-size: 8px;
     overflow: hidden;
     display: -webkit-box;
     -moz-box-orient: vertical;
     -webkit-box-orient: vertical;
-    word-break: break-word;
-    word-wrap: break-word;
+    word-break: break-all;
+    word-wrap: break-all;
 }
 
 .font-courier {

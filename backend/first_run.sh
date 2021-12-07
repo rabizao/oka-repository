@@ -1,5 +1,7 @@
 #!/bin/sh
-read -p " -> If you proceed your local database will be removed. Are you sure? (y/n) " CONT
+if [ ! "$CONT" = "y" ]; then
+    read -p " -> If you proceed your local database will be removed. Are you sure? (y/n) " CONT
+fi
 if [ "$CONT" = "y" ]; then
   rm -rf migrations
   rm -rf ~/.oka;

@@ -60,13 +60,15 @@ class Posts(MethodView):
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
 
-        storage = SQLA(current_app.config['DATA_URL'], debug=True)
+        storage = SQLA(current_app.config['DATA_URL'], user_id=username, debug=True)
 
         for file in argsFiles['files']:
             data = Idict(arff=file.read().decode())
             if data.id in storage:
                 HTTPAbort.already_uploaded()
-            data >> [storage]
+            data >> [[storage]]
+            print("     >>>>>>>>>>", data.id)
+            print()
             task = logged_user.launch_task('process_file',
                                            "Processing your uploaded files",
                                            [data.id, username, file.filename])

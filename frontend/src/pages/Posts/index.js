@@ -1114,18 +1114,16 @@ export default function Posts(props) {
                                                                         title="Show Dataset" alt="Show Dataset"
                                                                         onClick={(e) => handleIconClick(e, item.post, item.id)}
                                                                         className="box-uuid-history"
-                                                                        // style={{ backgroundColor: `rgb(${item.data.colors[0][0]}, ${item.data.colors[0][1]}, ${item.data.colors[0][2]})`, border: `var(--border)` }}
-                                                                        style={{ backgroundColor: `rgb(255, 255, 255)`, border: `var(--border)` }}
+                                                                        style={{ backgroundColor: `rgb(${item.rgb[0][0]}, ${item.rgb[0][1]}, ${item.rgb[0][2]})`, border: `var(--border)` }}
                                                                     >
-                                                                        <span>&nbsp;</span>
-                                                                        {/* {
-                                                                            item.data.colors.slice(1).map((color, index) =>
-                                                                                <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{item.id[index]}</span>
-                                                                            )
-                                                                        } */}
+                                                                    {
+                                                                        item.rgb.slice(1).map((color, index) =>
+                                                                            <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{item.id[index]}</span>
+                                                                        )
+                                                                    }
                                                                     </button>
                                                                     <button onClick={() => handleOperationClick(item)}>
-                                                                        <div className="flex-column flex-axis-center padding-sides-very-small" title={item.description}>
+                                                                        <div className="flex-column flex-axis-center padding-sides-very-small" title={item.metadata}>
                                                                             {/* <span className="color-tertiary">{item.data.step.desc.name}</span> */}
                                                                             <span className="color-tertiary">{item.name}</span>
                                                                             <span className="color-tertiary">→</span>
@@ -1142,16 +1140,14 @@ export default function Posts(props) {
                                             <button
                                                 onClick={(e) => copyToClipboard(e, post.data_uuid)}
                                                 title="Click to copy to clipboard"
-                                                className="flex-row-nowrap box-uuid"
-                                                // style={{ backgroundColor: `rgb(${post.data_uuid_colors[0][0]}, ${post.data_uuid_colors[0][1]}, ${post.data_uuid_colors[0][2]})`, border: `var(--border)` }}
-                                                style={{ backgroundColor: `rgb(255, 255, 255)`, border: `var(--border)` }}
+                                                className="box-uuid"
+                                                style={{ backgroundColor: `rgb(${post.data_uuid_colors[0][0]}, ${post.data_uuid_colors[0][1]}, ${post.data_uuid_colors[0][2]})`, border: `var(--border)` }}
                                             >
-                                                <span>&nbsp;</span>
-                                                {/* {
-                                                    post.data_uuid_colors.slice(1).map((color, index) =>
-                                                        <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{post.data_uuid[index]}</span>
-                                                    )
-                                                } */}
+                                            {
+                                                post.data_uuid_colors.slice(1).map((color, index) =>
+                                                    <span key={index} style={{ color: `rgb(${color[0]}, ${color[1]}, ${color[2]})` }}>{post.data_uuid[index]}</span>
+                                                )
+                                            }
                                             </button>
                                         </div>
                                     </div>

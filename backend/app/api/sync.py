@@ -12,9 +12,10 @@ from idict.persistence.sqla import sqla
 from app.api.tasks import create_post
 from app.errors.handlers import HTTPAbort
 from app.models import User
-from app.schemas import (FoundResponseSchema, SyncResponseSchema, SyncContentFileSchema, SyncFieldsSchema, SyncFieldsQuerySchema,
-                         SuccessResponseSchema, NumberResponseSchema, SyncContentQuerySchema, SyncIOSchema,
-                         PostFileSchema, ItemInfoSchema)
+from app.schemas import (FoundResponseSchema, SyncResponseSchema, SyncContentFileSchema, SyncFieldsSchema,
+                         SyncFieldsQuerySchema,
+                         SuccessResponseSchema, NumberResponseSchema, SyncContentQuerySchema, PostFileSchema,
+                         ItemInfoSchema)
 from . import bp
 
 
@@ -39,7 +40,6 @@ class SyncItem(MethodView):
             if id not in storage:
                 HTTPAbort.not_found()
             return send_file(BytesIO(storage[id]), mimetype="application/octet-stream")
-
 
     @bp.auth_required
     @bp.arguments(PostFileSchema, location="files")

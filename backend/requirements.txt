@@ -31,10 +31,10 @@ Flask-Mail==0.9.1
 Flask-Migrate==3.1.0
 flask-smorest==0.35.0
 Flask-SQLAlchemy==2.5.1
-garoupa==2.211126.1
+garoupa==2.211207.7
 greenlet==1.1.2
 gunicorn==20.1.0
-idict==1.211203.1
+idict==2.211207.3
 idna==3.3
 imbalanced-learn==0.8.1
 imblearn==0.0
@@ -48,7 +48,7 @@ Jinja2==3.0.3
 joblib==1.1.0
 kombu==5.2.2
 lange==0.2101.24
-ldict==3.211202.2
+ldict==3.211204.3
 liac-arff==2.5.0
 limits==2.0.3
 lz4==3.1.10
@@ -61,7 +61,7 @@ mccabe==0.6.1
 more-itertools==8.12.0
 multiprocess==0.70.12.2
 numpy==1.21.4
-orjson==3.6.4
+orjson==3.6.5
 packaging==21.3
 pandas==1.3.4
 parso==0.8.3
@@ -98,7 +98,7 @@ six==1.16.0
 sklearn==0.0
 spark-parser==1.8.9
 SQLAlchemy==1.4.27
-terminaltables==3.1.0
+terminaltables==3.1.7
 threadpoolctl==3.0.0
 toml==0.10.2
 traitlets==5.1.1
