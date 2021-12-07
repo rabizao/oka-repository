@@ -459,7 +459,8 @@ class VisualizeQuerySchema(SQLAlchemySchema):
 
     x = fields.Integer(missing=0)
     y = fields.Integer(missing=0)
-    plt = fields.String(required=True)
+    plot = fields.String(required=True, validate=validate.OneOf(
+        ['histogram', 'scatter']))
 
 
 class ItemInfoSchema(SQLAlchemySchema):

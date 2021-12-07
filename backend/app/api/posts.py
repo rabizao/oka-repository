@@ -300,12 +300,14 @@ class PostsCommentsById(MethodView):
 @bp.route('/posts/<int:id>/visualize')
 class PostsVisualizeById(MethodView):
     @bp.auth_required
-    @bp.arguments(VisualizeQuerySchema, location="query")
-    def get(self, args, id):
+    @bp.arguments(VisualizeQuerySchema)
+    @bp.response(201, TaskBaseSchema)
+    def post(self, args, id):
         """
         Return the data for visualization of the dataset of the post with id {id}
         """
-        logged_user = User.get_by_username(get_jwt_identity())
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
         post = Post.query.get(id)
 
         if not post or not post.active:
@@ -313,6 +315,12 @@ class PostsVisualizeById(MethodView):
 
         if not logged_user.has_access(post):
             HTTPAbort.not_authorized()
+
+        task = logged_user.launch_task('run',
+                                       "Processing your visualization request",
+                                       [post.id, username, args["plot"]])
+        db.session.commit()
+        return task
 
         tatu = current_app.config['TATU_SERVER']()
         data = tatu.fetch(post.data_uuid, lazy=False)
