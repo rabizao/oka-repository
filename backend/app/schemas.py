@@ -70,11 +70,18 @@ def get_fields(uuid):
     return []
 
 
-def get_name(oid, username):
-    # storage = SQLA(current_app.config['DATA_URL'], debug=True)
-    # data = idict.fromid(str(ø * oid * username.encode()), storage)
-    # return data["_name"]
-    return "chumbado"
+def get_name(post):
+    storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username, debug=True)
+    data = idict(post.data_uuid, storage)
+
+    return data["_name"] if "_name" in data else "No name"
+
+
+def get_description(post):
+    storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username, debug=True)
+    data = idict(post.data_uuid, storage)
+
+    return data["_description"] if "_description" in data else "No description"
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -344,7 +351,8 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     history = fields.Function(lambda obj: get_history(obj), dump_only=True)
     downloads = fields.Function(lambda obj: obj.get_unique_download_count(), dump_only=True)
     head = fields.Function(lambda obj: get_head(obj.data_uuid), dump_only=True)
-    name = fields.Function(lambda obj: get_name(obj.data_uuid, obj.author.username), dump_only=True)
+    name = fields.Function(lambda obj: get_name(obj), dump_only=True)
+    description = fields.Function(lambda obj: get_description(obj), dump_only=True)
     fields = fields.Function(lambda obj: get_fields(obj.data_uuid), dump_only=True)
 
 

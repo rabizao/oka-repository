@@ -12,10 +12,10 @@ export default function OkaNavBar({ navItems, setLoading, shownUserId }) {
                 !value.hide && (
                     value.private ?
                         shownUserId && (shownUserId === loggedUser.id) &&
-                        <NavLink key={key} to={value.url} activeClassName="nav-button-secondary-active" onClick={() => setLoading && setLoading(true)}>
+                        <NavLink key={key} to={value.url} className={({ isActive }) => (isActive && "nav-button-secondary-active" )} onClick={() => setLoading && setLoading(true)}>
                             <button className="nav-button-secondary">{value.name}</button>
                         </NavLink> :
-                        <NavLink key={key} to={value.url} activeClassName="nav-button-secondary-active" onClick={() => setLoading && setLoading(true)}>
+                        <NavLink key={key} to={value.url} className={({ isActive }) => (isActive && "nav-button-secondary-active" )} onClick={() => setLoading && setLoading(true)}>
                             <button className="nav-button-secondary">{value.name}</button>
                         </NavLink>)
                 )
