@@ -205,6 +205,19 @@ def send_async_email(message, recipients=None):
 
 
 @celery.task(bind=True, base=BaseTask)
+def run(self, post_id, username, plot):
+    _set_job_progress(self, 25)
+    # post = Post.query.get(post_id)
+    # user = User.get_by_username(username)
+
+    # storage = SQLA(current_app.config['DATA_URL'],
+    #                user_id=username, debug=True)
+    # data = idict(post.data_uuid, storage) >> SQLA[plot] >> [SQLA]
+
+    return _set_job_progress(self, 100)
+
+
+@celery.task(bind=True, base=BaseTask)
 def run_step(self, post_id, step_asdict, username):
     '''
     Background task to perform simulations based on step
