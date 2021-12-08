@@ -358,7 +358,6 @@ class PostsVisualizeById(MethodView):
                     datas.append({"x": row, "y": column, "color": corr})
 
         elif args["plt"] == "histogram":
-            # TODO: create step Hist to be able to cache it, and avoid evaluating X?
             data_modified = data >> Binarize
             cut = list(map(float, data_modified.X[:, int(args["x"])]))
             maximum = max(cut)
