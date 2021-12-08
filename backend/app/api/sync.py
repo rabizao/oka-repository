@@ -36,7 +36,7 @@ class SyncItem(MethodView):
     @bp.auth_required
     @bp.response(200)
     def get(self, id):
-        with sqla(current_app.config['DATA_URL'], user_id=get_jwt_identity()) as storage:
+        with sqla(current_app.config['DATA_URL'], user_id=get_jwt_identity(), autopack=False) as storage:
             if id not in storage:
                 HTTPAbort.not_found()
             return send_file(BytesIO(storage[id]), mimetype="application/octet-stream")
@@ -47,13 +47,13 @@ class SyncItem(MethodView):
     @bp.response(201, SuccessResponseSchema)
     def post(self, argsFile, argsForm, id):
         logged_user = User.get_by_username(get_jwt_identity())
-
-        with sqla(current_app.config["DATA_URL"], user_id=get_jwt_identity(), debug=True) as storage:
-            if id in storage:
+        sqlaid = "_" + id[1:] if argsForm["create_post"] else id
+        with sqla(current_app.config["DATA_URL"], user_id=get_jwt_identity(), debug=True, autopack=False) as storage:
+            if sqlaid in storage:
                 HTTPAbort.already_uploaded(field="data")
-            storage[id] = argsFile["file"].read()
             if argsForm["create_post"]:
                 create_post(logged_user, id)
+            storage[sqlaid] = argsFile["file"].read()
 
 
 @bp.route("/sync/<string:uuid>/lock")

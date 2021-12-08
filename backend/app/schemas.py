@@ -25,7 +25,6 @@ def get_history(post):
     #     return []
     # lst.append({"id": "oid", "data": {}, "post": 1})
     storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username, debug=True)
-    print(post.data_uuid, post.data_uuid, "<<<<<<<<<<<<<<<<<<<")
     data = idict(post.data_uuid, storage)
     if "_history" not in data:
         return []
@@ -343,12 +342,10 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     # attrs = fields.Function(lambda obj: get_attrs(
     #     obj.data_uuid), dump_only=True)
     history = fields.Function(lambda obj: get_history(obj), dump_only=True)
-    downloads = fields.Function(
-        lambda obj: obj.get_unique_download_count(), dump_only=True)
+    downloads = fields.Function(lambda obj: obj.get_unique_download_count(), dump_only=True)
     head = fields.Function(lambda obj: get_head(obj.data_uuid), dump_only=True)
     name = fields.Function(lambda obj: get_name(obj.data_uuid, obj.author.username), dump_only=True)
-    fields = fields.Function(
-        lambda obj: get_fields(obj.data_uuid), dump_only=True)
+    fields = fields.Function(lambda obj: get_fields(obj.data_uuid), dump_only=True)
 
 
 class PostSimplifiedSchema(PostBaseSchema):
