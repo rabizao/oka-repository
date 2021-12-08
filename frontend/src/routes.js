@@ -22,16 +22,16 @@ export default function RoutesModule() {
         <BrowserRouter>
             <Fragment>
                 <Routes>
-                    <Route exact path='/' element={<PrivateRoute />}>
+                    <Route element={<PrivateRoute />}>
                         <Route path="/home" element={<Home />} />
                         <Route path="/client" element={<OkaClient />} />
-                        <Route path="/users/:username" exact element={<Users />} />
+                        <Route path="/users/:username" element={<Users />} />
                         <Route path="/users/:username/:section" element={<Users />} />
                         <Route path="/search/:section/" element={<Search />} />
-                        <Route path="/posts/:id" exact element={<Posts />} />
+                        <Route path="/posts/:id" element={<Posts />} />
                         <Route path="/posts/:id/:section/" element={<Posts />} />
                     </Route>
-                    <Route path="/" exact element={<Index />} />
+                    <Route path="/" element={<Index />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/confirmation/submit" element={<ConfirmationSubmit />} />
