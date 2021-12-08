@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link, useHistory, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 import { ArrowLeft, ArrowRight, Search } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
@@ -14,7 +14,7 @@ import Gravatar from '../Gravatar';
 
 export default function OkaMessagesBox() {
     let location = useLocation();
-    const history = useHistory();
+    const navigate = useNavigate();
     const [filter, setFilter] = useState('');
     const [messages, setMessages] = useState([]);
     const [filteredMessages, setFilteredMessages] = useState([]);
@@ -60,13 +60,13 @@ export default function OkaMessagesBox() {
     function handlePreviousPage() {
         let newParsedQueries = queryString.parse(location.search);
         newParsedQueries['page'] = page - 1;
-        history.push(location.pathname + "?" + queryString.stringify(newParsedQueries));
+        navigate(location.pathname + "?" + queryString.stringify(newParsedQueries));
     }
 
     function handleNextPage() {
         let newParsedQueries = queryString.parse(location.search);
         newParsedQueries['page'] = page + 1;
-        history.push(location.pathname + "?" + queryString.stringify(newParsedQueries));
+        navigate(location.pathname + "?" + queryString.stringify(newParsedQueries));
     }
 
     function handleChangePageSize(e) {
@@ -74,7 +74,7 @@ export default function OkaMessagesBox() {
         let newParsedQueries = queryString.parse(location.search);
         newParsedQueries['page_size'] = e.target.value;
         newParsedQueries['page'] = 1;
-        history.push(location.pathname + "?" + queryString.stringify(newParsedQueries));
+        navigate(location.pathname + "?" + queryString.stringify(newParsedQueries));
     }
 
     function handleReload() {

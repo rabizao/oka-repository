@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link, useHistory, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 import { CheckBoxOutlineBlank, CheckBox, CloudDownload, Search, ArrowLeft, ArrowRight } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
@@ -13,7 +13,7 @@ import { NotificationsContext } from '../../contexts/NotificationsContext';
 
 export default function OkaPostsBox({ fetch_url }) {
     let location = useLocation();
-    const history = useHistory();
+    const navigate = useNavigate();
     const [selection, setSelection] = useState([]);
     const [selectAll, setSelectAll] = useState(false);
     const [filter, setFilter] = useState('');
@@ -109,13 +109,13 @@ export default function OkaPostsBox({ fetch_url }) {
     function handlePreviousPage() {
         let newParsedQueries = queryString.parse(location.search);
         newParsedQueries['page'] = page - 1;
-        history.push(location.pathname + "?" + queryString.stringify(newParsedQueries));
+        navigate(location.pathname + "?" + queryString.stringify(newParsedQueries));
     }
 
     function handleNextPage() {
         let newParsedQueries = queryString.parse(location.search);
         newParsedQueries['page'] = page + 1;
-        history.push(location.pathname + "?" + queryString.stringify(newParsedQueries));
+        navigate(location.pathname + "?" + queryString.stringify(newParsedQueries));
     }
 
     function handleChangePageSize(e) {
@@ -123,7 +123,7 @@ export default function OkaPostsBox({ fetch_url }) {
         let newParsedQueries = queryString.parse(location.search);
         newParsedQueries['page_size'] = e.target.value;
         newParsedQueries['page'] = 1;
-        history.push(location.pathname + "?" + queryString.stringify(newParsedQueries));
+        navigate(location.pathname + "?" + queryString.stringify(newParsedQueries));
     }
 
     function handleReload() {

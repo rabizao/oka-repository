@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 
 import './styles.css';
 
@@ -21,8 +21,9 @@ import Gravatar from '../../components/Gravatar';
 
 export default function Users(props) {
     const location = useLocation()
-    const username = props.match.params.username;
-    const section = props.match.params.section ? props.match.params.section : "empty";
+    let params = useParams()
+    const username = params.username;
+    const section = params.section ? params.section : "empty";
     const [parsedQueries, setParsedQueries] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
@@ -39,7 +40,7 @@ export default function Users(props) {
     const [newPasswordRetype, setNewPasswordRetype] = useState('');
     const [nameEdit, setNameEdit] = useState('');
     const [about_meEdit, setAbout_meEdit] = useState('');
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const loggedUser = useContext(LoginContext);
 
@@ -180,7 +181,7 @@ export default function Users(props) {
             await api.post(`messages/${user.username}`, data);
             setOpenMessage(false);
             setMessage('');
-            NotificationManager.success("Message sent. Click here to follow your conversations", "Sent", 4000, () => { history.push(`/users/${loggedUser.username}/messages`) })
+            NotificationManager.success("Message sent. Click here to follow your conversations", "Sent", 4000, () => { navigate(`/users/${loggedUser.username}/messages`) })
         } catch (error) {
             notifyError(error);
         }

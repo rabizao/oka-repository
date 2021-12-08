@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useHistory, useLocation } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
+import { useParams } from 'react-router-dom';
 import queryString from 'query-string';
 
 import './styles.css';
@@ -96,8 +97,9 @@ const filterOptions = {
 
 export default function Search(props) {
     const location = useLocation();
-    const section = props.match.params.section;
-    const history = useHistory();
+    let params = useParams();
+    const section = params.section;
+    const navigate = useNavigate();
     const [parsedQueries, setParsedQueries] = useState(queryString.parse(location.search));
     const [filter, setFilter] = useState(false);
 
@@ -115,7 +117,7 @@ export default function Search(props) {
         }
 
         setParsedQueries(newParsedQueries);
-        history.push("datasets?" + queryString.stringify(newParsedQueries));
+        navigate("datasets?" + queryString.stringify(newParsedQueries));
     }
 
     const textBox = (text) => {
@@ -132,7 +134,7 @@ export default function Search(props) {
         if (filter === true) {
             const newParsedQueries = { "logic": "and", "name": parsedQueries.name };
             setParsedQueries(newParsedQueries);
-            history.push("datasets?" + queryString.stringify(newParsedQueries));
+            navigate("datasets?" + queryString.stringify(newParsedQueries));
 
         }
         setFilter(!filter);

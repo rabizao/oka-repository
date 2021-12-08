@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { NotificationManager } from 'react-notifications';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { notifyError } from '../../utils';
 
 import './styles.css';
 
 export default function AccountRecover() {
-    const history = useHistory();
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
 
     async function handleSubmit(e) {
@@ -20,7 +20,7 @@ export default function AccountRecover() {
         try {
             await api.post('users/recover/account', data);
             NotificationManager.success(`Please check your email for instructions.`, "Success", 8000)
-            history.push('/login');
+            navigate('/login');
         } catch (error) {
             notifyError(error);
         }

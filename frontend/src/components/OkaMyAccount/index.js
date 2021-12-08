@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { ExpandMore } from '@material-ui/icons';
 
@@ -15,14 +15,14 @@ import Gravatar from '../Gravatar';
 export default function OkaMyAccount() {
     const loggedUser = useContext(LoginContext);
     const notificationsContext = useContext(NotificationsContext);
-    const history = useHistory();
+    const navigate = useNavigate();
 
     function handleLogout() {
         logout();
         loggedUser.setLogged(false);
         notificationsContext.setNotifications([]);
         notificationsContext.setSince(timeStart);
-        history.push('/');
+        navigate('/');
     }
 
     async function handleLogoutAllDevices() {

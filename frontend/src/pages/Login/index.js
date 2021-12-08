@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import './styles.css';
 
@@ -8,7 +8,7 @@ import api from '../../services/api';
 import { notifyError } from '../../utils';
 
 export default function Login() {
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const loginContext = useContext(LoginContext);
     const [username, setUsername] = useState('');
@@ -29,7 +29,7 @@ export default function Login() {
             localStorage.setItem('name', response.data.name);
             localStorage.setItem('gravatar', response.data.gravatar);
             loginContext.setLogged(true);
-            history.push('/home');
+            navigate('/home');
         } catch (error) {
             notifyError(error);
         }

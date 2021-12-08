@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ReCAPTCHA from "react-google-recaptcha";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -60,13 +60,13 @@ export default function Index() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
-    const history = useHistory();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (loggedUser.logged) {
-            history.push("/home");
+            navigate("/home");
         }
-    }, [loggedUser.logged, history])
+    }, [loggedUser.logged, navigate])
 
     async function handleContactSubmit(e) {
         e.preventDefault()

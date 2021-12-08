@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import './styles.css';
 
@@ -265,9 +265,10 @@ const metas = {
 }
 
 
-export default function Posts(props) {
-    const id = props.match.params.id;
-    const section = props.match.params.section ? props.match.params.section : "empty";
+export default function Posts() {
+    let params = useParams();
+    const id = params.id;
+    const section = params.section ? params.section : "empty";
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [render, setRender] = useState(0);
@@ -302,7 +303,7 @@ export default function Posts(props) {
     const loggedUser = useContext(LoginContext);
     const runningTasksBar = useContext(RunningTasksBarContext);
     const notificationsContext = useContext(NotificationsContext);
-    const history = useHistory();
+    const navigate = useNavigate();
 
     useEffect(() => {
         async function fetchPost() {
@@ -739,7 +740,7 @@ export default function Posts(props) {
                 setDescription(response.data.description ? response.data.description : '');
                 setDescriptionEdit(response.data.description ? response.data.description : '');
                 setLoading(false);
-                history.push(`/posts/${postId}/overview`);
+                navigate(`/posts/${postId}/overview`);
             }
         } catch (error) {
             notifyError(error);
@@ -802,7 +803,7 @@ export default function Posts(props) {
             await api.delete(`posts/${id}`);
             NotificationManager.success("Post was successfully deleted.", "Delete", 8000);
             setOpenDeletePost(false);
-            history.push("/home");
+            navigate("/home");
         } catch (error) {
             notifyError(error);
         }

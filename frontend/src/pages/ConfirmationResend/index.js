@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { notifyError } from '../../utils';
 
 import './styles.css';
 
 export default function ConfirmationResend() {
-    const history = useHistory();
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
 
     async function handleSubmit(e) {
@@ -18,7 +18,7 @@ export default function ConfirmationResend() {
 
         try {
             const response = await api.post('users/recover/key', data);
-            history.push({pathname: '/confirmation', state: {username: response.data.username, email: response.data.email}});
+            navigate({pathname: '/confirmation', state: {username: response.data.username, email: response.data.email}});
         } catch (error) {
             notifyError(error);
         }

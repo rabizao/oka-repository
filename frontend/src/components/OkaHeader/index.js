@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useHistory, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Search, Notifications } from '@material-ui/icons'; // Apps, AccountBalance, , ChatBubble
 import Badge from '@material-ui/core/Badge';
 
@@ -14,14 +14,14 @@ import { LoginContext } from '../../contexts/LoginContext';
 
 export default function OkaHeader(props) {
 
-    const history = useHistory();
+    const navigate = useNavigate();
     const [search, setSearch] = useState(props.query || "");
     const notificationsContext = useContext(NotificationsContext);
     const loggedUser = useContext(LoginContext);
 
     function handleSearch(e) {
         e.preventDefault();
-        history.push(`${props.section ?
+        navigate(`${props.section ?
             `/search/${props.section}?name=${search}&logic=and` :
             `/search/datasets?name=${search}&logic=and`}`);
     }
@@ -50,7 +50,7 @@ export default function OkaHeader(props) {
 
     // function handleMessageBadgeClick() {
     //     notificationsContext.setMessagesBadgeCount(0);
-    //     history.push(`/users/${loggedUser.username}/messages`);
+    //     navigate(`/users/${loggedUser.username}/messages`);
     // }
 
     return (

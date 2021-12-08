@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NotificationManager } from 'react-notifications';
-import { Link, useHistory, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import { notifyError } from '../../utils';
 import queryString from 'query-string';
@@ -8,7 +8,7 @@ import queryString from 'query-string';
 import './styles.css';
 
 export default function AccountRecoverSubmit() {
-    const history = useHistory();
+    const navigate = useNavigate();
     let location = useLocation();
     const key = queryString.parse(location.search).key
     const username = queryString.parse(location.search).username
@@ -26,7 +26,7 @@ export default function AccountRecoverSubmit() {
         try {
             await api.put('users/recover/account', data);
             NotificationManager.success(`Password successfully changed.`, "Success", 8000)
-            history.push('/login');
+            navigate('/login');
         } catch (error) {
             notifyError(error);
         }

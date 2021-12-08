@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import './styles.css';
 
 export default function Confirmation(props) {
-    const history = useHistory();
+    const navigate = useNavigate();
     const [key, setKey] = useState('');
 
     async function handleSubmit(e) {
         e.preventDefault();
-        history.push(`/confirmation/submit?username=${props.location.state.username}&key=${key}`)
+        navigate(`/confirmation/submit?username=${props.location.state.username}&key=${key}`)
     }
 
     return (

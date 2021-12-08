@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ReCAPTCHA from "react-google-recaptcha";
 
 import './styles.css';
@@ -8,7 +8,7 @@ import api, {recaptchaKey} from '../../services/api';
 import { notifyError } from '../../utils';
 
 export default function Register() {
-    const history = useHistory();
+    const navigate = useNavigate();
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -27,7 +27,7 @@ export default function Register() {
 
         try {
             await api.post('users', data);
-            history.push({ pathname: '/confirmation', state: { username: username, email: email } });
+            navigate({ pathname: '/confirmation', state: { username: username, email: email } });
         } catch (error) {
             notifyError(error);
         }

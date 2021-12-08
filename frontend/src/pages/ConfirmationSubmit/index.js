@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Redirect, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import queryString from 'query-string';
 
 import './styles.css';
@@ -43,12 +43,12 @@ export default function AccountRecoverSubmit() {
                 finished && (
                     confirm ? (
                         success ?
-                            <Redirect to="/login" /> :
-                            <Redirect to="/confirmation/resend" />
+                            <Navigate to="/login" /> :
+                            <Navigate to="/confirmation/resend" />
                     ) :
                         success ?
-                            <Redirect to="/" /> :
-                            <Redirect to="/confirmation/resend" />
+                            <Navigate to="/" /> :
+                            <Navigate to="/confirmation/resend" />
                 )
             }
         </>

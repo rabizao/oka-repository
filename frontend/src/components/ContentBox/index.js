@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Message, Favorite, FavoriteBorder } from '@material-ui/icons';
 import { CircularProgress } from '@material-ui/core';
 import TimeAgo from 'timeago-react';
@@ -22,7 +22,7 @@ export default function ContentBox(props) {
     const page_size = 20;
     const user = useContext(LoginContext);
 
-    const history = useHistory();
+    const navigate = useNavigate();
 
     useEffect(() => {
         async function fetchData() {
@@ -70,7 +70,7 @@ export default function ContentBox(props) {
         } else {
             newComments[post.id] = post.comments;
         }
-        history.push(`/posts/${post.id}/comments`);
+        navigate(`/posts/${post.id}/comments`);
         setComments(newComments);
     }
 

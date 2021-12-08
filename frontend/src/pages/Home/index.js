@@ -13,7 +13,7 @@ import { LoginContext } from '../../contexts/LoginContext';
 import { notifyError } from '../../utils';
 import { NotificationsContext } from '../../contexts/NotificationsContext';
 import { RunningTasksBarContext } from '../../contexts/RunningTasksBarContext';
-import { Prompt } from 'react-router-dom';
+// import { Prompt } from 'react-router-dom';
 
 export default function Home() {
     const [acceptedFiles, setAcceptedFiles] = useState([]);
@@ -204,10 +204,10 @@ export default function Home() {
                             {
                                 showProgress &&
                                 <div className="flex-row flex-axis-center padding-small box width100">
-                                    <Prompt
+                                    {/* <Prompt
                                         when={blockSubmit}
                                         message="This will cancel your upload, are you sure?"
-                                    />
+                                    /> */}
                                     <LinearProgress className="padding-sides-small width100" variant="determinate" value={progress} />
                                     <h5 className="margin-sides-verysmall min-width-small">{progress}%</h5>
                                 </div>
