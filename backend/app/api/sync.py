@@ -48,7 +48,7 @@ class SyncItem(MethodView):
     def post(self, argsFile, argsForm, id):
         logged_user = User.get_by_username(get_jwt_identity())
         sqlaid = "_" + id[1:] if argsForm["create_post"] else id
-        with sqla(current_app.config["DATA_URL"], user_id=get_jwt_identity(), debug=True, autopack=False) as storage:
+        with sqla(current_app.config["DATA_URL"], user_id=get_jwt_identity(), autopack=False) as storage:
             if sqlaid in storage:
                 HTTPAbort.already_uploaded(field="data")
             if argsForm["create_post"]:

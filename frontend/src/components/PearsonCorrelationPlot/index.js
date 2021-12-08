@@ -117,7 +117,7 @@ export default function PearsonCorrelationPlot({ postId, attrs }) {
     useEffect(() => {
         async function fetchData() {
             try {
-                // const response = await api.get(`posts/${postId}/visualize?plt=pearsoncorrelation`);
+                // const response = await api.get(`posts/${postId}/visualize?plot=pearsoncorrelation`);
                 // setChartData(response.data);
                 setError(false);
             } catch (error) {

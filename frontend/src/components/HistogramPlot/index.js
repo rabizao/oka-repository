@@ -16,7 +16,7 @@ export default function HistogramPlot({ postId, attrs }) {
     useEffect(() => {
         async function fetchData() {
             try {
-                const response = await api.get(`posts/${postId}/visualize?plt=histogram&x=${x}`);
+                const response = await api.get(`posts/${postId}/visualize?plot=histogram&x=${x}`);
                 setChartData(response.data);
                 setError(false);
             } catch (error) {

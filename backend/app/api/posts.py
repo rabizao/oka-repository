@@ -1,6 +1,7 @@
 import json
 import uuid as u
 from datetime import datetime
+from idict import idict
 from idict.core.idict_ import Idict
 from idict.persistence.sqla import SQLA
 
@@ -60,7 +61,8 @@ class Posts(MethodView):
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
 
-        storage = SQLA(current_app.config['DATA_URL'], user_id=username, debug=True)
+        storage = SQLA(
+            current_app.config['DATA_URL'], user_id=username)
 
         for file in argsFiles['files']:
             data = Idict(arff=file.read().decode())
@@ -304,7 +306,7 @@ class PostsVisualizeById(MethodView):
     @bp.response(201, TaskBaseSchema)
     def post(self, args, id):
         """
-        Return the data for visualization of the dataset of the post with id {id}
+        Evaluate the data for visualization of the dataset of the post with id {id}
         """
         username = get_jwt_identity()
         logged_user = User.get_by_username(username)
@@ -372,6 +374,32 @@ class PostsVisualizeById(MethodView):
 
         tatu.close()
         return json.dumps(datas)
+
+    @bp.auth_required
+    @bp.arguments(VisualizeQuerySchema, location="query")
+    @bp.response(200)
+    def get(self, args, id):
+        """
+        Return the data for visualization of the dataset of the post with id {id}
+        """
+
+        logged_user = User.get_by_username(get_jwt_identity())
+        post = Post.query.get(id)
+
+        print(post.active)
+
+        if not post or not post.active:
+            HTTPAbort.not_found()
+
+        if not logged_user.has_access(post):
+            HTTPAbort.not_authorized()
+
+        storage = SQLA(
+            current_app.config['DATA_URL'], user_id=post.author.username)
+        data = idict(post.data_uuid, storage)
+
+        if args["plot"] not in data:
+            HTTPAbort.not_found(field=args["plot"])
 
 
 @bp.route('/posts/<int:id>/twins')

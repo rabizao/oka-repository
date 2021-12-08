@@ -18,7 +18,7 @@ export default function ScatterPlot({ postId, attrs }) {
     useEffect(() => {
         async function fetchData() {
             try {
-                const response = await api.get(`posts/${postId}/visualize?plt=scatter&x=${x}&y=${y}`);
+                const response = await api.get(`posts/${postId}/visualize?plot=scatter&x=${x}&y=${y}`);
                 setChartData(response.data);
                 setError(false);
             } catch (error) {

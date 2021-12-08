@@ -607,24 +607,24 @@ class ApiCase(unittest.TestCase):
             username2).has_access(post), False)
         # 13
         # Can not get visualize of inexistent post
-        response = self.client.get("/api/posts/100/visualize?plt=scatter")
+        response = self.client.get("/api/posts/100/visualize?plot=scatter")
         self.assertEqual(response.status_code, 422)
         response = self.client.get(
-            f"/api/posts/{post_id}/visualize?plt=scatter")
+            f"/api/posts/{post_id}/visualize?plot=scatter")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(
-            f"/api/posts/{post_id}/visualize?plt=parallelcoordinates")
+            f"/api/posts/{post_id}/visualize?plot=parallelcoordinates")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(
-            f"/api/posts/{post_id}/visualize?plt=pearsoncorrelation")
+            f"/api/posts/{post_id}/visualize?plot=pearsoncorrelation")
         self.assertEqual(response.status_code, 200)
         response = self.client.get(
-            f"/api/posts/{post_id}/visualize?plt=histogram")
+            f"/api/posts/{post_id}/visualize?plot=histogram")
         self.assertEqual(response.status_code, 200)
         # User2 can not access visualization data
         self.login(create_user=False, user=create_user2)
         response = self.client.get(
-            f"/api/posts/{post_id}/visualize?plt=histogram")
+            f"/api/posts/{post_id}/visualize?plot=histogram")
         self.assertEqual(response.status_code, 422)
         self.login(create_user=False)
         # 14

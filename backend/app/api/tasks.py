@@ -211,7 +211,7 @@ def run(self, post_id, username, plot):
     # user = User.get_by_username(username)
 
     # storage = SQLA(current_app.config['DATA_URL'],
-    #                user_id=username, debug=True)
+    #                user_id=username)
     # data = idict(post.data_uuid, storage) >> SQLA[plot] >> [SQLA]
 
     return _set_job_progress(self, 100)
@@ -260,7 +260,7 @@ def download_data(self, pids, username, ip):
     if not logged_user:
         raise Exception(f'Username {username} not found!')
 
-    storage = SQLA(current_app.config['DATA_URL'], debug=True)
+    storage = SQLA(current_app.config['DATA_URL'])
     filename = str(u.uuid4()) + '.zip'
     file = BytesIO()
     with ZipFile(file, 'w') as zipped_file:
@@ -294,7 +294,7 @@ def process_file(self, id, username, original_name):
     if not logged_user:
         raise Exception(f'Username {username} not found!')
 
-    storage = SQLA(current_app.config['DATA_URL'], user_id=username, debug=True)
+    storage = SQLA(current_app.config['DATA_URL'], user_id=username)
     data_rawarff = Idict.fromid(id, storage)
     oid = (data_rawarff >> arff2df >> [[storage]]).id
 
@@ -314,7 +314,7 @@ def process_file(self, id, username, original_name):
 #     # tatu = current_app.config['TATU_SERVER']()
 #     # files = ["arq0.arff", "arq1.arff"]
 #     # files = bin
-#     storage = SQLA(current_app.config['DATA_URL'], debug=True)
+#     storage = SQLA(current_app.config['DATA_URL'])
 
 #     for file in files:
 #         actual_index = files.index(file)

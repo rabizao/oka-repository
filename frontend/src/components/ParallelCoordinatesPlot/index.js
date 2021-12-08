@@ -2257,7 +2257,7 @@ export default function ParallelCoordinatesPlot({ postId, attrs }) {
     useEffect(() => {
         async function fetchData() {
             try {
-                // const response = await api.get(`posts/${postId}/visualize?plt=parallelcoordinates`);
+                // const response = await api.get(`posts/${postId}/visualize?plot=parallelcoordinates`);
                 // setChartData(response.data);
                 setError(false);
             } catch (error) {

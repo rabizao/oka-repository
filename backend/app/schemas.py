@@ -24,7 +24,7 @@ def get_history(post):
     # if not data:  # REMINDER: The history exists, but is not accessible through data.fetch()
     #     return []
     # lst.append({"id": "oid", "data": {}, "post": 1})
-    storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username, debug=True)
+    storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username)
     data = idict(post.data_uuid, storage)
     if "_history" not in data:
         return []
@@ -71,14 +71,14 @@ def get_fields(uuid):
 
 
 def get_name(post):
-    storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username, debug=True)
+    storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username)
     data = idict(post.data_uuid, storage)
 
     return data["_name"] if "_name" in data else "No name"
 
 
 def get_description(post):
-    storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username, debug=True)
+    storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username)
     data = idict(post.data_uuid, storage)
 
     return data["_description"] if "_description" in data else "No description"
