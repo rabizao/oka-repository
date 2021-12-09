@@ -6,7 +6,7 @@ from flask_smorest import abort
 
 @bp.app_errorhandler(404)
 def not_found_error(error):
-    return jsonify(errors={"json": {"url": ["Does not exist."]}}), 404
+    return jsonify(errors={"json": {"404": ["Not found."]}}), 404
 
 
 @bp.app_errorhandler(500)
@@ -53,11 +53,11 @@ class HTTPAbort:
             "json": {field: ["Not possible." + complement]}})
 
     @staticmethod
-    def not_found(field="id"):
+    def not_found():
         """
         Called when the provided field does not exist
         """
-        return abort(404, errors={"json": {field: ["Not found."]}})
+        return abort(404)
 
     @staticmethod
     def field_invalid(field="key"):

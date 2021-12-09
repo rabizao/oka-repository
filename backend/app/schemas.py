@@ -24,7 +24,8 @@ def get_history(post):
     # if not data:  # REMINDER: The history exists, but is not accessible through data.fetch()
     #     return []
     # lst.append({"id": "oid", "data": {}, "post": 1})
-    storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username)
+    storage = SQLA(current_app.config['DATA_URL'],
+                   user_id=post.author.username)
     data = idict(post.data_uuid, storage)
     if "_history" not in data:
         return []
@@ -44,7 +45,7 @@ def get_history(post):
     return newhist
 
 
-def get_head(uuid):
+def get_head(post):
     # tatu = current_app.config['TATU_SERVER']()
     # data = tatu.fetch(uuid, lazy=False)
     # if not data:  # REMINDER: Data registry exists, but can be empty.
@@ -55,10 +56,20 @@ def get_head(uuid):
     # ret = [data.Xd[:10] + data.Yd[:10]] + table
     # tatu.close()
     # return ret
+
+    # storage = SQLA(current_app.config['DATA_URL'],
+    #                user_id=post.author.username)
+    # data = idict(post.data_uuid, storage)
+
+    # from idict.macro.data import dfhead
+    # data = data >> dfhead >> [[storage]]
+
+    # data = data >> (lambda df: {"head": df.head}) >> storage
+    # print(data)
     return []
 
 
-def get_fields(uuid):
+def get_fields(post):
     # tatu = current_app.config['TATU_SERVER']()
     # data = tatu.fetch(uuid, lazy=False)
     # if not data:  # REMINDER: Data registry exists, but can be empty.
@@ -67,18 +78,26 @@ def get_fields(uuid):
     # ret = list(data.asdict.keys())
     # tatu.close()
     # return ret
+    storage = SQLA(current_app.config['DATA_URL'],
+                   user_id=post.author.username)
+    data = idict(post.data_uuid, storage)
+
+    print(data.ids.keys())
+
     return []
 
 
 def get_name(post):
-    storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username)
+    storage = SQLA(current_app.config['DATA_URL'],
+                   user_id=post.author.username)
     data = idict(post.data_uuid, storage)
 
     return data["_name"] if "_name" in data else "No name"
 
 
 def get_description(post):
-    storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username)
+    storage = SQLA(current_app.config['DATA_URL'],
+                   user_id=post.author.username)
     data = idict(post.data_uuid, storage)
 
     return data["_description"] if "_description" in data else "No description"
@@ -345,15 +364,19 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     allowed = fields.Nested(UserBaseSchema(only=["username", "name"]),
                             many=True, dump_only=True)
     favorites = auto_field(dump_only=True)
-    data_uuid_colors = fields.Function(lambda obj: id2rgb(obj.data_uuid, dark=False), dump_only=True)
+    data_uuid_colors = fields.Function(lambda obj: id2rgb(
+        obj.data_uuid, dark=False), dump_only=True)
     # attrs = fields.Function(lambda obj: get_attrs(
     #     obj.data_uuid), dump_only=True)
     history = fields.Function(lambda obj: get_history(obj), dump_only=True)
-    downloads = fields.Function(lambda obj: obj.get_unique_download_count(), dump_only=True)
-    head = fields.Function(lambda obj: get_head(obj.data_uuid), dump_only=True)
+    downloads = fields.Function(
+        lambda obj: obj.get_unique_download_count(), dump_only=True)
+    head = fields.Function(lambda obj: get_head(obj), dump_only=True)
     name = fields.Function(lambda obj: get_name(obj), dump_only=True)
-    description = fields.Function(lambda obj: get_description(obj), dump_only=True)
-    fields = fields.Function(lambda obj: get_fields(obj.data_uuid), dump_only=True)
+    description = fields.Function(
+        lambda obj: get_description(obj), dump_only=True)
+    fields = fields.Function(
+        lambda obj: get_fields(obj), dump_only=True)
 
 
 class PostSimplifiedSchema(PostBaseSchema):

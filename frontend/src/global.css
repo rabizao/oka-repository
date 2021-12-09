@@ -823,7 +823,6 @@ button, input[type="submit"], input[type="reset"] {
     height: 110px;
     width: 96px;
     padding: 5px;
-    text-align: left;
     font-family: "Andale Mono", Andale Mono, monospace;
     font-size: 16px;
     overflow: hidden;
@@ -831,14 +830,12 @@ button, input[type="submit"], input[type="reset"] {
     -moz-box-orient: vertical;
     -webkit-box-orient: vertical;
     word-break: break-all;
-    word-wrap: break-all;
 }
 
 .box-uuid-history {
     height: 60px;
     width: 52px;
     padding: 5px;
-    text-align: left;
     font-family: "Andale Mono", Andale Mono, monospace;
     font-size: 8px;
     overflow: hidden;
@@ -846,7 +843,6 @@ button, input[type="submit"], input[type="reset"] {
     -moz-box-orient: vertical;
     -webkit-box-orient: vertical;
     word-break: break-all;
-    word-wrap: break-all;
 }
 
 .font-courier {
