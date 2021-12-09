@@ -18,12 +18,6 @@ from app.models import User, Post, Comment, Contact, Notification, Task, Message
 
 
 def get_history(post):
-    # tatu = current_app.config['TATU_SERVER']()
-    # data = tatu.fetch(post.data_uuid, lazy=False)
-
-    # if not data:  # REMINDER: The history exists, but is not accessible through data.fetch()
-    #     return []
-    # lst.append({"id": "oid", "data": {}, "post": 1})
     storage = SQLA(current_app.config['DATA_URL'],
                    user_id=post.author.username)
     data = idict(post.data_uuid, storage)
@@ -70,21 +64,11 @@ def get_head(post):
 
 
 def get_fields(post):
-    # tatu = current_app.config['TATU_SERVER']()
-    # data = tatu.fetch(uuid, lazy=False)
-    # if not data:  # REMINDER: Data registry exists, but can be empty.
-    #     return []
-
-    # ret = list(data.asdict.keys())
-    # tatu.close()
-    # return ret
     storage = SQLA(current_app.config['DATA_URL'],
                    user_id=post.author.username)
     data = idict(post.data_uuid, storage)
 
-    print(data.ids.keys())
-
-    return []
+    return data.fields
 
 
 def get_name(post):
