@@ -34,7 +34,7 @@ Flask-SQLAlchemy==2.5.1
 garoupa==2.211207.7
 greenlet==1.1.2
 gunicorn==20.1.0
-idict==2.211207.6
+idict==2.211209.1
 idna==3.3
 imbalanced-learn==0.8.1
 imblearn==0.0
@@ -97,7 +97,7 @@ simplejson==3.17.6
 six==1.16.0
 sklearn==0.0
 spark-parser==1.8.9
-SQLAlchemy==1.4.27
+SQLAlchemy==1.4.28
 terminaltables==3.1.7
 threadpoolctl==3.0.0
 toml==0.10.2

@@ -17,7 +17,7 @@ from app.models import Post, Task, User
 from app.schemas import TaskStatusBaseSchema
 
 from idict import idict
-from idict.function.data import df2arff, arff2df
+from idict.function.dataset import df2arff, arff2df
 
 
 def create_post(logged_user, id, original_name="My uploaded data"):
