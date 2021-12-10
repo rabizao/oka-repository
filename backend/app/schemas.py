@@ -6,8 +6,6 @@ from datetime import datetime
 from flask import current_app
 from flask_smorest.fields import Upload
 from garoupa.misc.colors import id2rgb
-from idict import idict
-from idict.persistence.sqla import SQLA
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow.decorators import pre_load
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
@@ -15,6 +13,10 @@ from werkzeug.security import generate_password_hash
 
 from app import db
 from app.models import User, Post, Comment, Contact, Notification, Task, Message
+from idict import idict, let
+from idict.function.data import df2list
+from idict.macro.data import df_head
+from idict.persistence.sqla import SQLA
 
 
 def get_history(post):
@@ -40,27 +42,10 @@ def get_history(post):
 
 
 def get_head(post):
-    # tatu = current_app.config['TATU_SERVER']()
-    # data = tatu.fetch(uuid, lazy=False)
-    # if not data:  # REMINDER: Data registry exists, but can be empty.
-    #     tatu.close()
-    #     return []
-    # sliced = data >> Slice(":10,:10") * Cache(tatu)
-    # table = np.concatenate((sliced.X, sliced.Y), axis=1).tolist()
-    # ret = [data.Xd[:10] + data.Yd[:10]] + table
-    # tatu.close()
-    # return ret
-
-    # storage = SQLA(current_app.config['DATA_URL'],
-    #                user_id=post.author.username)
-    # data = idict(post.data_uuid, storage)
-
-    # from idict.macro.data import dfhead
-    # data = data >> dfhead >> [[storage]]
-
-    # data = data >> (lambda df: {"head": df.head}) >> storage
-    # print(data)
-    return []
+    storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username)
+    data = idict(post.data_uuid, storage)
+    data = data >> df_head() >> let(df2list, input="head") >> [storage]
+    return data.list
 
 
 def get_fields(post):

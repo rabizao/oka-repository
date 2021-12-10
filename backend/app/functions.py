@@ -3,11 +3,11 @@ from sklearn.utils import resample
 
 from idict import let
 from idict.function.data import nomcols, binarize
-from idict.function.higherorder import compose
 from idict.function.model import fit
 from idict.function.text import value2text
 from idict.function.vizualization import X2histogram, Xy2scatterplot
 from idict.function.wrapper import xywrapper
+from idict.macro.higherorder import compose
 
 
 def histogram_macro(col):
