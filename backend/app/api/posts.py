@@ -386,8 +386,6 @@ class PostsVisualizeById(MethodView):
         logged_user = User.get_by_username(get_jwt_identity())
         post = Post.query.get(id)
 
-        print(post.active)
-
         if not post or not post.active:
             HTTPAbort.not_found()
 
@@ -397,6 +395,8 @@ class PostsVisualizeById(MethodView):
         storage = SQLA(
             current_app.config['DATA_URL'], user_id=post.author.username)
         data = idict(post.data_uuid, storage)
+
+        # data = data >> histogram_macro(col=2) >> storage
 
         if args["plot"] not in data:
             HTTPAbort.not_found(field=args["plot"])

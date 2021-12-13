@@ -53,11 +53,12 @@ class HTTPAbort:
             "json": {field: ["Not possible." + complement]}})
 
     @staticmethod
-    def not_found():
+    def not_found(field="id"):
         """
         Called when the provided field does not exist
         """
-        return abort(404)
+        return abort(404, errors={
+            "json": {field: ["Not found."]}})
 
     @staticmethod
     def field_invalid(field="key"):
