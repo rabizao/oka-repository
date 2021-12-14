@@ -95,7 +95,7 @@ const filterOptions = {
     ]
 }
 
-export default function Search(props) {
+export default function Search() {
     const location = useLocation();
     let params = useParams();
     const section = params.section;
@@ -117,7 +117,7 @@ export default function Search(props) {
         }
 
         setParsedQueries(newParsedQueries);
-        navigate("datasets?" + queryString.stringify(newParsedQueries));
+        navigate("/search/datasets?" + queryString.stringify(newParsedQueries));
     }
 
     const textBox = (text) => {
