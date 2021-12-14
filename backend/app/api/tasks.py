@@ -205,14 +205,15 @@ def send_async_email(message, recipients=None):
 
 
 @celery.task(bind=True, base=BaseTask)
-def run(self, post_id, username, plot):
+def run(self, post_id, username):
     _set_job_progress(self, 25)
-    # post = Post.query.get(post_id)
-    # user = User.get_by_username(username)
+    post = Post.query.get(post_id)
+    user = User.get_by_username(username)
 
-    # storage = SQLA(current_app.config['DATA_URL'],
-    #                user_id=username)
-    # data = idict(post.data_uuid, storage) >> SQLA[plot] >> [SQLA]
+    storage = SQLA(current_app.config['DATA_URL'],
+                   user_id=username)
+    data = idict(post.data_uuid, storage)
+    data.evaluate()
 
     return _set_job_progress(self, 100)
 
@@ -285,20 +286,20 @@ def download_data(self, pids, username, ip):
     return _set_job_progress(self, 100, result=f'{filename}')
 
 
-@celery.task(bind=True, base=BaseTask)
-def process_file(self, id, username, original_name):
-    """
-    Background task to run async post process
-    """
-    logged_user = User.get_by_username(username)
-    if not logged_user:
-        raise Exception(f'Username {username} not found!')
+# @celery.task(bind=True, base=BaseTask)
+# def process_file(self, id, username, original_name):
+#     """
+#     Background task to run async post process
+#     """
+#     logged_user = User.get_by_username(username)
+#     if not logged_user:
+#         raise Exception(f'Username {username} not found!')
 
-    storage = SQLA(current_app.config['DATA_URL'], user_id=username)
-    data_rawarff = Idict.fromid(id, storage)
-    oid = (data_rawarff >> arff2df >> [[storage]]).id
+#     storage = SQLA(current_app.config['DATA_URL'], user_id=username)
+#     data_rawarff = Idict.fromid(id, storage)
+#     oid = (data_rawarff >> arff2df >> [[storage]]).id
 
-    return _set_job_progress(self, 100, result=create_post(logged_user, oid, original_name))  # data.id acho q nao é OID
+#     return _set_job_progress(self, 100, result=create_post(logged_user, oid, original_name))  # data.id acho q nao é OID
 
 
 # @celery.task(bind=True, base=BaseTask)

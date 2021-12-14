@@ -18,9 +18,11 @@ from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity
 from flask_smorest import abort
+from idict.function.dataset import arff2df, df2Xy
 
 from . import bp
 from .tasks import create_post
+from app.functions import scatter_macro, histogram_macro
 
 
 def save_files(input_files):
@@ -68,12 +70,11 @@ class Posts(MethodView):
             data = Idict(arff=file.read().decode())
             if data.id in storage:
                 HTTPAbort.already_uploaded()
-            data >> [[storage]]
-            print("     >>>>>>>>>>", data.id)
-            print()
-            task = logged_user.launch_task('process_file',
+            oid = (data >> arff2df >> [[storage]]).id
+            create_post(logged_user, oid, file.filename)
+            task = logged_user.launch_task('run',
                                            "Processing your uploaded files",
-                                           [data.id, username, file.filename])
+                                           [oid, username])
         db.session.commit()
         return task
 
@@ -318,9 +319,16 @@ class PostsVisualizeById(MethodView):
         if not logged_user.has_access(post):
             HTTPAbort.not_authorized()
 
+        storage = SQLA(
+            current_app.config['DATA_URL'], user_id=post.author.username)
+        data = idict(post.data_uuid, storage)
+
+        # if args["plot"] == "scatter":
+        #     data >> scatter_macro
+
         task = logged_user.launch_task('run',
                                        "Processing your visualization request",
-                                       [post.id, username, args["plot"]])
+                                       [post.id, username])
         db.session.commit()
         return task
 
@@ -396,10 +404,25 @@ class PostsVisualizeById(MethodView):
             current_app.config['DATA_URL'], user_id=post.author.username)
         data = idict(post.data_uuid, storage)
 
-        # data = data >> histogram_macro(col=2) >> storage
+        result = {}
 
-        if args["plot"] not in data:
-            HTTPAbort.not_found(field=args["plot"])
+        print(args["x"], args["y"], type(args["x"]))
+
+        if args["plot"] == "scatter":
+            data = data >> df2Xy >> scatter_macro(
+                colx=args["x"], coly=args["y"]) >> [storage]
+            result = data.scatterplot
+        if args["plot"] == "histogram":
+            data = data >> df2Xy >> histogram_macro(
+                col=args["x"]) >> [storage]
+            result = data.histogram
+        if not result:
+            HTTPAbort.not_found()
+
+        return result
+
+        # if args["plot"] not in data:
+        #     HTTPAbort.not_found(field=args["plot"])
 
 
 @bp.route('/posts/<int:id>/twins')
