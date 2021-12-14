@@ -56,6 +56,14 @@ def get_fields(post):
     return data.fields
 
 
+def get_attrs(post):
+    storage = SQLA(current_app.config['DATA_URL'],
+                   user_id=post.author.username)
+    data = idict(post.data_uuid, storage)
+
+    return list(data.df.columns.values)[:-1]
+
+
 def get_name(post):
     storage = SQLA(current_app.config['DATA_URL'],
                    user_id=post.author.username)
@@ -335,8 +343,8 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     favorites = auto_field(dump_only=True)
     data_uuid_colors = fields.Function(lambda obj: id2rgb(
         obj.data_uuid, dark=False), dump_only=True)
-    # attrs = fields.Function(lambda obj: get_attrs(
-    #     obj.data_uuid), dump_only=True)
+    attrs = fields.Function(lambda obj: get_attrs(
+        obj), dump_only=True)
     history = fields.Function(lambda obj: get_history(obj), dump_only=True)
     downloads = fields.Function(
         lambda obj: obj.get_unique_download_count(), dump_only=True)
