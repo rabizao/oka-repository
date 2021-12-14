@@ -14,7 +14,7 @@ from werkzeug.security import generate_password_hash
 from app import db
 from app.models import User, Post, Comment, Contact, Notification, Task, Message
 from idict import idict, let
-from idict.function.data import df2list
+from idict.function.data import df2list, nomcols
 from idict.macro.data import df_head
 from idict.persistence.sqla import SQLA
 
@@ -59,9 +59,8 @@ def get_fields(post):
 def get_attrs(post):
     storage = SQLA(current_app.config['DATA_URL'],
                    user_id=post.author.username)
-    data = idict(post.data_uuid, storage)
-
-    return list(data.df.columns.values)[:-1]
+    data = idict(post.data_uuid, storage) >> nomcols
+    return {c: not (c in data.nomcols) for c in data.df.columns.values}  # nomecoluna -> boolean[é numérico?]
 
 
 def get_name(post):
