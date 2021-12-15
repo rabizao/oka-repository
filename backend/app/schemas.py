@@ -6,6 +6,7 @@ from datetime import datetime
 from flask import current_app
 from flask_smorest.fields import Upload
 from garoupa.misc.colors import id2rgb
+from idict.function.dataset import df2Xy
 from marshmallow import fields, post_load, EXCLUDE, ValidationError, validate
 from marshmallow.decorators import pre_load
 from marshmallow_sqlalchemy import SQLAlchemySchema, SQLAlchemyAutoSchema, auto_field
@@ -59,7 +60,7 @@ def get_fields(post):
 def get_attrs(post):
     storage = SQLA(current_app.config['DATA_URL'],
                    user_id=post.author.username)
-    data = idict(post.data_uuid, storage) >> nomcols
+    data = idict(post.data_uuid, storage) >> df2Xy >> nomcols
     return {c: not (c in data.nomcols) for c in data.df.columns.values}  # nomecoluna -> boolean[é numérico?]
 
 
