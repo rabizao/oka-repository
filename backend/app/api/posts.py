@@ -1,23 +1,19 @@
-import json
 import uuid as u
 from datetime import datetime
 from idict import idict
 from idict.core.idict_ import Idict
 from idict.persistence.sqla import SQLA
 
-import numpy as np
-import pandas as pd
 from app import db
 from app.errors.handlers import HTTPAbort
 from app.models import Comment, Post, User
 from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
                          PostEditSchema, PostFilesSchema, PostQuerySchema, PostSimplifiedSchema,
-                         RunSchema, TaskBaseSchema, UserBaseSchema, VisualizeQuerySchema, PostCreateSchema,
+                         RunSchema, TaskBaseSchema, UserBaseSchema, VisualizeQuerySchema,
                          PostActivateSchema)
 from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity
-from flask_smorest import abort
 from idict.function.dataset import arff2df, df2Xy
 
 from . import bp
@@ -331,57 +327,6 @@ class PostsVisualizeById(MethodView):
                                        [post.id, username])
         db.session.commit()
         return task
-
-        tatu = current_app.config['TATU_SERVER']()
-        data = tatu.fetch(post.data_uuid, lazy=False)
-        datas = []
-        # TODO: replace all data transformation by cacheable results and avoid evaluating heavy fields like X
-        if args["plt"] == "scatter":
-            data_modified = data >> Sample_(
-                n=500, ignore_badarg=True) * Binarize
-            for m in data_modified.Yt[0]:
-                inner = []
-                for k in range(len(data_modified.X)):
-                    left = m if isinstance(m, str) else str(float(m))
-                    if isinstance(data_modified.y[k], str):
-                        right = data_modified.y[k]
-                    else:
-                        right = str(float(data_modified.y[k]))
-                    if left == right:
-                        inner.append({
-                            "x": float(data_modified.X[k, args['x']]),
-                            "y": float(data_modified.X[k, args['y']]),
-                        })
-                datas.append(
-                    {
-                        "id": m,
-                        "data": inner
-                    })
-        elif args["plt"] == "parallelcoordinates":
-            data_modified = data >> Sample_(n=500, ignore_badarg=True)
-        elif args["plt"] == "pearsoncorrelation":
-            # TODO: create step Corr to be able to cache it, and avoid evaluating X?
-            df = pd.DataFrame(data.X)
-
-            for row, v in df.corr().to_dict().items():
-                for column, corr in v.items():
-                    datas.append({"x": row, "y": column, "color": corr})
-
-        elif args["plt"] == "histogram":
-            data_modified = data >> Binarize
-            cut = list(map(float, data_modified.X[:, int(args["x"])]))
-            maximum = max(cut)
-            minimum = min(cut)
-            step = (maximum - minimum) / 10
-            ranges = np.arange(minimum-1, maximum+1, step)
-
-            df = pd.DataFrame(cut)
-            df2 = df.groupby(pd.cut(cut, ranges)).count()
-            datas = [{"x": str(k), "count": v}
-                     for k, v in df2.to_dict()[0].items()]
-
-        tatu.close()
-        return json.dumps(datas)
 
     @bp.auth_required
     @bp.arguments(VisualizeQuerySchema, location="query")

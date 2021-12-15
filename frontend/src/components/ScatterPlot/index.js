@@ -67,23 +67,28 @@ export default function ScatterPlot({ postId, attrs }) {
                                             attrs.length > axisButtonsLimit ?
                                                 <select>
                                                     {Object.entries(attrs)
-                                                        .map(([key, value]) =>
-                                                            <option key={key}
-                                                                value={value}
-                                                                onClick={() => handleSelection(key, 0)}
+                                                        .map(([key, value], index) =>
+                                                            value &&
+                                                            <option key={index}
+                                                                value={index}
+                                                                onClick={() => handleSelection(index, 0)}
                                                             >
-                                                                {value}
+                                                                {key}
                                                             </option>
                                                         )}
                                                 </select> :
                                                 Object.entries(attrs)
-                                                    .map(([key, value]) =>
-                                                        <button key={key}
-                                                            onClick={() => handleSelection(key, 0)}
-                                                            className={`${x === key ? ("button-negative") : "button-primary"} margin-very-very-small`}
-                                                        >
-                                                            {value}
-                                                        </button>
+                                                    .map(([key, value], index) =>
+                                                        value ?
+                                                            <button key={index}
+                                                                onClick={() => handleSelection(index, 0)}
+                                                                className={`${x === index ? ("button-negative") : "button-primary"} margin-very-very-small`}
+                                                            >
+                                                                {key}
+                                                            </button> :
+                                                            <div className='button-primary-disabled margin-very-very-small'>
+                                                                {key}
+                                                            </div>
                                                     )
                                         }
                                     </div>
@@ -93,25 +98,28 @@ export default function ScatterPlot({ postId, attrs }) {
                                             attrs.length > axisButtonsLimit ?
                                                 <select>
                                                     {Object.entries(attrs)
-                                                        .map(([key, value]) =>
-
-                                                            <option key={key}
+                                                        .map(([key, value], index) =>
+                                                            value &&
+                                                            <option key={index}
                                                                 value={value}
-                                                                onClick={() => handleSelection(key, 1)}
+                                                                onClick={() => handleSelection(index, 1)}
                                                             >
-                                                                {value}
+                                                                {key}
                                                             </option>
                                                         )}
                                                 </select> :
                                                 Object.entries(attrs)
-                                                    .map(([key, value]) =>
-
-                                                        <button key={key}
-                                                            onClick={() => handleSelection(key, 1)}
-                                                            className={`${y === key ? ("button-negative") : "button-primary"} margin-very-very-small`}
-                                                        >
-                                                            {value}
-                                                        </button>
+                                                    .map(([key, value], index) =>
+                                                        value ?
+                                                            <button key={index}
+                                                                onClick={() => handleSelection(index, 1)}
+                                                                className={`${y === index ? ("button-negative") : "button-primary"} margin-very-very-small`}
+                                                            >
+                                                                {key}
+                                                            </button> :
+                                                            <div className='button-primary-disabled margin-very-very-small'>
+                                                                {key}
+                                                            </div>
                                                     )
                                         }
                                     </div>

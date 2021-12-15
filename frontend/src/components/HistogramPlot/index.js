@@ -57,23 +57,28 @@ export default function HistogramPlot({ postId, attrs }) {
                                             attrs.length > axisButtonsLimit ?
                                                 <select>
                                                     {Object.entries(attrs)
-                                                        .map(([key, value]) =>
+                                                        .map(([key, value], index) =>
+                                                            value &&
                                                             <option key={key}
                                                                 value={value}
-                                                                onClick={() => setX(key)}
+                                                                onClick={() => setX(index)}
                                                             >
-                                                                {value}
+                                                                {key}
                                                             </option>
                                                         )}
                                                 </select> :
                                                 Object.entries(attrs)
-                                                    .map(([key, value]) =>
-                                                        <button key={key}
-                                                            onClick={() => setX(key)}
-                                                            className={`${x === key ? ("button-negative") : "button-primary"} margin-very-very-small`}
-                                                        >
-                                                            {value}
-                                                        </button>
+                                                    .map(([key, value], index) =>
+                                                        value ?
+                                                            <button key={key}
+                                                                onClick={() => setX(index)}
+                                                                className={`${x === index ? ("button-negative") : "button-primary"} margin-very-very-small`}
+                                                            >
+                                                                {key}
+                                                            </button> :
+                                                            <div className='button-primary-disabled margin-very-very-small'>
+                                                                {key}
+                                                            </div>
                                                     )
                                         }
                                     </div>
