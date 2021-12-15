@@ -79,16 +79,12 @@ export default function ScatterPlot({ postId, attrs }) {
                                                 </select> :
                                                 Object.entries(attrs)
                                                     .map(([key, value], index) =>
-                                                        value ?
                                                             <button key={index}
                                                                 onClick={() => handleSelection(index, 0)}
                                                                 className={`${x === index ? ("button-negative") : "button-primary"} margin-very-very-small`}
                                                             >
                                                                 {key}
-                                                            </button> :
-                                                            <div className='button-primary-disabled margin-very-very-small'>
-                                                                {key}
-                                                            </div>
+                                                            </button>
                                                     )
                                         }
                                     </div>
@@ -110,16 +106,12 @@ export default function ScatterPlot({ postId, attrs }) {
                                                 </select> :
                                                 Object.entries(attrs)
                                                     .map(([key, value], index) =>
-                                                        value ?
                                                             <button key={index}
                                                                 onClick={() => handleSelection(index, 1)}
                                                                 className={`${y === index ? ("button-negative") : "button-primary"} margin-very-very-small`}
                                                             >
                                                                 {key}
-                                                            </button> :
-                                                            <div className='button-primary-disabled margin-very-very-small'>
-                                                                {key}
-                                                            </div>
+                                                            </button>
                                                     )
                                         }
                                     </div>

@@ -60,8 +60,8 @@ def get_fields(post):
 def get_attrs(post):
     storage = SQLA(current_app.config['DATA_URL'],
                    user_id=post.author.username)
-    data = idict(post.data_uuid, storage) >> df2Xy >> nomcols
-    return {c: not (i in data.nomcols) for i,c in enumerate(data.df.columns.values)}
+    data = idict(post.data_uuid, storage) >> df2Xy
+    return {c.split("@")[0]: i for i, c in enumerate(data.df.columns.values)}
 
 
 def get_name(post):
