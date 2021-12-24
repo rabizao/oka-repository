@@ -455,20 +455,20 @@ export default function Posts() {
 															loggedUser.username === post.author.username && !post.public ? (
 																item.editable ? (
 																	item.type === "boolean" && (
-																		<button className={`icon-medium ${!post[item.variable] && "icon-error"}`} onClick={() => handlePostMetaUpdate(item.tag, post[item.variable])}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</button>
+																		<button className={`icon-medium ${!post[item.variable] ? "icon-error": undefined}`} onClick={() => handlePostMetaUpdate(item.tag, post[item.variable])}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</button>
 																	)
 																) : (
 																	item.type === "boolean" ? (
-																		<div className={`icon-medium ${!post[item.variable] && "color-error"}`}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</div>
+																		<div className={`icon-medium ${!post[item.variable] ? "color-error": undefined}`}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</div>
 																	) : (
 																		<div className={"padding-sides-small"}>{post[item.variable]}</div>
 																	)
 																)
 															) : (
 																item.type === "boolean" ? (
-																	<div className={`icon-medium ${!post[item.variable] && "icon-error"}`}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</div>
+																	<div className={`icon-medium ${!post[item.variable] ? "icon-error": undefined}`}>{post[item.variable] ? <ToggleOn /> : <ToggleOff />}</div>
 																) : (
-																	<div className={"padding-sides-small"}>{post[item.variable]}</div>
+																	<div className="padding-sides-small">{post[item.variable]}</div>
 																)
 															)
 														}

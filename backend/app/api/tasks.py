@@ -205,10 +205,10 @@ def send_async_email(message, recipients=None):
 
 
 @celery.task(bind=True, base=BaseTask)
-def run(self, post_id, username):
+def run(self, oid, username):
     _set_job_progress(self, 25)
-    post = Post.query.get(post_id)
-    user = User.get_by_username(username)
+    logged_user = User.get_by_username(username)
+    post = Post.query.filter_by(data_uuid=oid, author=logged_user).first()
 
     storage = SQLA(current_app.config['DATA_URL'],
                    user_id=username)
