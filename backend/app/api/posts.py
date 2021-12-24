@@ -354,12 +354,10 @@ class PostsVisualizeById(MethodView):
         print(args["x"], args["y"], type(args["x"]))
 
         if args["plot"] == "scatter":
-            data = data >> df2Xy >> scatter_macro(
-                colx=args["x"], coly=args["y"]) >> [storage]
+            data = data >> df2Xy >> scatter_macro(colx=args["x"], coly=args["y"]) >> [storage]
             result = data.scatterplot
         if args["plot"] == "histogram":
-            data = data >> df2Xy >> histogram_macro(
-                col=args["x"]) >> [storage]
+            data = data >> df2Xy >> histogram_macro(col=args["x"]) >> [storage]
             result = data.histogram
         if not result:
             HTTPAbort.not_found()
