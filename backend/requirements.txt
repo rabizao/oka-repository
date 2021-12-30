@@ -40,11 +40,11 @@ flask-smorest==0.35.0
 Flask-SQLAlchemy==2.5.1
 frozenlist==1.2.0
 fsspec==2021.11.1
-garoupa==2.211212.2
+garoupa==2.211225.1
 greenlet==1.1.2
 gunicorn==20.1.0
 huggingface-hub==0.2.1
-idict==3.211224.5
+idict==4.211229.1
 idna==3.3
 imbalanced-learn==0.8.1
 imblearn==0.0
