@@ -11,8 +11,8 @@ export default function ScatterPlot({ postId, attrs }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [render, setRender] = useState(0);
-    const [x, setX] = useState("0");
-    const [y, setY] = useState("0");
+    const [x, setX] = useState(0);
+    const [y, setY] = useState(0);
     const axisButtonsLimit = 10;
 
     useEffect(() => {
@@ -66,24 +66,22 @@ export default function ScatterPlot({ postId, attrs }) {
                                         {
                                             attrs.length > axisButtonsLimit ?
                                                 <select>
-                                                    {Object.entries(attrs)
-                                                        .map(([key, value], index) =>
+                                                    {attrs.map((value, index) =>
                                                             value &&
                                                             <option key={index}
                                                                 value={index}
                                                                 onClick={() => handleSelection(index, 0)}
                                                             >
-                                                                {key}
+                                                                {value.name}
                                                             </option>
                                                         )}
                                                 </select> :
-                                                Object.entries(attrs)
-                                                    .map(([key, value], index) =>
+                                                attrs.map((value, index) =>
                                                             <button key={index}
                                                                 onClick={() => handleSelection(index, 0)}
                                                                 className={`${x === index ? ("button-negative") : "button-primary"} margin-very-very-small`}
                                                             >
-                                                                {key}
+                                                                {value.name}
                                                             </button>
                                                     )
                                         }
@@ -93,24 +91,22 @@ export default function ScatterPlot({ postId, attrs }) {
                                         {
                                             attrs.length > axisButtonsLimit ?
                                                 <select>
-                                                    {Object.entries(attrs)
-                                                        .map(([key, value], index) =>
+                                                    {attrs.map((value, index) =>
                                                             value &&
                                                             <option key={index}
-                                                                value={value}
+                                                                value={value.name}
                                                                 onClick={() => handleSelection(index, 1)}
                                                             >
-                                                                {key}
+                                                                {value.name}
                                                             </option>
                                                         )}
                                                 </select> :
-                                                Object.entries(attrs)
-                                                    .map(([key, value], index) =>
+                                                attrs.map((value, index) =>
                                                             <button key={index}
                                                                 onClick={() => handleSelection(index, 1)}
                                                                 className={`${y === index ? ("button-negative") : "button-primary"} margin-very-very-small`}
                                                             >
-                                                                {key}
+                                                                {value.name}
                                                             </button>
                                                     )
                                         }
@@ -135,7 +131,7 @@ export default function ScatterPlot({ postId, attrs }) {
                                     tickSize: 5,
                                     tickPadding: 5,
                                     tickRotation: 0,
-                                    legend: attrs && attrs[x],
+                                    legend: attrs && attrs[x].name,
                                     legendPosition: 'middle',
                                     legendOffset: 46
                                 }}
@@ -144,7 +140,7 @@ export default function ScatterPlot({ postId, attrs }) {
                                     tickSize: 5,
                                     tickPadding: 5,
                                     tickRotation: 0,
-                                    legend: attrs && attrs[y],
+                                    legend: attrs && attrs[y].name,
                                     legendPosition: 'middle',
                                     legendOffset: -60
                                 }}

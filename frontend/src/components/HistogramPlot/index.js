@@ -10,7 +10,7 @@ export default function HistogramPlot({ postId, attrs }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [render, setRender] = useState(0);
-    const [x, setX] = useState("0");
+    const [x, setX] = useState(0);
     const axisButtonsLimit = 10;
 
     useEffect(() => {
@@ -56,30 +56,28 @@ export default function HistogramPlot({ postId, attrs }) {
                                         {
                                             attrs.length > axisButtonsLimit ?
                                                 <select>
-                                                    {Object.entries(attrs)
-                                                        .map(([key, value], index) =>
-                                                            value &&
-                                                            <option key={key}
-                                                                value={value}
-                                                                onClick={() => setX(index)}
-                                                            >
-                                                                {key}
-                                                            </option>
-                                                        )}
+                                                    {attrs.map((value, index) =>
+                                                        value &&
+                                                        <option key={index}
+                                                            value={value.name}
+                                                            onClick={() => setX(index)}
+                                                        >
+                                                            {value.name}
+                                                        </option>
+                                                    )}
                                                 </select> :
-                                                Object.entries(attrs)
-                                                    .map(([key, value], index) =>
-                                                        value ?
-                                                            <button key={key}
-                                                                onClick={() => setX(index)}
-                                                                className={`${x === index ? ("button-negative") : "button-primary"} margin-very-very-small`}
-                                                            >
-                                                                {key}
-                                                            </button> :
-                                                            <div className='button-primary-disabled margin-very-very-small'>
-                                                                {key}
-                                                            </div>
-                                                    )
+                                                attrs.map((value, index) =>
+                                                    !value.nominal ?
+                                                        <button key={index}
+                                                            onClick={() => setX(index)}
+                                                            className={`${x === index ? ("button-negative") : "button-primary"} margin-very-very-small`}
+                                                        >
+                                                            {value.name}
+                                                        </button> :
+                                                        <div className='button-primary-disabled margin-very-very-small'>
+                                                            {value.name}
+                                                        </div>
+                                                )
                                         }
                                     </div>
                                 </>
@@ -97,7 +95,7 @@ export default function HistogramPlot({ postId, attrs }) {
                                     tickSize: 5,
                                     tickPadding: 5,
                                     tickRotation: 0,
-                                    legend: attrs && attrs[x],
+                                    legend: attrs && attrs[x].name,
                                     legendPosition: 'middle',
                                     legendOffset: 32
                                 }}

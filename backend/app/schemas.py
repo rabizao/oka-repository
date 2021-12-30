@@ -43,7 +43,8 @@ def get_history(post):
 
 
 def get_head(post):
-    storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username)
+    storage = SQLA(current_app.config['DATA_URL'],
+                   user_id=post.author.username)
     data = idict(post.data_uuid, storage)
     data = data >> df_head() >> let(df2list, input="head") >> [storage]
     return data.list
@@ -61,7 +62,8 @@ def get_attrs(post):
     storage = SQLA(current_app.config['DATA_URL'],
                    user_id=post.author.username)
     data = idict(post.data_uuid, storage) >> df2Xy
-    return {c.split("@")[0]: i for i, c in enumerate(data.df.columns.values)}
+
+    return [{"name": item, "nominal": item.isdigit()} for item in list(data.df.columns.values)]
 
 
 def get_name(post):

@@ -351,8 +351,6 @@ class PostsVisualizeById(MethodView):
 
         result = {}
 
-        print(args["x"], args["y"], type(args["x"]))
-
         if args["plot"] == "scatter":
             data = data >> df2Xy >> scatter_macro(colx=args["x"], coly=args["y"]) >> [storage]
             result = data.scatterplot
