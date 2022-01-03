@@ -31,7 +31,6 @@ def save_files(input_files):
     return files
 
 
-# noinspection PyArgumentList
 @bp.route("/posts")
 class Posts(MethodView):
     @bp.auth_required
@@ -73,19 +72,6 @@ class Posts(MethodView):
                                            [oid, username])
         db.session.commit()
         return task
-
-    # @bp.auth_required
-    # @bp.arguments(PostCreateSchema)
-    # @bp.response(201)
-    # def put(self, args):
-    #     """
-    #     Create inactive post (and without Data for a while), and parents.
-    #     """
-    #     logged_user = User.get_by_username(get_jwt_identity())
-    #     obj = create_post(
-    #         logged_user, args["data_uuid"], args["name"], args["description"], active=False, info=args["info"])
-    #     if obj["code"] != "success":
-    #         abort(422, errors={"json": {"data_uuid": obj["message"]}})
 
 
 @bp.route('/posts/<int:id>')
@@ -129,6 +115,12 @@ class PostsById(MethodView):
                 HTTPAbort.not_authorized()
 
         post.update(args)
+        # storage = SQLA(current_app.config['DATA_URL'],
+        #                user_id=post.author.username)
+        # data = idict(post.data_uuid, storage)
+        # for key, value in args.items():
+        #     setattr(data, key, value)
+        # data >> [[storage]]
         db.session.commit()
 
     @bp.auth_required
@@ -352,7 +344,8 @@ class PostsVisualizeById(MethodView):
         result = {}
 
         if args["plot"] == "scatter":
-            data = data >> df2Xy >> scatter_macro(colx=args["x"], coly=args["y"]) >> [storage]
+            data = data >> df2Xy >> scatter_macro(
+                colx=args["x"], coly=args["y"]) >> [storage]
             result = data.scatterplot
         if args["plot"] == "histogram":
             data = data >> df2Xy >> histogram_macro(col=args["x"]) >> [storage]

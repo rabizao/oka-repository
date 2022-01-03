@@ -642,7 +642,7 @@ export default function Posts() {
 
 	async function handleDownload() {
 		try {
-			const resp = await api.post(`downloads/data?pids=${post.id}`);
+			const resp = await api.post(`downloads/posts?ids=${post.id}`);
 			var newTasks = { ...runningTasksBar.tasks };
 			newTasks[resp.data.id] = {
 				description: "Starting..."

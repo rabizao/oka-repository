@@ -7,7 +7,7 @@ from io import BytesIO
 from time import sleep
 from unittest.mock import patch
 
-# import os
+import os
 from idict.persistence.sqla import SQLA
 from sqlalchemy.orm import relation
 from werkzeug.datastructures import FileStorage
@@ -50,25 +50,20 @@ class TestConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite://'
     BROKER_URL = 'redis://'
     CELERY_RESULT_BACKEND = None
-    # TATU_URL = 'sqlite://testdb'
-    DATA_URL = 'sqlite://'
+    DATA_URL = 'sqlite+pysqlite:////dev/shm/teste.db'
 
 
 class ApiCase(unittest.TestCase):
     def setUp(self):
         warnings.simplefilter(
             'ignore', (DeprecationWarning, UserWarning, ImportWarning))  # checar se SAWarning do SQLAlchemy é relevante
-        app.RECONNECTMODE_TATU = False
-        app.THREADED_TATU = False
-        app.DEBUG_TATU = True
         self.app = create_app(TestConfig)
         self.app_context = self.app.app_context()
         self.app_context.push()
         self.client = self.app.test_client()
         db.create_all()
-        # self.tatu = self.app.config['TATU_SERVER']()
-        # if os.path.exists('testdb.db'):
-        #     os.remove('testdb.db')
+        if os.path.exists('/dev/shm/teste.db'):
+            os.remove('/dev/shm/teste.db')
 
     def tearDown(self):
         db.session.remove()
@@ -376,90 +371,82 @@ class ApiCase(unittest.TestCase):
                 response = self.client.post(
                     "/api/posts", data={'files': (fr, "test.arff")})
 
+        post = Post.query.all()[0]
         self.assertEqual(response.status_code, 201)
         # 3
-        print()
-        # with open(filename, 'rb') as fr:
-        #     data = Idict(arff=fr.read().decode())
-        #     storage = SQLA(self.app.config['DATA_URL'], user_id=username)
-        #     oid = (data >> arff2df >> [[storage]]).id
-    
-        # print(">>>>>", oid)
-        print(Post.query.all()[0].author.username, username)
-        result = run.run(Post.query.all()[0].data_uuid, username)
-        self.assertEqual(json.loads(result['result'])[
-            0]["code"] == "success", True)
-        # post_id = json.loads(result['result'])[0]['id']
-        # post = Post.query.get(post_id)
-        # # 4
-        # new_name = "new name"
-        # new_description = "new description"
-        # # User2 can not edit post
-        # self.login(create_user=False, user=create_user2)
-        # response = self.client.put(
-        #     f"/api/posts/{post_id}", json={"name": new_name, "description": new_description})
-        # self.assertEqual(response.status_code, 422)
-        # # Public post can not be edited
-        # self.login(create_user=False)
-        # post.public = True
-        # db.session.commit()
-        # response = self.client.put(
-        #     f"/api/posts/{post_id}", json={"name": new_name, "description": new_description})
-        # self.assertEqual(response.status_code, 422)
-        # post.public = False
-        # db.session.commit()
-        # # Edit post
-        # response = self.client.put(
-        #     f"/api/posts/{post_id}", json={"name": new_name, "description": new_description})
-        # self.assertEqual(response.status_code, 201)
-        # # Can not edit inexistent post
-        # response = self.client.put(
-        #     "/api/posts/100", json={"name": new_name, "description": new_description})
-        # self.assertEqual(response.status_code, 422)
-        # # 5
-        # # User2 can not list the post
-        # self.login(create_user=False, user=create_user2)
-        # response = self.client.get(f"/api/posts/{post_id}")
-        # self.assertEqual(response.status_code, 422)
-        # # List post
-        # self.login(create_user=False)
-        # response = self.client.get(f"/api/posts/{post_id}")
-        # self.assertEqual(response.status_code, 200)
-        # self.assertEqual(response.json['name'], new_name)
-        # self.assertEqual(response.json['description'], new_description)
-        # response = self.client.get("/api/posts/100")
-        # self.assertEqual(response.status_code, 422)
-        # # List all posts
-        # response = self.client.get("/api/posts")
-        # self.assertEqual(len(response.json), 1)
-        # self.assertEqual(response.status_code, 200)
-        # # 6
-        # with patch('app.api.tasks.User.launch_task'):
-        #     response = self.client.post(f"/api/downloads/data?pids={post_id}")
-        # self.assertEqual(response.status_code, 201)
-        # result = download_data.run([post_id], username, "127.0.0.1")
-        # self.assertEqual(result['state'], 'SUCCESS')
-        # # Can not download inexistent file
-        # response = self.client.get("/api/downloads/data?name=inexistent")
-        # self.assertEqual(response.status_code, 422)
-        # # User2 does not have access to file
-        # self.login(create_user=False, user=create_user2)
-        # response = self.client.get(
-        #     f"/api/downloads/data?name={json.loads(result['result'])}")
-        # self.assertEqual(response.status_code, 422)
-        # # User1 can download file
-        # self.login(create_user=False)
-        # response = self.client.get(
-        #     f"/api/downloads/data?name={json.loads(result['result'])}")
-        # self.assertEqual(response.status_code, 200)
-        # # Check downloads count
-        # self.assertEqual(post.get_unique_download_count(), 1)
-        # result = download_data.run([post_id], username, "127.0.0.1")
-        # self.assertEqual(result['state'], 'SUCCESS')
-        # self.assertEqual(post.get_unique_download_count(), 1)
-        # result = download_data.run([post_id], username, "127.0.0.2")
-        # self.assertEqual(result['state'], 'SUCCESS')
-        # self.assertEqual(post.get_unique_download_count(), 2)
+        result = run.run(post.data_uuid, username)
+        self.assertEqual(result["state"] == "SUCCESS", True)
+        # 4
+        new_name = "new name"
+        new_description = "new description"
+        # User2 can not edit post
+        self.login(create_user=False, user=create_user2)
+        response = self.client.put(
+            f"/api/posts/{post.id}", json={"name": new_name, "description": new_description})
+        self.assertEqual(response.status_code, 422)
+        # Public post can not be edited
+        self.login(create_user=False)
+        post.public = True
+        db.session.commit()
+        response = self.client.put(
+            f"/api/posts/{post.id}", json={"name": new_name, "description": new_description})
+        self.assertEqual(response.status_code, 422)
+        post.public = False
+        db.session.commit()
+        # Edit post
+        response = self.client.put(
+            f"/api/posts/{post.id}", json={"name": new_name, "description": new_description})
+        self.assertEqual(response.status_code, 201)
+        # Can not edit inexistent post
+        response = self.client.put(
+            "/api/posts/100", json={"name": new_name, "description": new_description})
+        self.assertEqual(response.status_code, 404)
+        # 5
+        # User2 can not list the post
+        self.login(create_user=False, user=create_user2)
+        response = self.client.get(f"/api/posts/{post.id}")
+        self.assertEqual(response.status_code, 422)
+        # List post
+        self.login(create_user=False)
+        response = self.client.get(f"/api/posts/{post.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json['name'], new_name)
+        self.assertEqual(response.json['description'], new_description)
+        response = self.client.get("/api/posts/100")
+        self.assertEqual(response.status_code, 404)
+        # List all posts
+        response = self.client.get("/api/posts")
+        self.assertEqual(len(response.json), 1)
+        self.assertEqual(response.status_code, 200)
+
+        
+        # 6
+        with patch('app.api.tasks.User.launch_task'):
+            response = self.client.post(f"/api/downloads/posts?ids={post.id}")
+        self.assertEqual(response.status_code, 201)
+        result = download_data.run([post.id], username, "127.0.0.1")
+        self.assertEqual(result['state'], 'SUCCESS')
+        # Can not download inexistent file
+        response = self.client.get("/api/downloads/data?name=inexistent")
+        self.assertEqual(response.status_code, 404)
+        # User2 does not have access to file
+        self.login(create_user=False, user=create_user2)
+        response = self.client.get(
+            f"/api/downloads/data?name={json.loads(result['result'])}")
+        self.assertEqual(response.status_code, 404)
+        # User1 can download file
+        self.login(create_user=False)
+        response = self.client.get(
+            f"/api/downloads/data?name={json.loads(result['result'])}")
+        self.assertEqual(response.status_code, 200)
+        # Check downloads count
+        self.assertEqual(post.get_unique_download_count(), 1)
+        result = download_data.run([post.id], username, "127.0.0.1")
+        self.assertEqual(result['state'], 'SUCCESS')
+        self.assertEqual(post.get_unique_download_count(), 1)
+        result = download_data.run([post.id], username, "127.0.0.2")
+        self.assertEqual(result['state'], 'SUCCESS')
+        self.assertEqual(post.get_unique_download_count(), 2)
         # # 7
         # response = self.client.post(f"/api/posts/{post_id}/favorite")
         # self.assertEqual(response.status_code, 201)
@@ -883,12 +870,10 @@ class ApiCase(unittest.TestCase):
 
     def test_create_post(self):
         import arff
-        from sklearn.datasets import load_iris        
+        from sklearn.datasets import load_iris
 
         with open("../examples/iris.arff") as f:
             print(f)
-        
-
 
         print(">>>>>>>>>>>")
         self.login()
