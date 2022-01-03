@@ -212,6 +212,7 @@ def run(self, oid, username):
 
     storage = SQLA(current_app.config['DATA_URL'],
                    user_id=username)
+    print("eeeeeeeeeeeeee", post.data_uuid, storage)
     data = idict(post.data_uuid, storage)
     data.evaluate()
 

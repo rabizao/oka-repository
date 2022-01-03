@@ -1,8 +1,6 @@
 import json
 from datetime import datetime
 
-# from kururu.tool.manipulation.slice import Slice
-# import numpy as np
 from flask import current_app
 from flask_smorest.fields import Upload
 from garoupa.misc.colors import id2rgb
@@ -15,7 +13,7 @@ from werkzeug.security import generate_password_hash
 from app import db
 from app.models import User, Post, Comment, Contact, Notification, Task, Message
 from idict import idict, let
-from idict.function.data import df2list, nomcols
+from idict.function.data import df2list
 from idict.macro.data import df_head
 from idict.persistence.sqla import SQLA
 
