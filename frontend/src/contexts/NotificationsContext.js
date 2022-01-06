@@ -59,8 +59,9 @@ const NotificationsProvider = ({ children }) => {
                                 } else {
                                     if (payload.task_name === 'download_data') {
                                         if (isWaitingDownload.current === true) {
-                                            const r = await api.get(`downloads/data?name=${JSON.parse(payload.result)}`, { responseType: 'blob' });
-                                            saveAs(r.data, JSON.parse(payload.result));
+                                            const rr = JSON.parse(payload.result)
+                                            const r = await api.get(`downloads/files?id=${rr["id"]}`, { responseType: 'blob' });
+                                            saveAs(r.data, rr["name"]);
                                             isWaitingDownload.current = false;
                                         }
                                     } else if (payload.task_name === 'run_step') {

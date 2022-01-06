@@ -212,7 +212,6 @@ def run(self, oid, username):
 
     storage = SQLA(current_app.config['DATA_URL'],
                    user_id=username)
-    print("eeeeeeeeeeeeee", post.data_uuid, storage)
     data = idict(post.data_uuid, storage)
     data.evaluate()
 
@@ -251,7 +250,7 @@ def run_step(self, post_id, step_asdict, username):
 
 
 @celery.task(bind=True, base=BaseTask)
-def download_data(self, pids, username, ip):
+def download_data(self, ids, username, ip):
     '''
     Background task to run async download process
     '''
@@ -266,25 +265,25 @@ def download_data(self, pids, username, ip):
     filename = str(u.uuid4()) + '.zip'
     file = BytesIO()
     with ZipFile(file, 'w') as zipped_file:
-        for pid in pids:
-            actual_index = pids.index(pid)
-            _set_job_progress(self, actual_index / len(pids) * 100)
-            post = Post.query.get(pid)
+        for id in ids:
+            actual_index = ids.index(id)
+            _set_job_progress(self, actual_index / len(ids) * 100)
+            post = Post.query.get(id)
             if not post:
-                raise Exception(f'Download failed: post {pid} not found!')
+                raise Exception(f'Download failed: post {id} not found!')
             if not logged_user.has_access(post):
                 raise Exception(
-                    f'Download failed. You do not have access to post {pid}!')
+                    f'Download failed. You do not have access to post {id}!')
             data = idict.fromid(post.data_uuid, storage)
             if data is None:
                 raise Exception(
                     f'Download failed: data {post.data_uuid} not found!')
             post.add_download(ip)
-            zipped_file.writestr(f'{pid}.arff', data.arff)
-        logged_user.add_file(filename, file.getvalue())
+            zipped_file.writestr(f'{id}.arff', data.arff)
+        f = logged_user.add_file(filename, file.getvalue())
         db.session.commit()
 
-    return _set_job_progress(self, 100, result=f'{filename}')
+    return _set_job_progress(self, 100, result={"id": f.id, "name": filename})
 
 
 # @celery.task(bind=True, base=BaseTask)

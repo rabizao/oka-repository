@@ -83,8 +83,8 @@ export default function OkaPostsBox({ fetch_url }) {
     async function handleDownload() {
         try {
             var serializedSelection = JSON.stringify(selection);
-            serializedSelection = serializedSelection.replace(/,/g, '&pids=').replace('[', "").replace(']', "")
-            const resp = await api.post('/downloads/data?pids=' + serializedSelection);
+            serializedSelection = serializedSelection.replace(/,/g, '&ids=').replace('[', "").replace(']', "")
+            const resp = await api.post('/downloads/posts?ids=' + serializedSelection);
             var newTasks = { ...runningTasksBar.tasks };
             newTasks[resp.data.id] = {
                 description: "Starting..."

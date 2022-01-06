@@ -134,7 +134,7 @@ export default function Search() {
         if (filter === true) {
             const newParsedQueries = { "logic": "and", "name": parsedQueries.name };
             setParsedQueries(newParsedQueries);
-            navigate("datasets?" + queryString.stringify(newParsedQueries));
+            navigate("/search/datasets?" + queryString.stringify(newParsedQueries));
 
         }
         setFilter(!filter);

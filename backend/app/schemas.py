@@ -64,20 +64,20 @@ def get_attrs(post):
     return [{"name": item, "nominal": item.isdigit()} for item in list(data.df.columns.values)]
 
 
-def get_name(post):
-    storage = SQLA(current_app.config['DATA_URL'],
-                   user_id=post.author.username)
-    data = idict(post.data_uuid, storage)
+# def get_name(post):
+#     storage = SQLA(current_app.config['DATA_URL'],
+#                    user_id=post.author.username)
+#     data = idict(post.data_uuid, storage)
 
-    return data["_name"] if "_name" in data else "No name"
+#     return data["_name"] if "_name" in data else "No name"
 
 
-def get_description(post):
-    storage = SQLA(current_app.config['DATA_URL'],
-                   user_id=post.author.username)
-    data = idict(post.data_uuid, storage)
+# def get_description(post):
+#     storage = SQLA(current_app.config['DATA_URL'],
+#                    user_id=post.author.username)
+#     data = idict(post.data_uuid, storage)
 
-    return data["_description"] if "_description" in data else "No description"
+#     return data["_description"] if "_description" in data else "No description"
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -349,9 +349,9 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     downloads = fields.Function(
         lambda obj: obj.get_unique_download_count(), dump_only=True)
     head = fields.Function(lambda obj: get_head(obj), dump_only=True)
-    name = fields.Function(lambda obj: get_name(obj), dump_only=True)
-    description = fields.Function(
-        lambda obj: get_description(obj), dump_only=True)
+    # name = fields.Function(lambda obj: get_name(obj), dump_only=True)
+    # description = fields.Function(
+    #     lambda obj: get_description(obj), dump_only=True)
     fields = fields.Function(
         lambda obj: get_fields(obj), dump_only=True)
 
@@ -363,7 +363,7 @@ class PostSimplifiedSchema(PostBaseSchema):
                   "favorites", "name", "description", "timestamp"]
 
 
-class PostEditSchema(SQLAlchemyAutoSchema):
+class PostEditSchema(SQLAlchemySchema):
     class Meta:
         model = Post
         fields = ["name", "description", "number_of_instances",
@@ -448,7 +448,14 @@ class DownloadQuerySchema(SQLAlchemySchema):
     class Meta:
         unknown = EXCLUDE
 
-    pids = fields.List(fields.String(), required=True)
+    ids = fields.List(fields.Integer(), required=True)
+
+
+class DownloadQueryIdSchema(SQLAlchemySchema):
+    class Meta:
+        unknown = EXCLUDE
+
+    id = fields.Integer(required=True)
 
 
 class DownloadFileByNameQuerySchema(SQLAlchemySchema):
