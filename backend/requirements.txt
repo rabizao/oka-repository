@@ -44,7 +44,7 @@ garoupa==2.211225.1
 greenlet==1.1.2
 gunicorn==20.1.0
 huggingface-hub==0.2.1
-idict==4.211229.1
+idict==4.220105.1
 idna==3.3
 imbalanced-learn==0.8.1
 imblearn==0.0
