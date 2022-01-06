@@ -6,7 +6,7 @@ apispec==4.3.0
 autopep8==1.5.5
 billiard==3.6.3.0
 blinker==1.4
-celery==5.0.5
+celery==5.2.2
 certifi==2020.12.5
 chardet==4.0.0
 click==7.1.2
