@@ -32,9 +32,14 @@ def get_history(post):
         step["id"] = current_hosh.id
         metadata = step.copy()
         metadata["id"] = id
-        del metadata["name"]
-        del metadata["code"]
-        step["metadata"] = json.dumps(metadata, indent=3)
+        if "name" in metadata:
+            del metadata["name"]
+        if "code" in metadata:
+            del metadata["code"]
+        try:
+            step["metadata"] = json.dumps(metadata, indent=3)
+        except TypeError:
+            step["metadata"] = str(metadata)
         step["rgb"] = id2rgb(id, dark=False)
         newhist.append(step)
     return newhist
@@ -44,6 +49,8 @@ def get_head(post):
     storage = SQLA(current_app.config['DATA_URL'],
                    user_id=post.author.username)
     data = idict(post.data_uuid, storage)
+    if "df" not in data:
+        return []
     data = data >> df_head() >> let(df2list, input="head") >> [storage]
     return data.list
 
@@ -59,8 +66,10 @@ def get_fields(post):
 def get_attrs(post):
     storage = SQLA(current_app.config['DATA_URL'],
                    user_id=post.author.username)
-    data = idict(post.data_uuid, storage) >> df2Xy
-
+    data = idict(post.data_uuid, storage)
+    if "df" not in data:
+        return []
+    data >>= df2Xy
     return [{"name": item, "nominal": item.isdigit()} for item in list(data.df.columns.values)]
 
 

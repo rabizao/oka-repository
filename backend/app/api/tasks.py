@@ -161,7 +161,10 @@ def configure(sender=None, conf=None, **kwargs):
 
 
 def _set_job_progress(job, progress, failure=False, result={}):
-    report = json.dumps(result)
+    try:
+        report = json.dumps(result)
+    except TypeError:
+        report = str(result)
     done = True if progress >= 100 else False
     status = 'done' if done else 'processing'
     state = 'SUCCESS' if done else 'PROGRESS'
