@@ -367,8 +367,7 @@ class ApiCase(unittest.TestCase):
         filename = "../examples/iris.arff"
         with open(filename, 'rb') as fr:
             with patch('app.api.tasks.User.launch_task'):
-                response = self.client.post(
-                    "/api/posts", data={'files': (fr, "test.arff")})
+                response = self.client.post("/api/posts", data={'files': (fr, "test.arff")})
 
         post = Post.query.all()[0]
         self.assertEqual(response.status_code, 201)

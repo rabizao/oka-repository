@@ -7,7 +7,6 @@ from flask import make_response, current_app, jsonify
 from flask import send_file
 from flask.views import MethodView
 from flask_jwt_extended.utils import get_jwt_identity
-from idict.persistence.sqla import sqla
 
 from app.api.tasks import create_post
 from app.errors.handlers import HTTPAbort
@@ -16,6 +15,7 @@ from app.schemas import (FoundResponseSchema, SyncResponseSchema, SyncContentFil
                          SyncFieldsQuerySchema,
                          SuccessResponseSchema, NumberResponseSchema, SyncContentQuerySchema, PostFileSchema,
                          ItemInfoSchema)
+from idict.persistence.sqla import sqla
 from . import bp
 
 
@@ -37,7 +37,7 @@ class SyncItem(MethodView):
     @bp.response(200)
     def get(self, id):
         with sqla(current_app.config['DATA_URL'], user_id=get_jwt_identity(), autopack=False) as storage:
-            if id not in storage:
+            if id not in storage and (id := "_" + id[1:]) not in storage:
                 HTTPAbort.not_found()
             return send_file(BytesIO(storage[id]), mimetype="application/octet-stream")
 
@@ -47,7 +47,7 @@ class SyncItem(MethodView):
     @bp.response(201, SuccessResponseSchema)
     def post(self, argsFile, argsForm, id):
         logged_user = User.get_by_username(get_jwt_identity())
-        sqlaid = "_" + id[1:] if argsForm["create_post"] else id
+        sqlaid = ("_" + id[1:]) if argsForm["create_post"] else id
         with sqla(current_app.config["DATA_URL"], user_id=get_jwt_identity(), autopack=False) as storage:
             if sqlaid in storage:
                 HTTPAbort.already_uploaded(field="data")

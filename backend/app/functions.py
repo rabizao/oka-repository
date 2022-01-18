@@ -15,12 +15,15 @@ def histogram_macro(col, bins=8):
     >>> from idict import idict
     >>> from idict.function.dataset import df2Xy
     >>> d = idict.fromtoy(output_format="df") >> df2Xy
-    >>> (d >> histogram_macro(col=0, bins=3)).histogram
-    [{'x': '(0.099, 2.133]', 'count': 7}, {'x': '(2.133, 5.1]', 'count': 7}, {'x': '(5.1, 31.1]', 'count': 6}]
+    >>> (d >> histogram_macro(col=0)).histogram
+    [{'x': '(0.069, 3.975]', 'count': 11}, {'x': '(3.975, 7.85]', 'count': 5}, {'x': '(7.85, 11.725]', 'count': 3}, {'x': '(11.725, 15.6]', 'count': 0}, {'x': '(15.6, 19.475]', 'count': 0}, {'x': '(19.475, 23.35]', 'count': 0}, {'x': '(23.35, 27.225]', 'count': 0}, {'x': '(27.225, 31.1]', 'count': 1}]
+    >>> X = np.array([[0, "a", 1.6], [3.2, "b", 2], [8, "a", 3]])
+    >>> d["df"] = X
+    >>> (d >> histogram_macro(col=1)).histogram
+    [{'x': 'a', 'count': 2}, {'x': 'b', 'count': 1}]
     """
     return compose(
-        Xy2M,
-        let(X2histogram, input="M", col=col, bins=bins)
+        let(X2histogram, input="df", col=col, bins=bins)
     )
 
 

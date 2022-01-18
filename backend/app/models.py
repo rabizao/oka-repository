@@ -179,7 +179,10 @@ class User(PaginateMixin, db.Model):
     def add_notification(self, name, data, overwrite=False):
         if overwrite:
             self.notifications.filter_by(name=name).delete()
-        n = Notification(name=name, payload_json=json.dumps(data), user=self)
+        try:
+            n = Notification(name=name, payload_json=json.dumps(data), user=self)
+        except TypeError:
+            n = Notification(name=name, payload_json=str(data), user=self)
         db.session.add(n)
         return n
 
