@@ -1,4 +1,3 @@
-import uuid as u
 from datetime import datetime
 from idict import idict
 from idict.core.idict_ import Idict
@@ -19,16 +18,6 @@ from idict.function.dataset import arff2df, df2Xy
 from . import bp
 from .tasks import create_post
 from app.functions import scatter_macro, histogram_macro
-
-
-def save_files(input_files):
-    files = []
-    for file in input_files:
-        full_path = current_app.config['TMP_FOLDER'] + "/" + \
-            str(u.uuid4()) + file.filename[-10:]
-        file.save(full_path)
-        files.append({"path": full_path, "original_name": file.filename})
-    return files
 
 
 @bp.route("/posts")
@@ -297,28 +286,28 @@ class PostsVisualizeById(MethodView):
         """
         Evaluate the data for visualization of the dataset of the post with id {id}
         """
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
-        post = Post.query.get(id)
+        # username = get_jwt_identity()
+        # logged_user = User.get_by_username(username)
+        # post = Post.query.get(id)
 
-        if not post or not post.active:
-            HTTPAbort.not_found()
+        # if not post or not post.active:
+        #     HTTPAbort.not_found()
 
-        if not logged_user.has_access(post):
-            HTTPAbort.not_authorized()
+        # if not logged_user.has_access(post):
+        #     HTTPAbort.not_authorized()
 
-        storage = SQLA(
-            current_app.config['DATA_URL'], user_id=post.author.username)
-        data = idict(post.data_uuid, storage)
+        # storage = SQLA(
+        #     current_app.config['DATA_URL'], user_id=post.author.username)
+        # data = idict(post.data_uuid, storage)
 
-        # if args["plot"] == "scatter":
-        #     data >> scatter_macro
+        # # if args["plot"] == "scatter":
+        # #     data >> scatter_macro
 
-        task = logged_user.launch_task('run',
-                                       "Processing your visualization request",
-                                       [post.id, username])
-        db.session.commit()
-        return task
+        # task = logged_user.launch_task('run',
+        #                                "Processing your visualization request",
+        #                                [post.id, username])
+        # db.session.commit()
+        # return task
 
     @bp.auth_required
     @bp.arguments(VisualizeQuerySchema, location="query")
@@ -354,9 +343,6 @@ class PostsVisualizeById(MethodView):
             HTTPAbort.not_found()
 
         return result
-
-        # if args["plot"] not in data:
-        #     HTTPAbort.not_found(field=args["plot"])
 
 
 @bp.route('/posts/<int:id>/twins')

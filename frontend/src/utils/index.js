@@ -3,6 +3,7 @@ import { NotificationManager } from 'react-notifications';
 export const notifyError = (error, force = true) => {
     const response = {};
     let accessDenied = false;
+    console.log(error)
     if (error && error.response && error.response.data && error.response.data.errors) {
         if (error.response.data.errors.json) {
             for (var prop in error.response.data.errors.json) {

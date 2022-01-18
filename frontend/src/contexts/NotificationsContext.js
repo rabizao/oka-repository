@@ -42,16 +42,15 @@ const NotificationsProvider = ({ children }) => {
                     const payload = notification.payload_json;
                     const notificationName = notification.name.split('|')[0]
                     if (notificationName === "task_progress") {
-                        if (payload.progress < 100) {
+                        var timestampNow = (new Date()).getTime();
+                        var notificationTimestamp = (new Date(notification.timestamp)).getTime()
+                        var notificationTimestampTranslated = (new Date(notificationTimestamp + 20 * 86400000)).getTime(); // 86400000 = 1 day in ms
+                        // Do not show progress older than 20 days because it certainly crashed
+                        if (payload.progress < 100 && notificationTimestampTranslated > timestampNow) {
                             newTasks[payload.task_id] = {
                                 progress: payload.progress,
                                 description: payload.description
-                            }
-                            var timestampNow = (new Date()).getTime() / 1000;
-                            // Do not show progress older than 20 days because it certainly crashed
-                            if (Number(notification.timestamp) < timestampNow - 3600 * 24 * 20) {
-                                delete newTasks[payload.task_id]
-                            }
+                            }                            
                         } else {
                             if (!(since === timeStart)) {
                                 if (payload.state === 'FAILURE') {

@@ -49,9 +49,6 @@ def create_app(config_class=Config):
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
 
-    if not os.path.isdir(app.config['TMP_FOLDER']):
-        os.mkdir(app.config['TMP_FOLDER'])
-
     if not app.debug and not app.testing:
         app.logger = logging.getLogger("oka_logger")
         if not app.logger.handlers:

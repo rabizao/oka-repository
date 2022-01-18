@@ -26,8 +26,7 @@ api.interceptors.response.use(function (response) {
 }, function (error) {
 	if (!axios.isCancel(error)) {
 		if (error.response.status === 401) {
-			logout()
-			window.location.href = '/login'
+			logout()			
 			return
 		}
 	}

@@ -14,7 +14,6 @@ from werkzeug.datastructures import FileStorage
 
 import app
 from app import create_app, db
-from app.api.posts import save_files
 from app.api.tasks import download_data, run_step
 from app.api.tasks import run
 from app.config import Config

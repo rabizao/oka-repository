@@ -61,7 +61,7 @@ def get_attrs(post):
                    user_id=post.author.username)
     data = idict(post.data_uuid, storage) >> df2Xy
 
-    return [{"name": item, "nominal": item.isdigit()} for item in list(data.df.columns.values)]
+    return [{"name": item.split('@')[0], "nominal": item.isdigit()} for item in list(data.df.columns.values)]
 
 
 # def get_name(post):

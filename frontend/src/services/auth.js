@@ -20,6 +20,7 @@ export const login = (access_token) => {
 
 export const logout = () => {
     localStorage.clear();
+    window.location.href = '/'
 }
 
 export const timeStart = (new Date(Date.UTC(1970))).toISOString();

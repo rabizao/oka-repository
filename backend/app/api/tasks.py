@@ -280,8 +280,8 @@ def download_data(self, ids, username, ip):
                     f'Download failed: data {post.data_uuid} not found!')
             post.add_download(ip)
             zipped_file.writestr(f'{id}.arff', data.arff)
-        f = logged_user.add_file(filename, file.getvalue())
-        db.session.commit()
+    f = logged_user.add_file(filename, file.getvalue())
+    db.session.commit()
 
     return _set_job_progress(self, 100, result={"id": f.id, "name": filename})
 
