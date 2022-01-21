@@ -68,7 +68,6 @@ class ApiCase(unittest.TestCase):
         db.session.remove()
         db.drop_all()
         self.app_context.pop()
-        # self.tatu.close(force=True)
 
     def login(self, create_user=True, user=create_user1, long_term=False, admin=False, token=None, confirm_email=True):
         # 1 - Create
@@ -233,7 +232,7 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         # 4
         response = self.client.get("/api/contacts/100")
-        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.status_code, 404)
         # 5
         self.login(user=create_user2)
         # 6
@@ -367,7 +366,9 @@ class ApiCase(unittest.TestCase):
         filename = "../examples/iris.arff"
         with open(filename, 'rb') as fr:
             with patch('app.api.tasks.User.launch_task'):
-                response = self.client.post("/api/posts", data={'files': (fr, "test.arff")})
+                response = self.client.post(
+                    "/api/posts", data={'files': (fr, "test.arff")})
+                print(response.json)
 
         post = Post.query.all()[0]
         self.assertEqual(response.status_code, 201)
@@ -417,7 +418,6 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.status_code, 200)
 
-        
         # 6
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(f"/api/downloads/posts?ids={post.id}")
@@ -432,19 +432,19 @@ class ApiCase(unittest.TestCase):
         response = self.client.get(
             f"/api/downloads/data?name={json.loads(result['result'])}")
         self.assertEqual(response.status_code, 404)
-        # User1 can download file
-        self.login(create_user=False)
-        response = self.client.get(
-            f"/api/downloads/data?name={json.loads(result['result'])}")
-        self.assertEqual(response.status_code, 200)
-        # Check downloads count
-        self.assertEqual(post.get_unique_download_count(), 1)
-        result = download_data.run([post.id], username, "127.0.0.1")
-        self.assertEqual(result['state'], 'SUCCESS')
-        self.assertEqual(post.get_unique_download_count(), 1)
-        result = download_data.run([post.id], username, "127.0.0.2")
-        self.assertEqual(result['state'], 'SUCCESS')
-        self.assertEqual(post.get_unique_download_count(), 2)
+        # # User1 can download file
+        # self.login(create_user=False)
+        # response = self.client.get(
+        #     f"/api/downloads/data?name={json.loads(result['result'])}")
+        # self.assertEqual(response.status_code, 200)
+        # # Check downloads count
+        # self.assertEqual(post.get_unique_download_count(), 1)
+        # result = download_data.run([post.id], username, "127.0.0.1")
+        # self.assertEqual(result['state'], 'SUCCESS')
+        # self.assertEqual(post.get_unique_download_count(), 1)
+        # result = download_data.run([post.id], username, "127.0.0.2")
+        # self.assertEqual(result['state'], 'SUCCESS')
+        # self.assertEqual(post.get_unique_download_count(), 2)
         # # 7
         # response = self.client.post(f"/api/posts/{post_id}/favorite")
         # self.assertEqual(response.status_code, 201)
@@ -688,77 +688,77 @@ class ApiCase(unittest.TestCase):
         # self.assertEqual(json.loads(result['result'])[
         #     0]["code"] == "success", True)
 
-    def test_sync(self):
-        """
-            1 - Login
-            2 - Upload a dataset
-            3 - Lock/unlock dataset
-            4 - sync_uuid
-            5 - Get content
-            6 - Put content
-            7 - Put fields
-            8 - Put data
-            9 - Get data
-        """
-        # 1
-        self.login()
+    # def test_sync(self):
+    #     """
+    #         1 - Login
+    #         2 - Upload a dataset
+    #         3 - Lock/unlock dataset
+    #         4 - sync_uuid
+    #         5 - Get content
+    #         6 - Put content
+    #         7 - Put fields
+    #         8 - Put data
+    #         9 - Get data
+    #     """
+    #     # 1
+    #     self.login()
 
-        # 2
-        data = Dataset().data
-        self.tatu.store(data, lazy=False, ignoredup=True)
+    #     # 2
+    #     data = Dataset().data
+    #     self.tatu.store(data, lazy=False, ignoredup=True)
 
-        # 3
-        response = self.client.put("/api/sync/randomuuid/lock")
-        self.assertTrue('success' in response.json)
-        response = self.client.put("/api/sync/randomuuid/unlock")
-        self.assertTrue('success' in response.json)
+    #     # 3
+    #     response = self.client.put("/api/sync/randomuuid/lock")
+    #     self.assertTrue('success' in response.json)
+    #     response = self.client.put("/api/sync/randomuuid/unlock")
+    #     self.assertTrue('success' in response.json)
 
-        # 4
-        response = self.client.get("/api/sync_uuid")
-        self.assertEqual(response.json['uuid'], self.tatu.id)
+    #     # 4
+    #     response = self.client.get("/api/sync_uuid")
+    #     self.assertEqual(response.json['uuid'], self.tatu.id)
 
-        # 5
-        response = self.client.get(f"/api/sync/{data.id}/content")
-        self.assertEqual(response.status_code, 200)
+    #     # 5
+    #     response = self.client.get(f"/api/sync/{data.id}/content")
+    #     self.assertEqual(response.status_code, 200)
 
-        # 6
-        data2 = Dataset().data >> Let("F", [1, 2, 3])
-        file = dict(
-            bina=(BytesIO(pack(data2.F)), "bina"),
-        )
-        response = self.client.post(
-            f"/api/sync/{data.id}/content?ignoredup=true", data=file)
-        self.assertTrue('success' in response.json)
+    #     # 6
+    #     data2 = Dataset().data >> Let("F", [1, 2, 3])
+    #     file = dict(
+    #         bina=(BytesIO(pack(data2.F)), "bina"),
+    #     )
+    #     response = self.client.post(
+    #         f"/api/sync/{data.id}/content?ignoredup=true", data=file)
+    #     self.assertTrue('success' in response.json)
 
-        # 7
-        info = {"rows": [(data.id, "A", data.uuids["X"].id)]}
-        response = self.client.post(
-            "/api/sync/many?cat=fields&ignoredup=true", json=info)
-        msg = (
-            "errors" in response.json and response.json["errors"]) or response.json
-        self.assertEqual(1, response.json["n"], msg=msg)
+    #     # 7
+    #     info = {"rows": [(data.id, "A", data.uuids["X"].id)]}
+    #     response = self.client.post(
+    #         "/api/sync/many?cat=fields&ignoredup=true", json=info)
+    #     msg = (
+    #         "errors" in response.json and response.json["errors"]) or response.json
+    #     self.assertEqual(1, response.json["n"], msg=msg)
 
-        # 8
-        data3 = data >> Let("Q", [1, 2])
-        dic = {'kwargs': {
-            "id": data3.id,
-            "step": data3.step.id,
-            "inn": None,
-            "stream": False,
-            "parent": data.id,
-            "locked": False,
-            "ignoredup": False
-        }}
-        response = self.client.post("/api/sync?cat=data", json=dic)
-        msg = (
-            "errors" in response.json and response.json["errors"]) or response.json
-        self.assertTrue('success' in response.json, msg)
+    #     # 8
+    #     data3 = data >> Let("Q", [1, 2])
+    #     dic = {'kwargs': {
+    #         "id": data3.id,
+    #         "step": data3.step.id,
+    #         "inn": None,
+    #         "stream": False,
+    #         "parent": data.id,
+    #         "locked": False,
+    #         "ignoredup": False
+    #     }}
+    #     response = self.client.post("/api/sync?cat=data", json=dic)
+    #     msg = (
+    #         "errors" in response.json and response.json["errors"]) or response.json
+    #     self.assertTrue('success' in response.json, msg)
 
-        # 9
-        response = self.client.get(f"/api/sync?cat=data&uuids={data.id}")
-        self.assertEqual(response.json['has'], True)
-        response = self.client.get("/api/sync?cat=data&uuids=notexistentuuid")
-        self.assertEqual(response.json['has'], False)
+    #     # 9
+    #     response = self.client.get(f"/api/sync?cat=data&uuids={data.id}")
+    #     self.assertEqual(response.json['has'], True)
+    #     response = self.client.get("/api/sync?cat=data&uuids=notexistentuuid")
+    #     self.assertEqual(response.json['has'], False)
 
     def test_create_user(self):
         """
@@ -866,43 +866,6 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(len(user1.followed.all()), 0)
         self.assertEqual(len(user2.followed.all()), 0)
 
-    def test_create_post(self):
-        import arff
-        from sklearn.datasets import load_iris
-
-        with open("../examples/iris.arff") as f:
-            print(f)
-
-        print(">>>>>>>>>>>")
-        self.login()
-        # iris = Dataset().data
-        # info = {
-        #     "past": list(iris.past),
-        #     "nattrs": iris.X.shape[1],
-        #     "ninsts": iris.X.shape[0],
-        #     "ntargs": iris.Y.shape[1] if len(iris.Y.shape) > 1 else 1,
-        #     "nclasses": len(set(iris.y))
-        # }
-        response = self.client.put(
-            "/api/posts", json={'data_uuid': iris.id, 'info': info})
-        self.assertEqual(response.status_code, 201,
-                         msg=response.json and response.json["errors"])
-
-        self.tatu.store(iris)
-
-        response = self.client.put(
-            "/api/posts/activate", json={'data_uuid': iris.id})
-        self.assertEqual(response.status_code, 201,
-                         msg=response.json and response.json["errors"])
-
-        response = self.client.put(
-            "/api/posts/activate", json={'data_uuid': "inexistent"})
-        self.assertEqual(response.status_code, 422)
-
-        response = self.client.put("/api/posts", json={'data_uuid': iris.id})
-        self.assertEqual(response.status_code, 422,
-                         msg=response.json and response.json["errors"])
-
     def test_deployment(self):
         """
             1 - Send deployment request
@@ -944,7 +907,7 @@ class ApiCase(unittest.TestCase):
         with patch('app.api.tasks.send_async_email.delay'):
             response = self.client.post(
                 "/api/users/recover/key", json={"email": "inexistent@email.com"})
-        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.status_code, 404)
 
 
 if __name__ == '__main__':
