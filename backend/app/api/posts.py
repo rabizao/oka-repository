@@ -52,10 +52,12 @@ class Posts(MethodView):
 
         for file in argsFiles['files']:
             data = Idict(arff=file.read().decode())
-            if data.id in storage:
-                HTTPAbort.already_uploaded()
             oid = (data >> arff2df >> [[storage]]).id
-            create_post(logged_user, oid, file.filename)
+            if oid in storage:
+                HTTPAbort.already_uploaded()
+            new_post = create_post(logged_user, oid, file.filename)
+            if new_post["code"] == "error":
+                HTTPAbort.already_uploaded()
             task = logged_user.launch_task('run',
                                            "Processing your uploaded files",
                                            [oid, username])

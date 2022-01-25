@@ -8,7 +8,6 @@ from celery.signals import worker_init
 from flask import current_app
 from flask.views import MethodView
 from flask_mail import Message
-from idict.core.idict_ import Idict
 from idict.persistence.sqla import SQLA
 
 from app import celery, db, mail
@@ -17,13 +16,17 @@ from app.models import Post, Task, User
 from app.schemas import TaskStatusBaseSchema
 
 from idict import idict
-from idict.function.dataset import df2arff, arff2df
 
 
 def create_post(logged_user, id, original_name="My uploaded data"):
     existing_post = logged_user.posts.filter_by(data_uuid=id).first()
     if existing_post:
-        raise Exception('Dataset already uploaded!')
+        return {
+            'original_name': original_name,
+            'message': 'Post already exists',
+            'code': 'error',
+            'id': existing_post.id
+        }
 
     post = Post(
         author=logged_user,

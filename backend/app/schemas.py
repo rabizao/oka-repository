@@ -486,7 +486,6 @@ class ItemInfoSchema(SQLAlchemySchema):
 
     @pre_load
     def test(self, data, **kwargs):
-        print(data)
         return data
 
     id = fields.String()

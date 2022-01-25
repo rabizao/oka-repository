@@ -40,7 +40,8 @@ class Users(MethodView):
                         our database please click <a href='{link}&confirm=false'>here</a>. \
                             <br><br><br>{current_app.config['WEB_TITLE']}"
         send_async_email.delay(message, recipients=[user.email])
-        print(message)
+        if current_app.debug:
+            print(message)
         db.session.add(user)
         db.session.commit()
         return user
@@ -70,7 +71,8 @@ class UsersRecoverKey(MethodView):
                         our database please click <a href='{link}&confirm=false'>here</a>. \
                             <br><br><br>{current_app.config['WEB_TITLE']}"
         send_async_email.delay(message, recipients=[user.email])
-        print(message)
+        if current_app.debug:
+            print(message)
         db.session.commit()
         response = {"username": user.username, "email": user.email}
         return response
@@ -99,7 +101,8 @@ class UsersRecoverAccount(MethodView):
                         you do not need to do anything and your account still safe. \
                                 <br><br><br>{current_app.config['WEB_TITLE']}"
         send_async_email.delay(message, recipients=[user.email])
-        print(message)
+        if current_app.debug:
+            print(message)
         db.session.commit()
 
     @bp.arguments(UserRecoverKeySubmitNewPassSchema)

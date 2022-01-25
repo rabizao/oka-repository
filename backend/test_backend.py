@@ -1,26 +1,18 @@
-from idict import idict
+
 import json
 import unittest
 import warnings
 from datetime import timedelta
-from io import BytesIO
 from time import sleep
 from unittest.mock import patch
-
 import os
-from idict.persistence.sqla import SQLA
-from sqlalchemy.orm import relation
-from werkzeug.datastructures import FileStorage
-
-import app
 from app import create_app, db
-from app.api.tasks import download_data, run_step
+from app.api.tasks import download_data
 from app.api.tasks import run
 from app.config import Config
 from app.models import User, Token, Notification, Post
 from app.utils import consts
-from idict.core.idict_ import Idict
-from idict.function.dataset import arff2df
+
 
 create_user1 = {
     "username": "user1111",
@@ -341,21 +333,22 @@ class ApiCase(unittest.TestCase):
         """
             1 - Create user2 and create/login with user1
             2 - Create a new post uploading a dataset
-            3 - Run celery task to create the post
-            4 - Edit post's description and name
-            5 - List the post
-            6 - Download the dataset
-            7 - Favorite/Unfavorite post
-            8 - Publish post
-            9 - Feed
-            10 - Comment post
-            11 - Reply to comment
-            12 - Add user2 as collaborator, check, remove and check again
-            13 - Get visualize data
-            14 - Users can not upload same dataset twice
-            15 - Check twins of post. Add user2 as collaborator. Check twins again
-            16 - Run step
-            17 - Delete post
+            3 - Run celery task to process the uploaded file
+            4 - Cant create post with same dataset twice
+            5 - Uploaded file can be processed twice
+            6 - Edit post's description and name
+            7 - List the post
+            8 - Download the dataset
+            9 - Favorite/Unfavorite post
+            10 - Publish post
+            11 - Feed
+            12 - Comment post
+            13 - Reply to comment
+            14 - Add user2 as collaborator, check, remove and check again
+            15 - Get visualize data
+            16 - Check twins of post. Add user2 as collaborator. Check twins again
+            17 - Run step
+            18 - Delete post
         """
         # 1
         username2 = self.login(user=create_user2)['username']
@@ -368,14 +361,26 @@ class ApiCase(unittest.TestCase):
             with patch('app.api.tasks.User.launch_task'):
                 response = self.client.post(
                     "/api/posts", data={'files': (fr, "test.arff")})
-                print(response.json)
 
         post = Post.query.all()[0]
         self.assertEqual(response.status_code, 201)
         # 3
         result = run.run(post.data_uuid, username)
         self.assertEqual(result["state"] == "SUCCESS", True)
+        self.assertTrue(len(Post.query.all()) == 1)
         # 4
+        filename = "../examples/iris.arff"
+        with open(filename, 'rb') as fr:
+            with patch('app.api.tasks.User.launch_task'):
+                response = self.client.post(
+                    "/api/posts", data={'files': (fr, "test2.arff")})
+
+        self.assertEqual(response.status_code, 422)
+        # 5
+        result = run.run(post.data_uuid, username)
+        self.assertEqual(result["state"] == "SUCCESS", True)
+
+        # 6
         new_name = "new name"
         new_description = "new description"
         # User2 can not edit post
@@ -400,7 +405,7 @@ class ApiCase(unittest.TestCase):
         response = self.client.put(
             "/api/posts/100", json={"name": new_name, "description": new_description})
         self.assertEqual(response.status_code, 404)
-        # 5
+        # 7
         # User2 can not list the post
         self.login(create_user=False, user=create_user2)
         response = self.client.get(f"/api/posts/{post.id}")
@@ -418,7 +423,7 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(len(response.json), 1)
         self.assertEqual(response.status_code, 200)
 
-        # 6
+        # 8
         with patch('app.api.tasks.User.launch_task'):
             response = self.client.post(f"/api/downloads/posts?ids={post.id}")
         self.assertEqual(response.status_code, 201)
@@ -430,206 +435,199 @@ class ApiCase(unittest.TestCase):
         # User2 does not have access to file
         self.login(create_user=False, user=create_user2)
         response = self.client.get(
-            f"/api/downloads/data?name={json.loads(result['result'])}")
+            f"/api/downloads/files?id={json.loads(result['result'])['id']}")
         self.assertEqual(response.status_code, 404)
-        # # User1 can download file
-        # self.login(create_user=False)
-        # response = self.client.get(
-        #     f"/api/downloads/data?name={json.loads(result['result'])}")
-        # self.assertEqual(response.status_code, 200)
-        # # Check downloads count
-        # self.assertEqual(post.get_unique_download_count(), 1)
-        # result = download_data.run([post.id], username, "127.0.0.1")
-        # self.assertEqual(result['state'], 'SUCCESS')
-        # self.assertEqual(post.get_unique_download_count(), 1)
-        # result = download_data.run([post.id], username, "127.0.0.2")
-        # self.assertEqual(result['state'], 'SUCCESS')
-        # self.assertEqual(post.get_unique_download_count(), 2)
-        # # 7
-        # response = self.client.post(f"/api/posts/{post_id}/favorite")
-        # self.assertEqual(response.status_code, 201)
-        # self.assertEqual(user.has_favorited(post), True)
-        # response = self.client.post(f"/api/posts/{post_id}/favorite")
-        # self.assertEqual(response.status_code, 201)
-        # self.assertEqual(user.has_favorited(post), False)
-        # # Can not favorite an inexistent post
-        # response = self.client.post("/api/posts/100/favorite")
-        # self.assertEqual(response.status_code, 422)
-        # # User2 can not favorite post
-        # self.login(create_user=False, user=create_user2)
-        # response = self.client.post(f"/api/posts/{post_id}/favorite")
-        # self.assertEqual(response.status_code, 422)
-        # self.login(create_user=False)
-        # # 8
-        # # Can not publish inexistent post
-        # response = self.client.post("/api/posts/100/publish")
-        # self.assertEqual(response.status_code, 422)
-        # # User2 can not publish the post
-        # self.login(create_user=False, user=create_user2)
-        # response = self.client.post(f"/api/posts/{post_id}/publish")
-        # self.assertEqual(response.status_code, 422)
-        # self.login(create_user=False)
-        # # Can not publish without set meta
-        # self.assertEqual(post.public, False)
-        # response = self.client.post(f"/api/posts/{post_id}/publish")
-        # self.assertEqual(response.status_code, 422)
-        # self.assertEqual(post.public, False)
-        # # Publish
-        # post.classification = True
-        # post.regression = True
-        # post.clustering = True
-        # self.assertEqual(post.public, False)
-        # response = self.client.post(f"/api/posts/{post_id}/publish")
-        # self.assertEqual(response.status_code, 201)
-        # self.assertEqual(post.public, True)
-        # # Can not publish twice
-        # response = self.client.post(f"/api/posts/{post_id}/publish")
-        # self.assertEqual(response.status_code, 422)
-        # # User2 has access to post since it is public
-        # self.login(create_user=False, user=create_user2)
-        # response = self.client.get(f"/api/posts/{post_id}")
-        # self.assertEqual(response.status_code, 200)
-        # post.public = False
-        # db.session.commit()
-        # self.login(create_user=False)
-        # # 9
-        # # User can not see user2's feed
-        # response = self.client.get(f"/api/users/{username2}/feed")
-        # self.assertEqual(response.status_code, 422)
-        # # Post should appear on user's feed and not on user2's feed
-        # response = self.client.get(f"/api/users/{username}/feed")
-        # self.assertEqual(len(response.json), 1)
-        # self.login(create_user=False, user=create_user2)
-        # response = self.client.get(f"/api/users/{username2}/feed")
-        # self.assertEqual(len(response.json), 0)
-        # # Public post should appear on user2's feed if user2 is following user
-        # post.public = True
-        # db.session.commit()
-        # response = self.client.get(f"/api/users/{username2}/feed")
-        # self.assertEqual(len(response.json), 0)
-        # user2.follow(user)
-        # db.session.commit()
-        # response = self.client.get(f"/api/users/{username2}/feed")
-        # self.assertEqual(len(response.json), 1)
-        # post.public = False
-        # user2.unfollow(user)
-        # db.session.commit()
-        # self.login(create_user=False)
-        # # 10
-        # # Can not comment an inexistent post
-        # response = self.client.post(
-        #     "/api/posts/100/comments", json={"text": "Comment 1"})
-        # self.assertEqual(response.status_code, 422)
-        # # Comment
-        # response = self.client.post(
-        #     f"/api/posts/{post_id}/comments", json={"text": "Comment 1"})
-        # self.assertEqual(response.status_code, 201)
-        # # User2 can not comment
-        # self.login(create_user=False, user=create_user2)
-        # response = self.client.post(
-        #     f"/api/posts/{post_id}/comments", json={"text": "Comment 1"})
-        # self.assertEqual(response.status_code, 422)
-        # # User2 can not list comments
-        # response = self.client.get(f"/api/posts/{post_id}/comments")
-        # self.assertEqual(response.status_code, 422)
-        # self.login(create_user=False)
-        # # List comments
-        # response = self.client.get(f"/api/posts/{post_id}/comments")
-        # self.assertEqual(len(response.json), 1)
-        # comment_id = response.json[0]['id']
-        # # Can not list inexistent post comments
-        # response = self.client.get("/api/posts/100/comments")
-        # self.assertEqual(response.status_code, 422)
-        # # 11
-        # response = self.client.post(
-        #     f"/api/comments/{comment_id}/replies", json={"text": "Reply to comment 1"})
-        # self.assertEqual(response.status_code, 201)
-        # response = self.client.post(
-        #     "/api/comments/100/replies", json={"text": "Reply to comment 1"})
-        # self.assertEqual(response.status_code, 422)
-        # response = self.client.get(f"/api/comments/{comment_id}/replies")
-        # self.assertEqual(len(response.json), 1)
-        # response = self.client.get("/api/comments/100/replies")
-        # self.assertEqual(response.status_code, 422)
-        # # 12
-        # # Can not invite himself
-        # response = self.client.post(
-        #     f"/api/posts/{post_id}/collaborators", json={"username": username})
-        # self.assertEqual(response.status_code, 422)
-        # self.assertEqual(User.get_by_username(
-        #     username2).has_access(post), False)
-        # # Invite user2
-        # response = self.client.post(
-        #     f"/api/posts/{post_id}/collaborators", json={"username": username2})
-        # self.assertEqual(response.status_code, 201)
-        # self.assertEqual(User.get_by_username(
-        #     username2).has_access(post), True)
-        # # Can not invite user2 to an inexistent post
-        # response = self.client.post(
-        #     "/api/posts/100/collaborators", json={"username": username2})
-        # self.assertEqual(response.status_code, 422)
-        # # Can not invite an inexistent user
-        # response = self.client.post(
-        #     f"/api/posts/{post_id}/collaborators", json={"username": "inexistent"})
-        # self.assertEqual(response.status_code, 422)
-        # # User2 can not invite collaborators
-        # self.login(create_user=False, user=create_user2)
-        # response = self.client.post(
-        #     f"/api/posts/{post_id}/collaborators", json={"username": username2})
-        # self.assertEqual(response.status_code, 422)
-        # self.login(create_user=False)
-        # # Remove collaborator
-        # response = self.client.post(
-        #     f"/api/posts/{post_id}/collaborators", json={"username": username2})
-        # self.assertEqual(response.status_code, 201)
-        # self.assertEqual(User.get_by_username(
-        #     username2).has_access(post), False)
-        # # 13
-        # # Can not get visualize of inexistent post
-        # response = self.client.get("/api/posts/100/visualize?plot=scatter")
-        # self.assertEqual(response.status_code, 422)
-        # response = self.client.get(
-        #     f"/api/posts/{post_id}/visualize?plot=scatter")
-        # self.assertEqual(response.status_code, 200)
-        # response = self.client.get(
-        #     f"/api/posts/{post_id}/visualize?plot=parallelcoordinates")
-        # self.assertEqual(response.status_code, 200)
-        # response = self.client.get(
-        #     f"/api/posts/{post_id}/visualize?plot=pearsoncorrelation")
-        # self.assertEqual(response.status_code, 200)
-        # response = self.client.get(
-        #     f"/api/posts/{post_id}/visualize?plot=histogram")
-        # self.assertEqual(response.status_code, 200)
-        # # User2 can not access visualization data
-        # self.login(create_user=False, user=create_user2)
-        # response = self.client.get(
-        #     f"/api/posts/{post_id}/visualize?plot=histogram")
-        # self.assertEqual(response.status_code, 422)
-        # self.login(create_user=False)
-        # # 14
-        # result = process_file.run(files, username2)
-        # self.assertEqual(result['state'], 'SUCCESS')
-        # self.assertEqual(json.loads(result['result'])[
-        #     0]["code"] == "error", False)
-        # result = process_file.run(files, username2)
-        # self.assertEqual(result['state'], 'SUCCESS')
-        # self.assertEqual(json.loads(result['result'])[
-        #     0]["code"] == "error", True)
-        # # 15
-        # # Can not list twins of inexistent post
-        # response = self.client.get("/api/posts/100/twins")
-        # self.assertEqual(response.status_code, 422)
-        # # List twins
-        # response = self.client.get(f"/api/posts/{post_id}/twins")
-        # self.assertEqual(response.status_code, 200)
-        # self.assertEqual(len(response.json), 0)
-        # response = self.client.post(
-        #     f"/api/posts/{post_id}/collaborators", json={"username": username2})
-        # self.login(create_user=False, user=create_user2)
-        # response = self.client.get(f"/api/posts/{post_id}/twins")
-        # self.assertEqual(response.status_code, 200)
-        # self.assertEqual(len(response.json), 1)
-        # # 16
+        # User1 can download file
+        self.login(create_user=False)
+        response = self.client.get(
+            f"/api/downloads/files?id={json.loads(result['result'])['id']}")
+        self.assertEqual(response.status_code, 200)
+        # Check downloads count
+        self.assertEqual(post.get_unique_download_count(), 1)
+        result = download_data.run([post.id], username, "127.0.0.1")
+        self.assertEqual(result['state'], 'SUCCESS')
+        self.assertEqual(post.get_unique_download_count(), 1)
+        result = download_data.run([post.id], username, "127.0.0.2")
+        self.assertEqual(result['state'], 'SUCCESS')
+        self.assertEqual(post.get_unique_download_count(), 2)
+        # 9
+        response = self.client.post(f"/api/posts/{post.id}/favorite")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(user.has_favorited(post), True)
+        response = self.client.post(f"/api/posts/{post.id}/favorite")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(user.has_favorited(post), False)
+        # Can not favorite an inexistent post
+        response = self.client.post("/api/posts/100/favorite")
+        self.assertEqual(response.status_code, 404)
+        # User2 can not favorite post
+        self.login(create_user=False, user=create_user2)
+        response = self.client.post(f"/api/posts/{post.id}/favorite")
+        self.assertEqual(response.status_code, 422)
+        self.login(create_user=False)
+        # 10
+        # Can not publish inexistent post
+        response = self.client.post("/api/posts/100/publish")
+        self.assertEqual(response.status_code, 404)
+        # User2 can not publish the post
+        self.login(create_user=False, user=create_user2)
+        response = self.client.post(f"/api/posts/{post.id}/publish")
+        self.assertEqual(response.status_code, 422)
+        self.login(create_user=False)
+        # Can not publish without set meta
+        self.assertEqual(post.public, False)
+        response = self.client.post(f"/api/posts/{post.id}/publish")
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(post.public, False)
+        # Publish
+        post.classification = True
+        post.regression = True
+        post.clustering = True
+        self.assertEqual(post.public, False)
+        response = self.client.post(f"/api/posts/{post.id}/publish")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(post.public, True)
+        # Can not publish twice
+        response = self.client.post(f"/api/posts/{post.id}/publish")
+        self.assertEqual(response.status_code, 422)
+        # User2 has access to post since it is public
+        self.login(create_user=False, user=create_user2)
+        response = self.client.get(f"/api/posts/{post.id}")
+        self.assertEqual(response.status_code, 200)
+        post.public = False
+        db.session.commit()
+        self.login(create_user=False)
+        # 11
+        # User can not see user2's feed
+        response = self.client.get(f"/api/users/{username2}/feed")
+        self.assertEqual(response.status_code, 404)
+        # Post should appear on user's feed and not on user2's feed
+        response = self.client.get(f"/api/users/{username}/feed")
+        self.assertEqual(len(response.json), 1)
+        self.login(create_user=False, user=create_user2)
+        response = self.client.get(f"/api/users/{username2}/feed")
+        self.assertEqual(len(response.json), 0)
+        # Public post should appear on user2's feed if user2 is following user
+        post.public = True
+        db.session.commit()
+        response = self.client.get(f"/api/users/{username2}/feed")
+        self.assertEqual(len(response.json), 0)
+        user2.follow(user)
+        db.session.commit()
+        response = self.client.get(f"/api/users/{username2}/feed")
+        self.assertEqual(len(response.json), 1)
+        post.public = False
+        user2.unfollow(user)
+        db.session.commit()
+        self.login(create_user=False)
+        # 12
+        # Can not comment an inexistent post
+        response = self.client.post(
+            "/api/posts/100/comments", json={"text": "Comment 1"})
+        self.assertEqual(response.status_code, 404)
+        # Comment
+        response = self.client.post(
+            f"/api/posts/{post.id}/comments", json={"text": "Comment 1"})
+        self.assertEqual(response.status_code, 201)
+        # User2 can not comment
+        self.login(create_user=False, user=create_user2)
+        response = self.client.post(
+            f"/api/posts/{post.id}/comments", json={"text": "Comment 1"})
+        self.assertEqual(response.status_code, 422)
+        # User2 can not list comments
+        response = self.client.get(f"/api/posts/{post.id}/comments")
+        self.assertEqual(response.status_code, 422)
+        self.login(create_user=False)
+        # List comments
+        response = self.client.get(f"/api/posts/{post.id}/comments")
+        self.assertEqual(len(response.json), 1)
+        comment_id = response.json[0]['id']
+        # Can not list inexistent post comments
+        response = self.client.get("/api/posts/100/comments")
+        self.assertEqual(response.status_code, 404)
+        # 13
+        response = self.client.post(
+            f"/api/comments/{comment_id}/replies", json={"text": "Reply to comment 1"})
+        self.assertEqual(response.status_code, 201)
+        response = self.client.post(
+            "/api/comments/100/replies", json={"text": "Reply to comment 1"})
+        self.assertEqual(response.status_code, 404)
+        response = self.client.get(f"/api/comments/{comment_id}/replies")
+        self.assertEqual(len(response.json), 1)
+        response = self.client.get("/api/comments/100/replies")
+        self.assertEqual(response.status_code, 404)
+        # 14
+        # Can not invite himself
+        response = self.client.post(
+            f"/api/posts/{post.id}/collaborators", json={"username": username})
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(User.get_by_username(
+            username2).has_access(post), False)
+        # Invite user2
+        response = self.client.post(
+            f"/api/posts/{post.id}/collaborators", json={"username": username2})
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(User.get_by_username(
+            username2).has_access(post), True)
+        # Can not invite user2 to an inexistent post
+        response = self.client.post(
+            "/api/posts/100/collaborators", json={"username": username2})
+        self.assertEqual(response.status_code, 404)
+        # Can not invite an inexistent user
+        response = self.client.post(
+            f"/api/posts/{post.id}/collaborators", json={"username": "inexistent"})
+        self.assertEqual(response.status_code, 404)
+        # User2 can not invite collaborators
+        self.login(create_user=False, user=create_user2)
+        response = self.client.post(
+            f"/api/posts/{post.id}/collaborators", json={"username": username2})
+        self.assertEqual(response.status_code, 422)
+        self.login(create_user=False)
+        # Remove collaborator
+        response = self.client.post(
+            f"/api/posts/{post.id}/collaborators", json={"username": username2})
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(User.get_by_username(
+            username2).has_access(post), False)
+        # 15
+        # Can not get visualize of inexistent post
+        response = self.client.get("/api/posts/100/visualize?plot=scatter")
+        self.assertEqual(response.status_code, 404)
+        response = self.client.get(
+            f"/api/posts/{post.id}/visualize?plot=scatter")
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(
+            f"/api/posts/{post.id}/visualize?plot=histogram")
+        self.assertEqual(response.status_code, 200)
+        # User2 can not access visualization data
+        self.login(create_user=False, user=create_user2)
+        response = self.client.get(
+            f"/api/posts/{post.id}/visualize?plot=histogram")
+        self.assertEqual(response.status_code, 422)
+        self.login(create_user=False)
+        # 16
+        # Can not list twins of inexistent post
+        response = self.client.get("/api/posts/100/twins")
+        self.assertEqual(response.status_code, 404)
+        # List twins
+        response = self.client.get(f"/api/posts/{post.id}/twins")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json), 0)
+        # user2 upload same dataset
+        self.login(create_user=False, user=create_user2)
+        filename = "../examples/iris.arff"
+        with open(filename, 'rb') as fr:
+            with patch('app.api.tasks.User.launch_task'):
+                response = self.client.post(
+                    "/api/posts", data={'files': (fr, "test.arff")})
+
+        post = Post.query.all()[0]
+        self.assertEqual(response.status_code, 201)
+        # should have one twin
+        response = self.client.get(f"/api/posts/{post.id}/twins")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json), 1)
+        # # 17
         # step = {
         #     "category": "evaluation",
         #     "algorithm": "partition",
@@ -665,28 +663,34 @@ class ApiCase(unittest.TestCase):
         # result = run_step.run(post_id, step_full, username)
         # self.assertEqual(json.loads(result['result'])[
         #     "code"] == "error", False)
-        # # 17
-        # # User2 can not delete post_id
-        # response = self.client.delete(f"/api/posts/{post_id}")
-        # self.assertEqual(response.status_code, 422)
-        # # Public posts can not be deleted
-        # self.login(create_user=False)
-        # post.public = True
-        # db.session.commit()
-        # response = self.client.delete(f"/api/posts/{post_id}")
-        # self.assertEqual(response.status_code, 422)
-        # post.public = False
-        # db.session.commit()
-        # # Delete post
-        # response = self.client.delete(f"/api/posts/{post_id}")
-        # self.assertEqual(response.status_code, 203)
-        # # Can not delete inexistent post
-        # response = self.client.delete("/api/posts/100")
-        # self.assertEqual(response.status_code, 422)
+        # 18
+        # User2 can not delete post_id
+        self.login(create_user=False, user=create_user2)
+        response = self.client.delete(f"/api/posts/{post.id}")
+        self.assertEqual(response.status_code, 422)
+        # Public posts can not be deleted
+        self.login(create_user=False)
+        post.public = True
+        db.session.commit()
+        response = self.client.delete(f"/api/posts/{post.id}")
+        self.assertEqual(response.status_code, 422)
+        post.public = False
+        db.session.commit()
+        # Delete post
+        response = self.client.delete(f"/api/posts/{post.id}")
+        self.assertEqual(response.status_code, 203)
+        # Can not delete inexistent post
+        response = self.client.delete("/api/posts/100")
+        self.assertEqual(response.status_code, 404)
         # # Restore post uploading data again
-        # result = process_file.run(files, username)
-        # self.assertEqual(json.loads(result['result'])[
-        #     0]["code"] == "success", True)
+        # filename = "../examples/iris.arff"
+        # with open(filename, 'rb') as fr:
+        #     with patch('app.api.tasks.User.launch_task'):
+        #         response = self.client.post(
+        #             "/api/posts", data={'files': (fr, "test.arff")})
+
+        # print(response.json)
+        # self.assertEqual(response.status_code, 201)
 
     # def test_sync(self):
     #     """
