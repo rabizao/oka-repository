@@ -132,7 +132,10 @@ class PostsById(MethodView):
         if post.author != logged_user:
             HTTPAbort.not_authorized()
 
-        post.active = False
+        storage = SQLA(
+            current_app.config['DATA_URL'], user_id=logged_user.username)
+        del storage[post.data_uuid]
+        db.session.delete(post)
         db.session.commit()
 
 

@@ -682,15 +682,14 @@ class ApiCase(unittest.TestCase):
         # Can not delete inexistent post
         response = self.client.delete("/api/posts/100")
         self.assertEqual(response.status_code, 404)
-        # # Restore post uploading data again
-        # filename = "../examples/iris.arff"
-        # with open(filename, 'rb') as fr:
-        #     with patch('app.api.tasks.User.launch_task'):
-        #         response = self.client.post(
-        #             "/api/posts", data={'files': (fr, "test.arff")})
+        # Upload same data again
+        filename = "../examples/iris.arff"
+        with open(filename, 'rb') as fr:
+            with patch('app.api.tasks.User.launch_task'):
+                response = self.client.post(
+                    "/api/posts", data={'files': (fr, "test.arff")})
 
-        # print(response.json)
-        # self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 201)
 
     # def test_sync(self):
     #     """
