@@ -372,44 +372,44 @@ class PostsTwinsById(MethodView):
         return data
 
 
-@bp.route('/posts/<int:id>/run')
-class PostsTransformById(MethodView):
-    @bp.auth_required
-    @bp.arguments(RunSchema)
-    @bp.response(201, TaskBaseSchema)
-    def post(self, args, id):
-        """
-        Return the twins of a post with id {id}
-        """
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
-        post = Post.query.get(id)
+# @bp.route('/posts/<int:id>/run')
+# class PostsTransformById(MethodView):
+#     @bp.auth_required
+#     @bp.arguments(RunSchema)
+#     @bp.response(201, TaskBaseSchema)
+#     def post(self, args, id):
+#         """
+#         Return the twins of a post with id {id}
+#         """
+#         username = get_jwt_identity()
+#         logged_user = User.get_by_username(username)
+#         post = Post.query.get(id)
 
-        if not post or not post.active:
-            HTTPAbort.not_found()
+#         if not post or not post.active:
+#             HTTPAbort.not_found()
 
-        if not logged_user.has_access(post):
-            HTTPAbort.not_authorized()
+#         if not logged_user.has_access(post):
+#             HTTPAbort.not_authorized()
 
-        for key, value in args["parameters"].items():
-            try:
-                args["parameters"][key] = int(value)
-            except ValueError:
-                pass
+#         for key, value in args["parameters"].items():
+#             try:
+#                 args["parameters"][key] = int(value)
+#             except ValueError:
+#                 pass
 
-        step_asdict = {
-            'id': post.data_uuid,
-            'desc': {
-                'name': args["algorithm"].capitalize(),
-                'path': f'kururu.tool.{args["category"]}.{args["algorithm"]}',
-                'config': args["parameters"]
-            }
-        }
+#         step_asdict = {
+#             'id': post.data_uuid,
+#             'desc': {
+#                 'name': args["algorithm"].capitalize(),
+#                 'path': f'kururu.tool.{args["category"]}.{args["algorithm"]}',
+#                 'config': args["parameters"]
+#             }
+#         }
 
-        task = logged_user.launch_task('run_step', 'Processing your simulation',
-                                       [post.id, step_asdict, username])
-        db.session.commit()
-        return task
+#         task = logged_user.launch_task('run_step', 'Processing your simulation',
+#                                        [post.id, step_asdict, username])
+#         db.session.commit()
+#         return task
 
 
 # noinspection PyArgumentList
