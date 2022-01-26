@@ -64,8 +64,7 @@ def get_fields(post):
 
 
 def get_attrs(post):
-    storage = SQLA(current_app.config['DATA_URL'],
-                   user_id=post.author.username)
+    storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username)
     data = idict(post.data_uuid, storage) >> df2Xy
 
     return [{"name": item.split('@')[0], "nominal": item.isdigit()} for item in list(data.df.columns.values)]
@@ -350,8 +349,7 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     favorites = auto_field(dump_only=True)
     data_uuid_colors = fields.Function(lambda obj: id2rgb(
         obj.data_uuid, dark=False), dump_only=True)
-    attrs = fields.Function(lambda obj: get_attrs(
-        obj), dump_only=True)
+    attrs = fields.Function(lambda obj: get_attrs(obj), dump_only=True)
     history = fields.Function(lambda obj: get_history(obj), dump_only=True)
     downloads = fields.Function(
         lambda obj: obj.get_unique_download_count(), dump_only=True)
