@@ -1,5 +1,6 @@
 
 import json
+from testfixtures import TempDirectory
 import unittest
 import warnings
 from datetime import timedelta
@@ -356,11 +357,14 @@ class ApiCase(unittest.TestCase):
         user = User.get_by_username(username)
         user2 = User.get_by_username(username2)
         # 2
-        filename = "../examples/iris.arff"
-        with open(filename, 'rb') as fr:
-            with patch('app.api.tasks.User.launch_task'):
-                response = self.client.post(
-                    "/api/posts", data={'files': (fr, "test.arff")})
+        from idict import idict
+        data = idict.fromminiarff(output_format="arff")
+        with TempDirectory() as tmpDir:
+            tmpDir.write("test.arff", data["arff"].encode())
+            with open(tmpDir.path + "/test.arff", 'rb') as fr:
+                with patch('app.api.tasks.User.launch_task'):
+                    response = self.client.post(
+                        "/api/posts", data={'files': (fr, "test.arff")})
 
         post = Post.query.all()[0]
         self.assertEqual(response.status_code, 201)
@@ -369,11 +373,12 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(result["state"] == "SUCCESS", True)
         self.assertTrue(len(Post.query.all()) == 1)
         # 4
-        filename = "../examples/iris.arff"
-        with open(filename, 'rb') as fr:
-            with patch('app.api.tasks.User.launch_task'):
-                response = self.client.post(
-                    "/api/posts", data={'files': (fr, "test2.arff")})
+        with TempDirectory() as tmpDir:
+            tmpDir.write("test.arff", data["arff"].encode())
+            with open(tmpDir.path + "/test.arff", 'rb') as fr:
+                with patch('app.api.tasks.User.launch_task'):
+                    response = self.client.post(
+                        "/api/posts", data={'files': (fr, "test.arff")})
 
         self.assertEqual(response.status_code, 422)
         # 5
@@ -615,11 +620,12 @@ class ApiCase(unittest.TestCase):
         self.assertEqual(len(response.json), 0)
         # user2 upload same dataset
         self.login(create_user=False, user=create_user2)
-        filename = "../examples/iris.arff"
-        with open(filename, 'rb') as fr:
-            with patch('app.api.tasks.User.launch_task'):
-                response = self.client.post(
-                    "/api/posts", data={'files': (fr, "test.arff")})
+        with TempDirectory() as tmpDir:
+            tmpDir.write("test.arff", data["arff"].encode())
+            with open(tmpDir.path + "/test.arff", 'rb') as fr:
+                with patch('app.api.tasks.User.launch_task'):
+                    response = self.client.post(
+                        "/api/posts", data={'files': (fr, "test.arff")})
 
         post = Post.query.all()[0]
         self.assertEqual(response.status_code, 201)

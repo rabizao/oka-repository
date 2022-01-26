@@ -8,8 +8,8 @@ from app.errors.handlers import HTTPAbort
 from app.models import Comment, Post, User
 from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
                          PostEditSchema, PostFilesSchema, PostQuerySchema, PostSimplifiedSchema,
-                         RunSchema, TaskBaseSchema, UserBaseSchema, VisualizeQuerySchema,
-                         PostActivateSchema)
+                         TaskBaseSchema, UserBaseSchema, VisualizeQuerySchema,
+                         PostActivateSchema)  # RunSchema,
 from flask import current_app
 from flask.views import MethodView
 from flask_jwt_extended import get_jwt_identity
