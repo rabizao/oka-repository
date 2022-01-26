@@ -51,11 +51,12 @@ class Posts(MethodView):
             current_app.config['DATA_URL'], user_id=username)
 
         for file in argsFiles['files']:
-            data = Idict(arff=file.read().decode())
-            oid = (data >> arff2df >> [[storage]]).id
+            data = Idict(arff=file.read().decode()) >> arff2df >> [[storage]]
+            oid = data.id
             if oid in storage:
                 HTTPAbort.already_uploaded()
-            new_post = create_post(logged_user, oid, file.filename)
+            desc = data.description if "_description" in data else "No description"
+            new_post = create_post(logged_user, oid, data.name, desc)
             if new_post["code"] == "error":
                 HTTPAbort.already_uploaded()
             task = logged_user.launch_task('run',

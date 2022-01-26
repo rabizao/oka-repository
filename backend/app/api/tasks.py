@@ -18,7 +18,7 @@ from app.schemas import TaskStatusBaseSchema
 from idict import idict
 
 
-def create_post(logged_user, id, original_name="My uploaded data"):
+def create_post(logged_user, id, original_name, description):
     existing_post = logged_user.posts.filter_by(data_uuid=id).first()
     if existing_post:
         return {
@@ -30,7 +30,9 @@ def create_post(logged_user, id, original_name="My uploaded data"):
 
     post = Post(
         author=logged_user,
-        data_uuid=id
+        data_uuid=id,
+        name=original_name,
+        description=description
     )
     db.session.add(post)
     db.session.flush()
