@@ -689,11 +689,12 @@ class ApiCase(unittest.TestCase):
         response = self.client.delete("/api/posts/100")
         self.assertEqual(response.status_code, 404)
         # Upload same data again
-        filename = "../examples/iris.arff"
-        with open(filename, 'rb') as fr:
-            with patch('app.api.tasks.User.launch_task'):
-                response = self.client.post(
-                    "/api/posts", data={'files': (fr, "test.arff")})
+        with TempDirectory() as tmpDir:
+            tmpDir.write("test.arff", data["arff"].encode())
+            with open(tmpDir.path + "/test.arff", 'rb') as fr:
+                with patch('app.api.tasks.User.launch_task'):
+                    response = self.client.post(
+                        "/api/posts", data={'files': (fr, "test.arff")})
 
         self.assertEqual(response.status_code, 201)
 
