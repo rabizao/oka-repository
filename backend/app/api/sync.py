@@ -23,7 +23,7 @@ from . import bp
 
 
 @bp.route("/item/<string:id>/check")
-class SyncItem(MethodView):
+class SyncItemCheck(MethodView):
     @bp.auth_required
     @bp.response(200, FoundResponseSchema)
     def get(self, id):

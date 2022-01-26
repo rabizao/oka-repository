@@ -7,7 +7,7 @@ from app import db
 from app.errors.handlers import HTTPAbort
 from app.models import Comment, Post, User
 from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
-                         PostEditSchema, PostFilesSchema, PostQuerySchema, PostSimplifiedSchema,
+                         PostEditSchema, PostFilesSchema, PostQuerySchema, PostSimplifiedSchema, RunSchema,
                          TaskBaseSchema, UserBaseSchema, VisualizeQuerySchema,
                          PostActivateSchema)  # RunSchema,
 from flask import current_app
@@ -16,8 +16,8 @@ from flask_jwt_extended import get_jwt_identity
 from idict.function.dataset import arff2df, df2Xy
 
 from . import bp
-from .tasks import create_post
 from app.functions import scatter_macro, histogram_macro
+from idict.function.evaluation import split
 
 
 @bp.route("/posts")
@@ -49,19 +49,21 @@ class Posts(MethodView):
 
         storage = SQLA(
             current_app.config['DATA_URL'], user_id=username)
-
+        import dill
         for file in argsFiles['files']:
-            data = Idict(arff=file.read().decode()) >> arff2df >> [[storage]]
+            data = Idict(x=15)   #   arff=file.read().decode()) >> arff2df   # >> [[storage]]
+            data.evaluate()
             oid = data.id
             if oid in storage:
                 HTTPAbort.already_uploaded()
-            desc = data.description if "_description" in data else "No description"
-            new_post = create_post(logged_user, oid, data.name, desc)
-            if new_post["code"] == "error":
-                HTTPAbort.already_uploaded()
-            task = logged_user.launch_task('run',
-                                           "Processing your uploaded files",
-                                           [oid, username])
+            run_id = (data.hosh * b"run").id
+            dump = dill.dumps(data.frozen, protocol=5)
+            storage[run_id] = dump
+            data = dill.loads(dump).asmutable
+            data.show()
+            # task = logged_user.launch_task('run',
+            #                                "Processing your uploaded files",
+            #                                [username, run_id])
         db.session.commit()
         return task
 
@@ -373,44 +375,52 @@ class PostsTwinsById(MethodView):
         return data
 
 
-# @bp.route('/posts/<int:id>/run')
-# class PostsTransformById(MethodView):
-#     @bp.auth_required
-#     @bp.arguments(RunSchema)
-#     @bp.response(201, TaskBaseSchema)
-#     def post(self, args, id):
-#         """
-#         Return the twins of a post with id {id}
-#         """
-#         username = get_jwt_identity()
-#         logged_user = User.get_by_username(username)
-#         post = Post.query.get(id)
+@bp.route('/posts/<int:id>/run')
+class PostsTransformById(MethodView):
+    @bp.auth_required
+    @bp.arguments(RunSchema)
+    @bp.response(201, TaskBaseSchema)
+    def post(self, args, id):
+        """
+        Return the twins of a post with id {id}
+        """
+        username = get_jwt_identity()
+        logged_user = User.get_by_username(username)
+        post = Post.query.get(id)
 
-#         if not post or not post.active:
-#             HTTPAbort.not_found()
+        if not post or not post.active:
+            HTTPAbort.not_found()
 
-#         if not logged_user.has_access(post):
-#             HTTPAbort.not_authorized()
+        if not logged_user.has_access(post):
+            HTTPAbort.not_authorized()
 
-#         for key, value in args["parameters"].items():
-#             try:
-#                 args["parameters"][key] = int(value)
-#             except ValueError:
-#                 pass
+        for key, value in args["parameters"].items():
+            try:
+                args["parameters"][key] = int(value)
+            except ValueError:
+                pass
 
-#         step_asdict = {
-#             'id': post.data_uuid,
-#             'desc': {
-#                 'name': args["algorithm"].capitalize(),
-#                 'path': f'kururu.tool.{args["category"]}.{args["algorithm"]}',
-#                 'config': args["parameters"]
-#             }
-#         }
+        # step_asdict = {
+        #     'id': post.data_uuid,
+        #     'desc': {
+        #         'name': args["algorithm"].capitalize(),
+        #         'path': f'kururu.tool.{args["category"]}.{args["algorithm"]}',
+        #         'config': args["parameters"]
+        #     }
+        # }
 
-#         task = logged_user.launch_task('run_step', 'Processing your simulation',
-#                                        [post.id, step_asdict, username])
-#         db.session.commit()
-#         return task
+        from idict import let
+        import dill
+
+        storage = SQLA(current_app.config['DATA_URL'], user_id=username)
+        data = idict(post.data_uuid, storage) >> df2Xy >> let(split, config=args["parameters"])
+        data.evaluate()
+        run_id = (data.hosh * "run").id
+        storage[run_id] = dill.dumps(data, protocol=5)
+        task = logged_user.launch_task('run', 'Processing your simulation',
+                                       [username, run_id])
+        db.session.commit()
+        return task
 
 
 # noinspection PyArgumentList

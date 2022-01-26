@@ -213,17 +213,35 @@ def send_async_email(message, recipients=None):
 
 
 @celery.task(bind=True, base=BaseTask)
-def run(self, oid, username):
+def run(self, username, run_id):
     _set_job_progress(self, 25)
     logged_user = User.get_by_username(username)
-    post = Post.query.filter_by(data_uuid=oid, author=logged_user).first()
+    import dill
+    storage = SQLA(current_app.config['DATA_URL'], user_id=username)
+    dump = storage[run_id]
+    data = dill.loads(dump)
+    data.evaluated >> [storage]
+    desc = data.description if "_description" in data else "No description"
+    new_post = create_post(logged_user, data.id, data.name, desc)
+    if new_post["code"] == "error":
+        _set_job_progress(self, 100)
+        raise Exception(new_post["message"])
 
-    storage = SQLA(current_app.config['DATA_URL'],
-                   user_id=username)
-    data = idict(post.data_uuid, storage)
-    data.evaluate()
+    return _set_job_progress(self, 100, result=new_post)
 
-    return _set_job_progress(self, 100)
+
+# @celery.task(bind=True, base=BaseTask)
+# def run(self, oid, username):
+#     _set_job_progress(self, 25)
+#     logged_user = User.get_by_username(username)
+#     post = Post.query.filter_by(data_uuid=oid, author=logged_user).first()
+
+#     storage = SQLA(current_app.config['DATA_URL'],
+#                    user_id=username)
+#     data = idict(post.data_uuid, storage)
+#     data.evaluate()
+
+#     return _set_job_progress(self, 100)
 
 
 # @celery.task(bind=True, base=BaseTask)
