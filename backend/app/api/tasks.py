@@ -269,7 +269,8 @@ def download_data(self, ids, username, ip):
     if not logged_user:
         raise Exception(f'Username {username} not found!')
 
-    storage = SQLA(current_app.config['DATA_URL'])
+    storage = SQLA(current_app.config['DATA_URL'],
+                   user_id=username)
     filename = str(u.uuid4()) + '.zip'
     file = BytesIO()
     with ZipFile(file, 'w') as zipped_file:
@@ -282,7 +283,7 @@ def download_data(self, ids, username, ip):
             if not logged_user.has_access(post):
                 raise Exception(
                     f'Download failed. You do not have access to post {id}!')
-            data = idict.fromid(post.data_uuid, storage)
+            data = idict(post.data_uuid, storage)
             if data is None:
                 raise Exception(
                     f'Download failed: data {post.data_uuid} not found!')
