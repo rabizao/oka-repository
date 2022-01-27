@@ -70,20 +70,20 @@ def get_attrs(post):
     return [{"name": item.split('@')[0], "nominal": item.isdigit()} for item in list(data.df.columns.values)]
 
 
-def get_name(post):
-    storage = SQLA(current_app.config['DATA_URL'],
-                   user_id=post.author.username)
-    data = idict(post.data_uuid, storage)
-
-    return data.name if "_name" in data else "No name"
-
-
-def get_description(post):
-    storage = SQLA(current_app.config['DATA_URL'],
-                   user_id=post.author.username)
-    data = idict(post.data_uuid, storage)
-
-    return data.description if "_description" in data else "No description"
+# def get_name(post):
+#     storage = SQLA(current_app.config['DATA_URL'],
+#                    user_id=post.author.username)
+#     data = idict(post.data_uuid, storage)
+#
+#     return data.name if "_name" in data else "No name"
+#
+#
+# def get_description(post):
+#     storage = SQLA(current_app.config['DATA_URL'],
+#                    user_id=post.author.username)
+#     data = idict(post.data_uuid, storage)
+#
+#     return data.description if "_description" in data else "No description"
 
 
 class UserBaseSchema(SQLAlchemyAutoSchema):
@@ -354,8 +354,8 @@ class PostBaseSchema(SQLAlchemyAutoSchema):
     downloads = fields.Function(
         lambda obj: obj.get_unique_download_count(), dump_only=True)
     head = fields.Function(lambda obj: get_head(obj), dump_only=True)
-    name = fields.Function(lambda obj: get_name(obj), dump_only=True)
-    description = fields.Function(lambda obj: get_description(obj), dump_only=True)
+    # name = fields.Function(lambda obj: get_name(obj), dump_only=True)
+    # description = fields.Function(lambda obj: get_description(obj), dump_only=True)
     fields = fields.Function(
         lambda obj: get_fields(obj), dump_only=True)
 
@@ -381,8 +381,8 @@ class PostEditSchema(SQLAlchemySchema):
 class PostCreateSchema(SQLAlchemySchema):
     data_uuid = fields.String(required=True)
     info = fields.Dict(required=True)
-    # name = fields.String(missing="No name")
-    # description = fields.String(missing="No description")
+    name = fields.String(missing="No name")
+    description = fields.String(missing="No description")
 
 
 class PostFilesSchema(SQLAlchemySchema):
@@ -486,8 +486,8 @@ class ItemInfoSchema(SQLAlchemySchema):
         return data
 
     id = fields.String()
-    # name = fields.String(missing="No name")
-    # description = fields.String(missing="No description")
+    name = fields.String(missing="No name")
+    description = fields.String(missing="No description")
     create_post = fields.Boolean(missing=False)
 
 

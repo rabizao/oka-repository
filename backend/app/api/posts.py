@@ -52,7 +52,6 @@ class Posts(MethodView):
         import dill
         for file in argsFiles['files']:
             data = Idict(arff=file.read().decode()) >> arff2df
-            # data.show()
             oid = data.id
             if oid in storage:
                 HTTPAbort.already_uploaded()
@@ -107,12 +106,12 @@ class PostsById(MethodView):
                 HTTPAbort.not_authorized()
 
         post.update(args)
-        # storage = SQLA(current_app.config['DATA_URL'],
-        #                user_id=post.author.username)
-        # data = idict(post.data_uuid, storage)
-        # for key, value in args.items():
-        #     setattr(data, key, value)
-        # data >> [[storage]]
+        storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username)
+        data = idict(post.data_uuid, storage)
+        for key, value in args.items():
+            data["_" + key] = value
+        data >> [[storage]]
+        # data.show()
         db.session.commit()
 
     @bp.auth_required
