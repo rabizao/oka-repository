@@ -219,8 +219,8 @@ def run(self, username, run_id):
     import dill
     storage = SQLA(current_app.config['DATA_URL'], user_id=username)
     dump = storage[run_id]
-    data = dill.loads(dump)
-    data.evaluated >> [storage]
+    data = dill.loads(dump).evaluated >> [storage]
+    # data.show()
     desc = data.description if "_description" in data else "No description"
     new_post = create_post(logged_user, data.id, data.name, desc)
     if new_post["code"] == "error":

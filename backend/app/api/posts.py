@@ -1,23 +1,23 @@
 from datetime import datetime
-from idict import idict
-from idict.core.idict_ import Idict
-from idict.persistence.sqla import SQLA
+
+from flask import current_app
+from flask.views import MethodView
+from flask_jwt_extended import get_jwt_identity
 
 from app import db
 from app.errors.handlers import HTTPAbort
+from app.functions import scatter_macro, histogram_macro
 from app.models import Comment, Post, User
 from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
                          PostEditSchema, PostFilesSchema, PostQuerySchema, PostSimplifiedSchema, RunSchema,
                          TaskBaseSchema, UserBaseSchema, VisualizeQuerySchema,
                          PostActivateSchema)  # RunSchema,
-from flask import current_app
-from flask.views import MethodView
-from flask_jwt_extended import get_jwt_identity
+from idict import idict
+from idict.core.idict_ import Idict
 from idict.function.dataset import arff2df, df2Xy
-
-from . import bp
-from app.functions import scatter_macro, histogram_macro
 from idict.function.evaluation import split
+from idict.persistence.sqla import SQLA
+from . import bp
 
 
 @bp.route("/posts")
@@ -51,19 +51,17 @@ class Posts(MethodView):
             current_app.config['DATA_URL'], user_id=username)
         import dill
         for file in argsFiles['files']:
-            data = Idict(x=15)   #   arff=file.read().decode()) >> arff2df   # >> [[storage]]
-            data.evaluate()
+            data = Idict(arff=file.read().decode()) >> arff2df
+            # data.show()
             oid = data.id
             if oid in storage:
                 HTTPAbort.already_uploaded()
-            run_id = (data.hosh * b"run").id
-            dump = dill.dumps(data.frozen, protocol=5)
+            run_id = (data.hosh * b"run" * username.encode()).id
+            dump = dill.dumps(data, protocol=5)
             storage[run_id] = dump
-            data = dill.loads(dump).asmutable
-            data.show()
-            # task = logged_user.launch_task('run',
-            #                                "Processing your uploaded files",
-            #                                [username, run_id])
+            task = logged_user.launch_task('run',
+                                           "Processing your uploaded files",
+                                           [username, run_id])
         db.session.commit()
         return task
 
@@ -414,8 +412,7 @@ class PostsTransformById(MethodView):
 
         storage = SQLA(current_app.config['DATA_URL'], user_id=username)
         data = idict(post.data_uuid, storage) >> df2Xy >> let(split, config=args["parameters"])
-        data.evaluate()
-        run_id = (data.hosh * "run").id
+        run_id = (data.hosh * b"run" * username.encode()).id
         storage[run_id] = dill.dumps(data, protocol=5)
         task = logged_user.launch_task('run', 'Processing your simulation',
                                        [username, run_id])
