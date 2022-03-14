@@ -9,13 +9,13 @@ from app.errors.handlers import HTTPAbort
 from app.functions import scatter_macro, histogram_macro
 from app.models import Comment, Post, User
 from app.schemas import (CommentBaseSchema, CommentQuerySchema, PostBaseSchema,
-                         PostEditSchema, PostFilesSchema, PostQuerySchema, PostSimplifiedSchema, RunSchema,
+                         PostEditSchema, PostFilesSchema, PostQuerySchema, PostSimplifiedSchema,  # RunSchema,
                          TaskBaseSchema, UserBaseSchema, VisualizeQuerySchema,
                          PostActivateSchema)  # RunSchema,
 from idict import idict
 from idict.core.idict_ import Idict
 from idict.function.dataset import arff2df, df2Xy
-from idict.function.evaluation import split
+# from idict.function.evaluation import split
 from idict.persistence.sqla import SQLA
 from . import bp
 
@@ -106,7 +106,8 @@ class PostsById(MethodView):
                 HTTPAbort.not_authorized()
 
         post.update(args)
-        storage = SQLA(current_app.config['DATA_URL'], user_id=post.author.username)
+        storage = SQLA(
+            current_app.config['DATA_URL'], user_id=post.author.username)
         data = idict(post.data_uuid, storage)
         for key, value in args.items():
             data["_" + key] = value
@@ -371,52 +372,45 @@ class PostsTwinsById(MethodView):
                                                           query=logged_user.accessible_twin_posts(post))
         return data
 
+# Run deactivate by now
 
-@bp.route('/posts/<int:id>/run')
-class PostsTransformById(MethodView):
-    @bp.auth_required
-    @bp.arguments(RunSchema)
-    @bp.response(201, TaskBaseSchema)
-    def post(self, args, id):
-        """
-        Return the twins of a post with id {id}
-        """
-        username = get_jwt_identity()
-        logged_user = User.get_by_username(username)
-        post = Post.query.get(id)
+# @bp.route('/posts/<int:id>/run')
+# class PostsTransformById(MethodView):
+#     @bp.auth_required
+#     @bp.arguments(RunSchema)
+#     @bp.response(201, TaskBaseSchema)
+#     def post(self, args, id):
+#         """
+#         Return the twins of a post with id {id}
+#         """
+#         username = get_jwt_identity()
+#         logged_user = User.get_by_username(username)
+#         post = Post.query.get(id)
 
-        if not post or not post.active:
-            HTTPAbort.not_found()
+#         if not post or not post.active:
+#             HTTPAbort.not_found()
 
-        if not logged_user.has_access(post):
-            HTTPAbort.not_authorized()
+#         if not logged_user.has_access(post):
+#             HTTPAbort.not_authorized()
 
-        for key, value in args["parameters"].items():
-            try:
-                args["parameters"][key] = int(value)
-            except ValueError:
-                pass
+#         for key, value in args["parameters"].items():
+#             try:
+#                 args["parameters"][key] = int(value)
+#             except ValueError:
+#                 pass
 
-        # step_asdict = {
-        #     'id': post.data_uuid,
-        #     'desc': {
-        #         'name': args["algorithm"].capitalize(),
-        #         'path': f'kururu.tool.{args["category"]}.{args["algorithm"]}',
-        #         'config': args["parameters"]
-        #     }
-        # }
+#         from idict import let
+#         import dill
 
-        from idict import let
-        import dill
-
-        storage = SQLA(current_app.config['DATA_URL'], user_id=username)
-        data = idict(post.data_uuid, storage) >> df2Xy >> let(split, config=args["parameters"])
-        run_id = (data.hosh * b"run" * username.encode()).id
-        storage[run_id] = dill.dumps(data, protocol=5)
-        task = logged_user.launch_task('run', 'Processing your simulation',
-                                       [username, run_id])
-        db.session.commit()
-        return task
+#         storage = SQLA(current_app.config['DATA_URL'], user_id=username)
+#         data = idict(post.data_uuid, storage) >> df2Xy >> let(split, config=args["parameters"])
+#         run_id = (data.hosh * b"run" * username.encode()).id
+#         data.evaluate()
+#         storage[run_id] = dill.dumps(data, protocol=5)
+#         task = logged_user.launch_task('run', 'Processing your simulation',
+#                                        [username, run_id])
+#         db.session.commit()
+#         return task
 
 
 # noinspection PyArgumentList

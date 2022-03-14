@@ -40,11 +40,11 @@ flask-smorest==0.35.0
 Flask-SQLAlchemy==2.5.1
 frozenlist==1.2.0
 fsspec==2021.11.1
-garoupa==2.211225.1
+garoupa==2.220128.1
 greenlet==1.1.2
 gunicorn==20.1.0
 huggingface-hub==0.2.1
-idict==4.220105.4
+idict==4.220128.1
 idna==3.3
 imbalanced-learn==0.8.1
 imblearn==0.0
@@ -59,7 +59,7 @@ Jinja2==3.0.3
 joblib==1.1.0
 kombu==5.2.2
 lange==0.2101.24
-ldict==3.211211.1
+ldict==3.220128.1
 liac-arff==2.5.0
 limits==2.0.3
 lz4==3.1.10
@@ -84,6 +84,7 @@ pexpect==4.8.0
 pickleshare==0.7.5
 Pillow==8.4.0
 pip-upgrader==1.4.15
+pkg_resources==0.0.0
 pluggy==1.0.0
 pox==0.3.0
 ppft==1.6.6.4

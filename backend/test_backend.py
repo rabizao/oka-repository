@@ -366,12 +366,12 @@ class ApiCase(unittest.TestCase):
                     response = self.client.post(
                         "/api/posts", data={'files': (fr, "test.arff")})
 
-        post = Post.query.all()[0]
         self.assertEqual(response.status_code, 201)
         # 3
-        result = run.run(post.data_uuid, username)
+        result = run.run(username, data.id)
         self.assertEqual(result["state"] == "SUCCESS", True)
         self.assertTrue(len(Post.query.all()) == 1)
+        post = Post.query.all()[0]
         # 4
         with TempDirectory() as tmpDir:
             tmpDir.write("test.arff", data["arff"].encode())
@@ -382,7 +382,7 @@ class ApiCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 422)
         # 5
-        result = run.run(post.data_uuid, username)
+        result = run.run(username, data.id)
         self.assertEqual(result["state"] == "SUCCESS", True)
 
         # 6
