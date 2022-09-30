@@ -29,7 +29,7 @@ imbalanced-learn==0.8.0
 imblearn==0.0
 itsdangerous==1.1.0
 Jinja2==2.11.3
-joblib==1.0.1
+joblib==1.2.0
 kombu==5.0.2
 kururu==0.2102.23
 liac-arff==2.5.0
